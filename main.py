@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 
+# FIXME include GPL3 license here + authors
+
 import sys
 import time
 import argparse
 import logging
 
 from datetime import datetime
-#from pydaemon import Daemon
 from mordred import Mordred
 
 
+##
 log_file = "/tmp/mordred.log"
 error_file = "/tmp/mordred.err"
 stdout_file = log_file
@@ -22,8 +24,8 @@ def parse_args():
         epilog="That's all folks"
     )
     parser.add_argument('operation',
-                    help='Operation with daemon. Accepts any of these ' +\
-                    'values: start, stop, restart, status',
+                    help='Accepts any of these values: start, stop, restart, '+\
+                    'status',
                     choices=['start', 'stop', 'restart', 'status'])
 
     args = parser.parse_args()
