@@ -29,9 +29,156 @@ import threading
 import json
 import sys
 import requests
+import random
 
 from grimoire.arthur import feed_backend, enrich_backend
 from perceval_backends import PERCEVAL_BACKENDS
+
+
+class Phases:
+    def __init__(self):
+        self.collection = False
+        self.identities = False
+        self.enrichment = False
+
+    def set_collection(self):
+        self.collection = True
+
+    def set_identities(self):
+        self.identities = True
+
+    def set_enrichment(self):
+        self.enrichment = True
+
+    def collection_enabled(self):
+        return self.collection
+
+    def identities_enabled(self):
+        return self.identities
+
+    def enrichment_enabled(self):
+        return self.enrichment
+
+class DataProcessor(threading.Thread):
+    def __init__(self, phases, backend_name, repos, stopper, logger, configuration):
+        super().__init__()
+        self.phases = phases
+        self.backend_name =  backend_name
+        self.repos = repos
+        self.stopper = stopper
+        self.logger = logger
+        self.configuration = configuration
+
+    def _get_github_owner_repo(self, github_url):
+        owner = github_url.split('/')[-2]
+        repo = github_url.split('/')[-1]
+        return (owner,repo)
+
+    def _compose_perceval_params(self, backend_name, repo):
+        params = []
+        if backend_name == 'git':
+            params.append(str(repo))
+        elif backend_name == 'github':
+            owner, github_repo = self._get_github_owner_repo(repo)
+            params.append('--owner')
+            params.append(owner)
+            params.append('--repository')
+            params.append(github_repo)
+            params.append('--sleep-for-rate')
+            params.append('-t')
+            params.append(self.configuration['github']['token'])
+        return params
+
+    def enrich(self, backend_name, repos, only_identities=False):
+        t2 = time.time()
+
+        if only_identities:
+            phase_name = 'Identities collection'
+        else:
+            phase_name = 'Data enrichment'
+        self.logger.info('%s starts for %s ' % (phase_name, backend_name))
+
+        cfg = self.configuration
+
+        clean = False
+        no_incremental = False
+        github_token = None
+        only_studies = False
+        for r in repos:
+            backend_args = self._compose_perceval_params(backend_name, r)
+
+            # enrich_backend(url, clean, args.backend, args.backend_args,
+            #                args.index, args.index_enrich,
+            #                args.db_projects_map, args.db_sortinghat,
+            #                args.no_incremental, args.only_identities,
+            #                args.github_token,
+            #                args.studies, args.only_studies,
+            #                args.elastic_url_enrich)
+            try:
+                enrich_backend(cfg['es_collection'], clean, backend_name,
+                            backend_args, #FIXME #FIXME
+                            cfg[backend_name]['raw_index'],
+                            cfg[backend_name]['enriched_index'],
+                            cfg['projects_db'], cfg['sh_db'],
+                            no_incremental, only_identities,
+                            github_token,
+                            cfg['studies_enabled'],
+                            only_studies,
+                            cfg['es_enrichment'])
+            except KeyError as e:
+                self.logger.exception(e)
+
+        time.sleep(random.randint(0,20)) # FIXME test purposes
+
+        t3 = time.time()
+        spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
+        self.logger.info('%s finished for %s in %s' % (phase_name, backend_name, spent_time))
+
+    def collect(self):
+        t2 = time.time()
+        self.logger.info('Data collection starts for %s ' % self.backend_name)
+        clean = False
+        fetch_cache = False
+        cfg = self.configuration
+        for r in self.repos:
+            backend_args = self._compose_perceval_params(self.backend_name, r)
+
+            feed_backend(cfg['es_collection'], clean, fetch_cache,
+                    self.backend_name,
+                    backend_args,
+                    cfg[self.backend_name]['raw_index'],
+                    cfg[self.backend_name]['enriched_index'],
+                    r)
+
+        # feed_backend(url, clean, args.fetch_cache,
+        #              args.backend, args.backend_args,
+        #              args.index, args.index_enrich, args.project)
+
+        time.sleep(random.randint(0,20)) # FIXME test purposes
+
+        t3 = time.time()
+        spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
+        self.logger.info('Data collection finished for %s in %s' % (self.backend_name, spent_time))
+
+    def extract_only_identities(self):
+        #FIXME to be done, it will be a called to enrich_backend with a flag
+        pass
+
+    def run(self):
+        self.logger.debug('Starting thread %s' % self.backend_name)
+
+        # Our dear thread is executed until his mom calls him to come back home
+        #
+        # Phases are determined by self.phases object passsed as parameter
+        while not self.stopper.is_set():
+            if self.phases.collection_enabled():
+                self.collect()
+            if self.phases.identities_enabled():
+                self.identities()
+            if self.phases.enrichment_enabled():
+                self.enrichment()
+
+        self.logger.debug('Exiting thread %s' % self.backend_name)
 
 
 class ElasticSearchError(Exception):
@@ -158,12 +305,15 @@ class Mordred:
         self.logger.debug('repos to be retrieved: %s ' % output)
         return output
 
-    def _get_github_owner_repo(self, github_url):
-        owner = github_url.split('/')[-2]
-        repo = github_url.split('/')[-1]
-        return (owner,repo)
+    # def _get_github_owner_repo(self, github_url):
+    #     owner = github_url.split('/')[-2]
+    #     repo = github_url.split('/')[-1]
+    #     return (owner,repo)
 
     def data_collection(self):
+        #
+        # deprecated
+        #
 
         if not self.configuration['collection_enabled']:
             self.logger.info("[SKIP] Data collection disabled")
@@ -173,41 +323,23 @@ class Mordred:
         self.logger.info('[START] Data collection starting .. ')
         t0 = time.time()
 
-        def worker(backend_name, repos):
-            t2 = time.time()
-            self.logger.debug('Starting thread %s' % backend_name)
-            self.logger.info('Data collection starts for %s ' % backend_name)
-
-            clean = False
-            fetch_cache = False
-            cfg = self.configuration
-            for r in repos:
-                backend_args = self.compose_perceval_params(backend_name, r)
-
-                feed_backend(cfg['es_collection'], clean, fetch_cache,
-                        backend_name,
-                        backend_args,
-                        cfg[backend_name]['raw_index'],
-                        cfg[backend_name]['enriched_index'],
-                        r)
-
-            # feed_backend(url, clean, args.fetch_cache,
-            #              args.backend, args.backend_args,
-            #              args.index, args.index_enrich, args.project)
-
-            t3 = time.time()
-            spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
-            self.logger.info('Data collection finished for %s in %s' % (backend_name, spent_time))
-            self.logger.debug('Exiting thread %s' % backend_name)
-
         threads = []
+        stopper = threading.Event()
         rbb = self._get_repos_by_backend()
         for backend in rbb:
             # Start new Threads and add them to the threads list to complete
             # FIXME we have to pass to the function worker the backend parameters
-            t = threading.Thread(name=backend, target=worker, args=(backend, rbb[backend]))
-            t.start()
+            t = BackendFeeder(backend, rbb[backend], stopper, self.logger, self.configuration)
+            #t = threading.Thread(name=backend, target=worker, args=(backend, rbb[backend]))
             threads.append(t)
+            t.start()
+
+        self.logger.info("Waiting 50 seconds before stopping")
+        time.sleep(45)
+        self.logger.info("Waiting 5 seconds before stopping")
+        time.sleep(5)
+        stopper.set()
+        self.logger.info("Waiting for all threads to complete")
 
         # Wait for all threads to complete
         for t in threads:
@@ -235,6 +367,9 @@ class Mordred:
         return params
 
     def data_enrichment(self, only_identities=False):
+        #
+        # deprecated
+        #
 
         if not self.configuration['enrichment_enabled']:
             self.logger.info("[SKIP] Data enrichment disabled")
@@ -244,49 +379,8 @@ class Mordred:
         self.logger.info('[START] Data enrichment starting .. ')
         t0 = time.time()
 
-        def enrich_backend_2(backend_name, repos, only_identities=False):
-            t2 = time.time()
-            self.logger.debug('Starting thread %s' % backend_name)
-            if only_identities:
-                phase_name = 'Identities collection'
-            else:
-                phase_name = 'Data enrichment'
-            self.logger.info('%s starts for %s ' % (phase_name, backend_name))
+        # FIXME enrich_backend_2 was here
 
-            cfg = self.configuration
-
-            clean = False
-            no_incremental = False
-            github_token = None
-            only_studies = False
-            for r in repos:
-                backend_args = self.compose_perceval_params(backend_name, r)
-
-                # enrich_backend(url, clean, args.backend, args.backend_args,
-                #                args.index, args.index_enrich,
-                #                args.db_projects_map, args.db_sortinghat,
-                #                args.no_incremental, args.only_identities,
-                #                args.github_token,
-                #                args.studies, args.only_studies,
-                #                args.elastic_url_enrich)
-                try:
-                    enrich_backend(cfg['es_collection'], clean, backend_name,
-                                backend_args, #FIXME #FIXME
-                                cfg[backend_name]['raw_index'],
-                                cfg[backend_name]['enriched_index'],
-                                cfg['projects_db'], cfg['sh_db'],
-                                no_incremental, only_identities,
-                                github_token,
-                                cfg['studies_enabled'],
-                                only_studies,
-                                cfg['es_enrichment'])
-                except KeyError as e:
-                    self.logger.exception(e)
-
-            t3 = time.time()
-            spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
-            self.logger.info('%s finished for %s in %s' % (phase_name, backend_name, spent_time))
-            self.logger.debug('Exiting thread %s' % backend_name)
 
         threads = []
         rbb = self._get_repos_by_backend()
@@ -305,14 +399,45 @@ class Mordred:
         self.logger.info('[END] Data enrichment phase finished in %s' % spent_time)
 
     def data_enrichment_studies(self):
-        print("Not implemented")
+        self.logger.info("Not implemented")
 
     def update_es_aliases(self):
-        print("Not implemented")
+        self.logger.info("Not implemented")
+
+    def identities_merge(self):
+        self.logger.info("Not implemented")
+
+    def launch_data_processor(self, phases, timer):
+        #
+        # FIXME long description needed
+        #
+
+        self.logger.info('Data process starting .. ') # FIXME what phase?
+
+        threads = []
+        stopper = threading.Event()
+        rbb = self._get_repos_by_backend()
+        for backend in rbb:
+            # Start new Threads and add them to the threads list to complete
+            t = DataProcessor(phases, backend, rbb[backend], stopper, self.logger, self.configuration)
+            threads.append(t)
+            t.start()
+
+        self.logger.info("Waiting %s seconds before stopping" % str(timer))
+        time.sleep(timer)
+        stopper.set()
+
+        self.logger.info("Waiting for all threads to complete. This could take a while ..")
+
+        # Wait for all threads to complete
+        for t in threads:
+            t.join()
 
     def run(self):
 
         while True:
+
+            #FIXME with the parallel processes this is won't be read until restart
             self.update_configuration(self.read_conf_files())
 
             # check section enabled
@@ -324,27 +449,44 @@ class Mordred:
             # projects database, do we need to feed it?
             self.feed_orgs_tables()
 
-            # parallel data collection
-            self.data_collection()
+            # phase one
+            # we get all the items with Perceval + identites browsing the
+            # raw items
+            p_one = Phases()
+            p_one.set_collection()
+            p_one.set_identities()
+            #FIXME launch DataProcessor
+            self.launch_data_processor(p_one, 0)
 
-            # first time, execute getting identities
-            # after that, do it on X
-            self.collect_identities()
+            # unify + affiliates (phase one and a half)
+            # Merge: we unify all the identities and enrol them
+            self.identities_merge()
 
-            # data enrichment
-            # on X a new index will be generated
-            self.data_enrichment()
+            # phase two
+            # raw items + sh database with merged identities + affiliations
+            # will used to produce a enriched index
+            p_two = Phases()
+            p_two.set_enrichment()
+            self.launch_data_processor(p_two, 0)
 
-            # on X data studies will be executed
-            self.data_enrichment_studies()
+            # phase three
+            # for a fixed period of time we:
+            # a) update our raw data with Perceval
+            # b) get new identities and add them to SH (no merge done)
+            # c) convert raw data into enriched data
+            p_three = Phases()
+            p_three.set_collection()
+            p_three.set_enrichment()
+            a_day = 86400
+            self.launch_data_processor(p_three, a_day)
+
+            # FIXME
+            # reached this point a new index should be produced
+            # or the one we are using should be updated with the Changes
+            # for unified identities + affiliations
 
             # do aliases need to be changed?
             self.update_es_aliases()
-
-            # SECOND ITERATION
-            # update dashboards + tabs
-
-            time.sleep(10)
 
 def parse_args():
 
