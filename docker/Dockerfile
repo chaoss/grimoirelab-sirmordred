@@ -12,9 +12,6 @@ ENV SCRIPTS_DIR ${DEPLOY_USER_DIR}/scripts
 # Initial user
 RUN useradd bitergia --create-home --shell /bin/bash
 
-# Helper scripts
-RUN mkdir ${DEPLOY_USER_DIR}/scripts
-
 # install dependencies
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
@@ -46,5 +43,5 @@ USER ${DEPLOY_USER}
 WORKDIR ${DEPLOY_USER_DIR}
 
 ADD stage ${DEPLOY_USER_DIR}/stage
-RUN chmod +x ${DEPLOY_USER_DIR}/stage
+RUN chmod 755 ${DEPLOY_USER_DIR}/stage
 CMD ${DEPLOY_USER_DIR}/stage

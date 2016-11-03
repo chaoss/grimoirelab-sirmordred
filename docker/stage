@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source requirements.cfg
+source /home/bitergia/conf/requirements.cfg
 
 # get SortingHat repository
 git clone https://github.com/MetricsGrimoire/sortinghat.git && \
@@ -27,3 +27,5 @@ git clone https://github.com/grimoirelab/perceval.git && \
     cd perceval && \
     git checkout $PERCEVAL && \
     sudo python3 setup.py install
+
+/home/bitergia/mordred/mordred/bin/mordred.sh /home/bitergia/conf/setup.cfg
