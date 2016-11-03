@@ -1,0 +1,29 @@
+#!/bin/bash
+
+source requirements.cfg
+
+# get SortingHat repository
+git clone https://github.com/MetricsGrimoire/sortinghat.git && \
+    cd sortinghat && \
+    git checkout $SORTINGHAT && \
+    sudo python3 setup.py install
+
+# get GrimoireELK repository
+git clone https://github.com/grimoirelab/GrimoireELK && \
+    git checkout $GRIMOIREELK
+
+# get Mordred repository
+git clone https://github.com/grimoirelab/GrimoireELK mordred && \
+    cd mordred && \
+    git checkout $MORDRED
+
+# get VizGrimoireUtils repository for tools like eclipse_projects
+git clone https://github.com/VizGrimoire/VizGrimoireUtils.git && \
+    cd VizGrimoireUtils && \
+    git checkout $VIZGRIMOIREUTILS
+
+# get Perceval repository
+git clone https://github.com/grimoirelab/perceval.git && \
+    cd perceval && \
+    git checkout $PERCEVAL && \
+    sudo python3 setup.py install
