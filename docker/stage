@@ -12,6 +12,7 @@ git clone https://github.com/MetricsGrimoire/sortinghat.git && \
 # get GrimoireELK repository
 cd /home/bitergia && \
 git clone https://github.com/grimoirelab/GrimoireELK && \
+    cd GrimoireELK && \
     git checkout $GRIMOIREELK
 
 # get Mordred repository
