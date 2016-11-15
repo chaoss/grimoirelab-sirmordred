@@ -112,12 +112,20 @@ class DataProcessor(threading.Thread):
                             backend_args, #FIXME #FIXME
                             cfg[self.backend_name]['raw_index'],
                             cfg[self.backend_name]['enriched_index'],
-                            cfg['projects_db'], cfg['sh_db'],
+                            None, #projects_db is deprecated
+                            cfg['projects_file'],
+                            cfg['sh_db'],
                             no_incremental, only_identities,
                             github_token,
                             cfg['studies_enabled'],
                             only_studies,
-                            cfg['es_enrichment'])
+                            cfg['es_enrichment'],
+                            None, #args.events_enrich
+                            cfg['sh_user'],
+                            cfg['sh_password'],
+                            cfg['sh_host'],
+                            None, #args.refresh_projects,
+                            None) #args.refresh_identities)
             except KeyError as e:
                 self.logger.exception(e)
 
@@ -228,13 +236,17 @@ class Mordred:
         conf['es_collection'] = config.get('es_collection', 'url')
         conf['es_enrichment'] = config.get('es_enrichment', 'url')
 
-        conf['projects_db'] = config.get('projects','database')
         projects_file = config.get('projects','projects_file')
+        conf['projects_file'] = projects_file
         with open(projects_file,'r') as fd:
             projects = json.load(fd)
         conf['projects'] = projects
 
         conf['sh_db'] = config.get('sortinghat','database')
+        conf['sh_host'] = config.get('sortinghat','host')
+        conf['sh_user'] = config.get('sortinghat','user')
+        conf['sh_password'] = config.get('sortinghat','password')
+
         for b_p in PERCEVAL_BACKENDS:
             try:
                 raw = config.get(b_p, 'raw_index')
