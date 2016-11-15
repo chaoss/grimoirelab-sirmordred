@@ -108,6 +108,7 @@ class TaskCollect(Task):
         cfg = self.conf
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
+            logger.info('Collection starts for %s %s', self.backend_name, r)
             feed_backend(cfg['es_collection'], clean, fetch_cache,
                         self.backend_name,
                         backend_args,
@@ -150,6 +151,7 @@ class TaskEnrich(Task):
             backend_args = self.compose_perceval_params(self.backend_name, r)
 
             try:
+                logger.info('Enrichment starts for %s %s', self.backend_name, r)
                 enrich_backend(cfg['es_collection'], self.clean, self.backend_name,
                                 backend_args, #FIXME #FIXME
                                 cfg[self.backend_name]['raw_index'],
@@ -241,6 +243,13 @@ class Mordred:
         logger = self.setup_logs()
 
     def setup_logs(self):
+
+        # For gelk logging
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+        # To control requests logging
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
+        logging.getLogger("requests").setLevel(logging.WARNING)
+
         #logging.basicConfig(filename='/tmp/mordred.log'level=logging.DEBUG)
         # logger = logging.getLogger('mordred')
         logger.setLevel(logging.DEBUG)
