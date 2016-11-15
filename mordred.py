@@ -83,6 +83,11 @@ class TaskSH(Task):
         self.unify = unify  # Unify identities
         self.autoprofile = autoprofile  # Execute autoprofile
 
+class TaskStudies(Task):
+    """ Run studies for the data sources  """
+
+class TaskPanels(Task):
+    """ Create the panels  """
 
 class TaskCollect(Task):
     """ Basic class shared by all collection tasks """
@@ -305,6 +310,7 @@ class Mordred:
         conf['identities_enabled'] = config.getboolean('phases','identities')
         conf['enrichment_enabled'] = config.getboolean('phases','enrichment')
         conf['studies_enabled'] = config.getboolean('phases','studies')
+        conf['panels_enabled'] = config.getboolean('phases','panels')
 
         return conf
 
@@ -322,8 +328,6 @@ class Mordred:
 
         if self.conf['enrichment_enabled'] or \
             self.conf['studies_enabled']:
-            print(self.conf['enrichment_enabled'] == True)
-            print(self.conf['studies_enabled'])
             es = self.conf['es_enrichment']
             r = requests.get(es, verify=False)
             if r.status_code != 200:
@@ -419,27 +423,47 @@ class Mordred:
             # projects database, do we need to feed it?
             self.feed_orgs_tables()
 
+
+            tasks = []
+
             # phase one
             # we get all the items with Perceval + identites browsing the
             # raw items
 
-            #FIXME launch DataProcessor
-            tasks = []
-            tasks.append(TaskCollect(self.conf))
-            tasks.append(TaskSH(self.conf, load=True))
-            self.launch_task_manager(tasks)
+            if self.conf['collection_enabled']:
+                tasks.append(TaskCollect(self.conf))
+                self.launch_task_manager(tasks)
 
-            # unify + affiliates (phase one and a half)
-            # Merge: we unify all the identities and enrol them
-            tasks = [TaskSH(self.conf, unify=True, affiliate=True)]
-            self.launch_task_manager(tasks)
+            if self.conf['identities_enabled']:
+                tasks.append(TaskSH(self.conf, load=True))
+                self.launch_task_manager(tasks)
 
-            # phase two
-            # raw items + sh database with merged identities + affiliations
-            # will used to produce a enriched index
-            tasks = [TaskEnrich(self.conf)]
-            self.launch_task_manager(tasks)
-            break
+                # unify + affiliates (phase one and a half)
+                # Merge: we unify all the identities and enrol them
+                tasks = [TaskSH(self.conf, unify=True, affiliate=True)]
+                self.launch_task_manager(tasks)
+
+            if self.conf['enrichment_enabled']:
+                # phase two
+                # raw items + sh database with merged identities + affiliations
+                # will used to produce a enriched index
+                tasks = [TaskEnrich(self.conf)]
+                self.launch_task_manager(tasks)
+                break
+
+            if self.conf['studies_enabled']:
+                # phase two
+                # raw items + sh database with merged identities + affiliations
+                # will used to produce a enriched index
+                tasks = [TaskStudies(self.conf)]
+                self.launch_task_manager(tasks)
+
+            if self.conf['panels_enabled']:
+                # phase two
+                # raw items + sh database with merged identities + affiliations
+                # will used to produce a enriched index
+                tasks = [TaskPanels(self.conf)]
+                self.launch_task_manager(tasks)
 
 
             # phase three
