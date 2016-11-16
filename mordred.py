@@ -35,6 +35,12 @@ from grimoire.arthur import feed_backend, enrich_backend, get_ocean_backend, loa
 from grimoire.panels import import_dashboard
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
 
+from sortinghat.cmd.affiliate import Affiliate
+from sortinghat.cmd.autoprofile import AutoProfile
+from sortinghat.cmd.load import Load
+from sortinghat.cmd.unify import Unify
+from sortinghat.command import CMD_SUCCESS
+
 logger = logging.getLogger(__name__)
 
 class Task():
@@ -77,26 +83,25 @@ class Task():
 class TaskSortingHat(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
-    def __init__(self, conf, load=False, unify=False, autoprofile=False,
-                 affiliate=False):
+    def __init__(self, conf, load_orgs=False, load_ids=False, unify=False,
+                 autoprofile=False, affiliate=False):
         super().__init__(conf)
 
         self.db_sh = self.conf['sh_database']
         self.db_user = self.conf['sh_user']
         self.db_password = self.conf['sh_password']
         self.db_host = self.conf['sh_host']
-        self.load = load  # Load identities
+        self.load_orgs = load_orgs  # Load orgs from file
+        self.load_ids = load_ids  # Load identities from raw index
         self.unify = unify  # Unify identities
         self.autoprofile = autoprofile  # Execute autoprofile
         self.affiliate = affiliate # Affiliate identities
+        self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
+                        'database': self.db_sh, 'host': self.db_host,
+                        'port': None}
 
 
-    def run(self):
-
-        if not self.backend_name:
-            logging.error ("Backend not configured in TaskSortingHat.")
-            return
-
+    def __get_backends(self):
         db_projects_map = None
         json_projects_map = None
         no_incremental = False
@@ -118,10 +123,57 @@ class TaskSortingHat(Task):
                                     clean, ocean_backend)
         ocean_backend.set_elastic(elastic_ocean)
 
+        return (ocean_backend, enrich_backend)
 
-        if self.load:
+    def run(self):
+
+        if not self.backend_name:
+            logging.error ("Backend not configured in TaskSortingHat.")
+            return
+
+        if self.load_orgs:
+            logger.info("Loading orgs from file %s", self.conf['sh_orgs_file'])
+            code = Load(**self.sh_kwargs).run("--orgs", self.conf['sh_orgs_file'])
+            if code != CMD_SUCCESS:
+                logger.error("Error in org loading %s", kwargs)
+
+        if self.load_ids:
             logger.info("Loading identities from index raw")
+            (ocean_backend, enrich_backend) = self.__get_backends()
             load_identities(ocean_backend, enrich_backend)
+
+        if self.unify:
+            # default for all identities
+            kwargs = {'matching':'default', 'fast_matching':True}
+            logger.info("Unifying identities %s", kwargs['matching'])
+            code = Unify(**self.sh_kwargs).unify(**kwargs)
+            if code != CMD_SUCCESS:
+                logger.error("Error in unify %s", kwargs)
+
+            # github for joining github-commits and github -> git
+            kwargs = {'matching':'github', 'fast_matching':True}
+            logger.info("Unifying identities %s", kwargs['matching'])
+            code = Unify(**self.sh_kwargs).unify(**kwargs)
+            if code != CMD_SUCCESS:
+                logger.error("Error in unify %s", kwargs)
+
+        if self.affiliate:
+            # Global enrollments using domains
+            logger.info("Executing affiliate")
+            code = Affiliate(**self.sh_kwargs).affiliate()
+            if code != CMD_SUCCESS:
+                logger.error("Error in affiliate %s", kwargs)
+
+
+        if self.autoprofile:
+            logger.info("Executing autoprofile")
+            if not 'sh_autoprofile' in self.conf:
+                logger.info("Autoprofile not configured. Skipping.")
+            else:
+                sources = self.conf['sh_autoprofile'].split()
+                code = AutoProfile(**self.sh_kwargs).autocomplete(sources)
+                if code != CMD_SUCCESS:
+                    logger.error("Error in autoprofile %s", kwargs)
 
 
 class TaskStudies(Task):
@@ -359,10 +411,12 @@ class Mordred:
             projects = json.load(fd)
         conf['projects'] = projects
 
-        conf['sh_database'] = config.get('sortinghat','database')
-        conf['sh_host'] = config.get('sortinghat','host')
-        conf['sh_user'] = config.get('sortinghat','user')
-        conf['sh_password'] = config.get('sortinghat','password')
+        conf['sh_database'] = config.get('sortinghat', 'database')
+        conf['sh_host'] = config.get('sortinghat', 'host')
+        conf['sh_user'] = config.get('sortinghat', 'user')
+        conf['sh_password'] = config.get('sortinghat', 'password')
+        conf['sh_autoprofile'] = config.get('sortinghat', 'autoprofile')
+        conf['sh_orgs_file'] = config.get('sortinghat', 'orgs_file')
 
         for backend in get_connectors().keys():
             try:
@@ -503,7 +557,9 @@ class Mordred:
                 self.launch_task_manager(tasks)
 
             if self.conf['identities_enabled']:
-                tasks.append(TaskSortingHat(self.conf, load=True))
+                tasks.append(TaskSortingHat(self.conf, load_orgs=True,
+                                            load_ids=False, unify=False,
+                                            autoprofile=False, affiliate=False))
                 self.launch_task_manager(tasks)
                 # unify + affiliates (phase one and a half)
                 # Merge: we unify all the identities and enrol them
