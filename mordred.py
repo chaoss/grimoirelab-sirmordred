@@ -31,9 +31,9 @@ import sys
 import requests
 import random
 
-from grimoire.arthur import feed_backend, enrich_backend
+from grimoire.arthur import feed_backend, enrich_backend, get_ocean_backend, load_identities
 from grimoire.panels import import_dashboard
-from grimoire.utils import get_connectors
+from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class Task():
     def __get_github_owner_repo(self, github_url):
         owner = github_url.split('/')[-2]
         repo = github_url.split('/')[-1]
-        return (owner,repo)
+        return (owner, repo)
 
     def compose_perceval_params(self, backend_name, repo):
         params = []
@@ -74,15 +74,55 @@ class Task():
         logger.debug("A bored task. It does nothing!")
 
 
-class TaskSH(Task):
+class TaskSortingHat(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
-    def __init__(self, db_conf, load=False, unify=False, autoprofile=False,
-                 affiliate=True):
-        self.db_conf = db_conf
+    def __init__(self, conf, load=False, unify=False, autoprofile=False,
+                 affiliate=False):
+        super().__init__(conf)
+
+        self.db_sh = self.conf['sh_database']
+        self.db_user = self.conf['sh_user']
+        self.db_password = self.conf['sh_password']
+        self.db_host = self.conf['sh_host']
         self.load = load  # Load identities
         self.unify = unify  # Unify identities
         self.autoprofile = autoprofile  # Execute autoprofile
+        self.affiliate = affiliate # Affiliate identities
+
+
+    def run(self):
+
+        if not self.backend_name:
+            logging.error ("Backend not configured in TaskSortingHat.")
+            return
+
+        db_projects_map = None
+        json_projects_map = None
+        no_incremental = False
+        clean = False
+        connector = get_connector_from_name(self.backend_name)
+
+        enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
+                                      self.db_user, self.db_password, self.db_host)
+        elastic_enrich = get_elastic(self.conf['es_enrichment'],
+                                     self.conf[self.backend_name]['enriched_index'],
+                                     clean, enrich_backend)
+        enrich_backend.set_elastic(elastic_enrich)
+
+        backend_cmd = None  # FIXME: Could we build a backend_cmd with params?
+        ocean_backend = get_ocean_backend(self.backend_name, backend_cmd,
+                                          enrich_backend, no_incremental)
+        elastic_ocean = get_elastic(self.conf['es_collection'],
+                                    self.conf[self.backend_name]['raw_index'],
+                                    clean, ocean_backend)
+        ocean_backend.set_elastic(elastic_ocean)
+
+
+        if self.load:
+            logger.info("Loading identities from index raw")
+            load_identities(ocean_backend, enrich_backend)
+
 
 class TaskStudies(Task):
     """ Run studies for the data sources  """
@@ -177,7 +217,7 @@ class TaskEnrich(Task):
                                 cfg[self.backend_name]['enriched_index'],
                                 None, #projects_db is deprecated
                                 cfg['projects_file'],
-                                cfg['sh_db'],
+                                cfg['sh_database'],
                                 no_incremental, only_identities,
                                 github_token,
                                 cfg['studies_enabled'],
@@ -264,7 +304,7 @@ class Mordred:
     def setup_logs(self):
 
         # For gelk logging
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
         # To control requests logging
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("requests").setLevel(logging.WARNING)
@@ -319,7 +359,7 @@ class Mordred:
             projects = json.load(fd)
         conf['projects'] = projects
 
-        conf['sh_db'] = config.get('sortinghat','database')
+        conf['sh_database'] = config.get('sortinghat','database')
         conf['sh_host'] = config.get('sortinghat','host')
         conf['sh_user'] = config.get('sortinghat','user')
         conf['sh_password'] = config.get('sortinghat','password')
@@ -463,12 +503,12 @@ class Mordred:
                 self.launch_task_manager(tasks)
 
             if self.conf['identities_enabled']:
-                tasks.append(TaskSH(self.conf, load=True))
+                tasks.append(TaskSortingHat(self.conf, load=True))
                 self.launch_task_manager(tasks)
                 # unify + affiliates (phase one and a half)
                 # Merge: we unify all the identities and enrol them
-                tasks = [TaskSH(self.conf, unify=True, affiliate=True)]
-                self.launch_task_manager(tasks)
+                # tasks = [TaskSortingHat(self.conf, unify=True, affiliate=True)]
+                # self.launch_task_manager(tasks)
 
             if self.conf['enrichment_enabled']:
                 # raw items + sh database with merged identities + affiliations
@@ -486,6 +526,8 @@ class Mordred:
             if self.conf['panels_enabled']:
                 tasks = [TaskPanels(self.conf)]
                 self.launch_task_manager(tasks)
+
+            break
 
             # phase three
             # for a fixed period of time we:
