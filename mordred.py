@@ -32,7 +32,8 @@ import requests
 import random
 
 from grimoire.arthur import feed_backend, enrich_backend
-from perceval_backends import PERCEVAL_BACKENDS
+from grimoire.panels import import_dashboard
+from grimoire.utils import get_connectors
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,22 @@ class TaskStudies(Task):
 
 class TaskPanels(Task):
     """ Create the panels  """
+
+    panels = {
+        "git": ["panels/dashboards/git-organizations-projects.json",
+                "panels/dashboards/git_demographics-organizations-projects.json"
+                ],
+        "github": ["panels/dashboards/github_backlog_organizations.json",
+                   "panels/dashboards/github_issues-organizations.json",
+                   "panels/dashboards/github_pullrequests_delays-organizations.json",
+                   "panels/dashboards/github_pullrequests-organizations.json"
+                   ]
+    }
+
+    def run(self):
+        for panel_file in self.panels[self.backend_name]:
+            import_dashboard(self.conf['es_enrichment'], panel_file)
+
 
 class TaskCollect(Task):
     """ Basic class shared by all collection tasks """
@@ -146,6 +163,8 @@ class TaskEnrich(Task):
 
         no_incremental = False
         github_token = None
+        if 'github' in self.conf and 'token' in self.conf['github']:
+            github_token = self.conf['github']['token']
         only_studies = False
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
@@ -305,7 +324,7 @@ class Mordred:
         conf['sh_user'] = config.get('sortinghat','user')
         conf['sh_password'] = config.get('sortinghat','password')
 
-        for backend in PERCEVAL_BACKENDS:
+        for backend in get_connectors().keys():
             try:
                 raw = config.get(backend, 'raw_index')
                 enriched = config.get(backend, 'enriched_index')
@@ -352,7 +371,7 @@ class Mordred:
         output = {}
         projects = self.conf['projects']
 
-        for backend in PERCEVAL_BACKENDS:
+        for backend in get_connectors().keys():
             for pro in projects:
                 if backend in projects[pro]:
                     if not backend in output:
@@ -446,14 +465,12 @@ class Mordred:
             if self.conf['identities_enabled']:
                 tasks.append(TaskSH(self.conf, load=True))
                 self.launch_task_manager(tasks)
-
                 # unify + affiliates (phase one and a half)
                 # Merge: we unify all the identities and enrol them
                 tasks = [TaskSH(self.conf, unify=True, affiliate=True)]
                 self.launch_task_manager(tasks)
 
             if self.conf['enrichment_enabled']:
-                # phase two
                 # raw items + sh database with merged identities + affiliations
                 # will used to produce a enriched index
                 tasks = [TaskEnrich(self.conf)]
@@ -461,19 +478,14 @@ class Mordred:
                 break
 
             if self.conf['studies_enabled']:
-                # phase two
                 # raw items + sh database with merged identities + affiliations
                 # will used to produce a enriched index
                 tasks = [TaskStudies(self.conf)]
                 self.launch_task_manager(tasks)
 
             if self.conf['panels_enabled']:
-                # phase two
-                # raw items + sh database with merged identities + affiliations
-                # will used to produce a enriched index
                 tasks = [TaskPanels(self.conf)]
                 self.launch_task_manager(tasks)
-
 
             # phase three
             # for a fixed period of time we:
