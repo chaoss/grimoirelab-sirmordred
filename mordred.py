@@ -31,6 +31,8 @@ import sys
 import requests
 import random
 
+from urllib.parse import urljoin
+
 from grimoire.arthur import feed_backend, enrich_backend, get_ocean_backend, load_identities
 from grimoire.panels import import_dashboard
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
@@ -83,15 +85,15 @@ class Task():
 class TaskSortingHat(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
-    def __init__(self, conf, load_orgs=False, load_ids=False, unify=False,
-                 autoprofile=False, affiliate=False):
+    def __init__(self, conf, load_orgs=True, load_ids=True, unify=True,
+                 autoprofile=True, affiliate=True):
         super().__init__(conf)
 
         self.db_sh = self.conf['sh_database']
         self.db_user = self.conf['sh_user']
         self.db_password = self.conf['sh_password']
         self.db_host = self.conf['sh_host']
-        self.load_orgs = load_orgs  # Load orgs from file
+        self.load_orgs = self.conf['sh_load_orgs']  # Load orgs from file
         self.load_ids = load_ids  # Load identities from raw index
         self.unify = unify  # Unify identities
         self.autoprofile = autoprofile  # Execute autoprofile
@@ -114,6 +116,11 @@ class TaskSortingHat(Task):
                                      self.conf[self.backend_name]['enriched_index'],
                                      clean, enrich_backend)
         enrich_backend.set_elastic(elastic_enrich)
+
+        gh_token = self.conf['github']['token']
+        if gh_token and self.backend_name == "git":
+            print(self.backend_name)
+            enrich_backend.set_github_token(gh_token)
 
         backend_cmd = None  # FIXME: Could we build a backend_cmd with params?
         ocean_backend = get_ocean_backend(self.backend_name, backend_cmd,
@@ -193,7 +200,61 @@ class TaskPanels(Task):
                    ]
     }
 
+    aliases = {
+        "git": {
+            "raw":["git-dev"],
+            "enrich":["git", "git_author", "git_enrich"]
+        },
+        "github": {
+            "raw":["github-dev"],
+            "enrich":["github_issues", "github_issues_enrich", "issues_closed",
+                      "issues_created", "issues_updated"]
+        }
+    }
+
+    def __create_alias(self, es_url, es_index, alias):
+        alias_url = urljoin(es_url, "_aliases")
+        action = """
+        {
+            "actions" : [
+                {"add" : { "index" : "%s",
+                           "alias" : "%s" }}
+           ]
+         }
+        """ % (es_index, alias)
+
+        logger.debug("%s %s", alias_url, action)
+
+        r = requests.post(alias_url, data=action)
+        print(r)
+        r.raise_for_status()
+
+    def __create_aliases(self):
+        """ Create aliases in ElasticSearch used by the panels """
+        es_col_url = self.conf['es_collection']
+        es_enrich_url = self.conf['es_enrichment']
+
+        for ds in self.aliases:
+            index_raw = self.conf[ds]['raw_index']
+            index_enrich = self.conf[ds]['enriched_index']
+
+            if 'raw' in ds:
+                for alias in ds['raw']:
+                    self.__create_alias(es_col_url, index_raw, alias)
+            else:
+                # Standard alias for the raw index
+                self.__create_alias(es_col_url, index_raw, ds+"-dev")
+            if 'enrich' in ds:
+                for alias in ds['enrich']:
+                    self.__create_alias(es_enrich_url, index_enrich, alias)
+            else:
+                # Standard alias for the enrich index
+                self.__create_alias(es_enrich_url, index_enrich, ds)
+
     def run(self):
+        # Create the aliases
+        self.__create_aliases()
+        # Create the panels which uses the aliases as data source
         for panel_file in self.panels[self.backend_name]:
             import_dashboard(self.conf['es_enrichment'], panel_file)
 
@@ -300,15 +361,17 @@ class TasksManager(threading.Thread):
 
     """
 
-    def __init__(self, tasks, backend_name, repos, stopper, conf):
+    def __init__(self, tasks_cls, backend_name, repos, stopper, conf):
         """
-        :tasks : tasks to be executed using the backend
+        :tasks_cls : tasks classes to be executed using the backend
         :backend_name: perceval backend name
         :repos: list of repositories to be managed
         :conf: conf for the manager
         """
         super().__init__()  # init the Thread
-        self.tasks = tasks  # tasks to be executed
+        self.conf = conf
+        self.tasks_cls = tasks_cls  # tasks classes to be executed
+        self.tasks = []  # tasks to be executed
         self.backend_name = backend_name
         self.repos = repos
         self.stopper = stopper  # To stop the thread from parent
@@ -321,9 +384,11 @@ class TasksManager(threading.Thread):
         logger.debug('Starting Task Manager thread %s', self.backend_name)
 
         # Configure the tasks
-        for task in self.tasks:
+        for task_cls in self.tasks_cls:
+            task = task_cls(self.conf)  # create the real Task from the class
             task.set_repos(self.repos)
             task.set_backend_name(self.backend_name)
+            self.tasks.append(task)
 
         if not self.tasks:
             logger.debug('Task Manager thread %s without tasks', self.backend_name)
@@ -417,6 +482,7 @@ class Mordred:
         conf['sh_password'] = config.get('sortinghat', 'password')
         conf['sh_autoprofile'] = config.get('sortinghat', 'autoprofile')
         conf['sh_orgs_file'] = config.get('sortinghat', 'orgs_file')
+        conf['sh_load_orgs'] = config.getboolean('sortinghat', 'load_orgs')
 
         for backend in get_connectors().keys():
             try:
@@ -480,7 +546,7 @@ class Mordred:
             if k in self.conf:
                 enabled[k] = output[k]
 
-        logger.debug('repos to be retrieved: %s ', enabled)
+        # logger.debug('repos to be retrieved: %s ', enabled)
         return enabled
 
     def collect_identities(self):
@@ -495,7 +561,7 @@ class Mordred:
     def identities_merge(self):
         logger.info("Not implemented")
 
-    def launch_task_manager(self, tasks, timer=0):
+    def launch_task_manager(self, tasks_cls, timer=0):
         """
         Start a task manger per backend to complete the tasks.
 
@@ -510,7 +576,8 @@ class Mordred:
         repos_backend = self.__get_repos_by_backend()
         for backend in repos_backend:
             # Start new Threads and add them to the threads list to complete
-            t = TasksManager(tasks, backend, repos_backend[backend], stopper, self.conf)
+            t = TasksManager(tasks_cls, backend, repos_backend[backend],
+                             stopper, self.conf)
             # According to the conf we need to add tasks
             threads.append(t)
             t.start()
@@ -546,21 +613,19 @@ class Mordred:
             self.feed_orgs_tables()
 
 
-            tasks = []
+            tasks_cls = []
 
             # phase one
             # we get all the items with Perceval + identites browsing the
             # raw items
 
             if self.conf['collection_enabled']:
-                tasks.append(TaskCollect(self.conf))
-                self.launch_task_manager(tasks)
+                tasks_cls.append(TaskCollect)
+                self.launch_task_manager(tasks_cls)
 
             if self.conf['identities_enabled']:
-                tasks.append(TaskSortingHat(self.conf, load_orgs=True,
-                                            load_ids=False, unify=False,
-                                            autoprofile=False, affiliate=False))
-                self.launch_task_manager(tasks)
+                tasks_cls.append(TaskSortingHat)
+                self.launch_task_manager(tasks_cls)
                 # unify + affiliates (phase one and a half)
                 # Merge: we unify all the identities and enrol them
                 # tasks = [TaskSortingHat(self.conf, unify=True, affiliate=True)]
@@ -569,19 +634,19 @@ class Mordred:
             if self.conf['enrichment_enabled']:
                 # raw items + sh database with merged identities + affiliations
                 # will used to produce a enriched index
-                tasks = [TaskEnrich(self.conf)]
-                self.launch_task_manager(tasks)
+                tasks_cls = [TaskEnrich]
+                self.launch_task_manager(tasks_cls)
                 break
 
             if self.conf['studies_enabled']:
                 # raw items + sh database with merged identities + affiliations
                 # will used to produce a enriched index
-                tasks = [TaskStudies(self.conf)]
-                self.launch_task_manager(tasks)
+                tasks_cls = [TaskStudies]
+                self.launch_task_manager(tasks_cls)
 
             if self.conf['panels_enabled']:
-                tasks = [TaskPanels(self.conf)]
-                self.launch_task_manager(tasks)
+                tasks_cls = [TaskPanels]
+                self.launch_task_manager(tasks_cls)
 
             break
 
