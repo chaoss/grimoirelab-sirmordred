@@ -34,7 +34,7 @@ import random
 from urllib.parse import urljoin
 
 from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
-                             load_identities,
+                             load_identities, do_studies,
                              refresh_projects, refresh_identities)
 from grimoire.panels import import_dashboard
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
@@ -102,8 +102,7 @@ class Task():
         no_incremental = False
         clean = False
 
-        ocean_backend = get_ocean_backend(self.backend_name, backend_cmd,
-                                          enrich_backend, no_incremental)
+        ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
         elastic_ocean = get_elastic(self.conf['es_collection'],
                                     self.conf[self.backend_name]['raw_index'],
                                     clean, ocean_backend)
@@ -418,11 +417,17 @@ class TaskEnrich(Task):
         eitems = refresh_identities(enrich_backend)
         enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
 
+    def __studies(self):
+        logging.info("Executing %s studies ...", self.backend_name)
+        enrich_backend = self.get_enrich_backend()
+        do_studies(enrich_backend)
 
     def run(self):
         self.__enrich_items()
-        if self.conf['autorefresh']:
+        if self.conf['autorefresh_on']:
             self.__autorefresh()
+        if self.conf['studies_on']:
+            self.__studies()
 
 
 class TasksManager(threading.Thread):
@@ -542,7 +547,8 @@ class Mordred:
 
         conf['es_collection'] = config.get('es_collection', 'url')
         conf['es_enrichment'] = config.get('es_enrichment', 'url')
-        conf['autorefresh'] = config.getboolean('es_enrichment', 'autorefresh')
+        conf['autorefresh_on'] = config.getboolean('es_enrichment', 'autorefresh')
+        conf['studies_on'] = config.getboolean('es_enrichment', 'studies')
 
         projects_file = config.get('projects','projects_file')
         conf['projects_file'] = projects_file
@@ -571,7 +577,6 @@ class Mordred:
         conf['collection_enabled'] = config.getboolean('phases','collection')
         conf['identities_enabled'] = config.getboolean('phases','identities')
         conf['enrichment_enabled'] = config.getboolean('phases','enrichment')
-        conf['studies_enabled'] = config.getboolean('phases','studies')
         conf['panels_enabled'] = config.getboolean('phases','panels')
 
         return conf
