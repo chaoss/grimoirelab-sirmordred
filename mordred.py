@@ -414,7 +414,7 @@ class TaskEnrich(Task):
             backend_args = self.compose_perceval_params(self.backend_name, r)
 
             try:
-                logger.info('[%s] enrichment starts for %s', self.backend_name, r)
+                logger.debug('[%s] enrichment starts for %s', self.backend_name, r)
                 enrich_backend(cfg['es_collection'], self.clean, self.backend_name,
                                 backend_args, #FIXME #FIXME
                                 cfg[self.backend_name]['raw_index'],
@@ -622,6 +622,8 @@ class Mordred:
         conf['enrichment_on'] = config.getboolean('phases','enrichment')
         conf['panels_on'] = config.getboolean('phases','panels')
 
+        conf['update'] = config.getboolean('general','update')
+
         return conf
 
     def check_es_access(self):
@@ -718,7 +720,7 @@ class Mordred:
                     global_t.append(t)
             return backend_t, global_t
 
-        logger.info(' Task Manager starting .. ')
+        logger.debug(' Task Manager starting .. ')
 
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
 
@@ -739,9 +741,9 @@ class Mordred:
         threads.append(gt)
         gt.start()
 
-        logger.info(" Waiting for all threads to complete. This could take a while ..")
+        logger.debug(" Waiting for all threads to complete. This could take a while ..")
         if timer:
-            logger.info(" Waiting %s seconds before stopping", str(timer))
+            logger.debug(" Waiting %s seconds before stopping", str(timer))
             time.sleep(timer)
         stopper.set()
 
@@ -754,7 +756,10 @@ class Mordred:
     def run(self):
 
         #logger.debug("Starting Mordred engine ...")
+        logger.info("")
+        logger.info("----------------------------")
         logger.info("Starting Mordred engine ...")
+        logger.info("- - - - - - - - - - - - - - ")
 
         self.update_conf(self.read_conf_files())
 
@@ -793,7 +798,7 @@ class Mordred:
             tasks_cls = [TaskPanels]
             self.execute_batch_tasks(tasks_cls)
 
-        while True:
+        while self.conf['update']:
 
             tasks = [TaskRawDataCollection,
                     TaskIdentitiesCollection,
