@@ -33,7 +33,9 @@ import random
 
 from urllib.parse import urljoin
 
-from grimoire.arthur import feed_backend, enrich_backend, get_ocean_backend, load_identities
+from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
+                             load_identities,
+                             refresh_projects, refresh_identities)
 from grimoire.panels import import_dashboard
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
 
@@ -50,6 +52,10 @@ class Task():
 
     def __init__(self, conf):
         self.conf = conf
+        self.db_sh = self.conf['sh_database']
+        self.db_user = self.conf['sh_user']
+        self.db_password = self.conf['sh_password']
+        self.db_host = self.conf['sh_host']
 
     def __get_github_owner_repo(self, github_url):
         owner = github_url.split('/')[-2]
@@ -71,6 +77,40 @@ class Task():
             params.append(self.conf['github']['token'])
         return params
 
+    def get_enrich_backend(self):
+        db_projects_map = None
+        json_projects_map = None
+        clean = False
+        connector = get_connector_from_name(self.backend_name)
+
+        enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
+                                      self.db_user, self.db_password, self.db_host)
+        elastic_enrich = get_elastic(self.conf['es_enrichment'],
+                                     self.conf[self.backend_name]['enriched_index'],
+                                     clean, enrich_backend)
+        enrich_backend.set_elastic(elastic_enrich)
+
+        gh_token = self.conf['github']['token']
+        if gh_token and self.backend_name == "git":
+            enrich_backend.set_github_token(gh_token)
+
+        return enrich_backend
+
+    def get_ocean_backend(self, enrich_backend):
+        backend_cmd = None  # FIXME: Could we build a backend_cmd with params?
+
+        no_incremental = False
+        clean = False
+
+        ocean_backend = get_ocean_backend(self.backend_name, backend_cmd,
+                                          enrich_backend, no_incremental)
+        elastic_ocean = get_elastic(self.conf['es_collection'],
+                                    self.conf[self.backend_name]['raw_index'],
+                                    clean, ocean_backend)
+        ocean_backend.set_elastic(elastic_ocean)
+
+        return ocean_backend
+
     def set_repos(self, repos):
         self.repos = repos
 
@@ -89,10 +129,6 @@ class TaskSortingHat(Task):
                  autoprofile=True, affiliate=True):
         super().__init__(conf)
 
-        self.db_sh = self.conf['sh_database']
-        self.db_user = self.conf['sh_user']
-        self.db_password = self.conf['sh_password']
-        self.db_host = self.conf['sh_host']
         self.load_orgs = self.conf['sh_load_orgs']  # Load orgs from file
         self.load_ids = load_ids  # Load identities from raw index
         self.unify = unify  # Unify identities
@@ -101,36 +137,6 @@ class TaskSortingHat(Task):
         self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
                         'database': self.db_sh, 'host': self.db_host,
                         'port': None}
-
-
-    def __get_backends(self):
-        db_projects_map = None
-        json_projects_map = None
-        no_incremental = False
-        clean = False
-        connector = get_connector_from_name(self.backend_name)
-
-        enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
-                                      self.db_user, self.db_password, self.db_host)
-        elastic_enrich = get_elastic(self.conf['es_enrichment'],
-                                     self.conf[self.backend_name]['enriched_index'],
-                                     clean, enrich_backend)
-        enrich_backend.set_elastic(elastic_enrich)
-
-        gh_token = self.conf['github']['token']
-        if gh_token and self.backend_name == "git":
-            print(self.backend_name)
-            enrich_backend.set_github_token(gh_token)
-
-        backend_cmd = None  # FIXME: Could we build a backend_cmd with params?
-        ocean_backend = get_ocean_backend(self.backend_name, backend_cmd,
-                                          enrich_backend, no_incremental)
-        elastic_ocean = get_elastic(self.conf['es_collection'],
-                                    self.conf[self.backend_name]['raw_index'],
-                                    clean, ocean_backend)
-        ocean_backend.set_elastic(elastic_ocean)
-
-        return (ocean_backend, enrich_backend)
 
     def run(self):
 
@@ -142,11 +148,12 @@ class TaskSortingHat(Task):
             logger.info("Loading orgs from file %s", self.conf['sh_orgs_file'])
             code = Load(**self.sh_kwargs).run("--orgs", self.conf['sh_orgs_file'])
             if code != CMD_SUCCESS:
-                logger.error("Error in org loading %s", kwargs)
+                logger.error("Error in org loading %s", self.conf['sh_orgs_file'])
 
         if self.load_ids:
             logger.info("Loading identities from index raw")
-            (ocean_backend, enrich_backend) = self.__get_backends()
+            enrich_backend = self.get_enrich_backend()
+            ocean_backend = self.get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)
 
         if self.unify:
@@ -347,14 +354,11 @@ class TaskEnrich(Task):
         self.clean = False
         self.fetch_cache = False
 
-    def run(self, only_identities=False):
-        t2 = time.time()
+    def __enrich_items(self):
+        # TODO: avoid identities loading. It is done in TaskSortingHat
+        time_start = time.time()
 
-        if only_identities:
-            phase_name = 'Identities collection'
-        else:
-            phase_name = 'Data enrichment'
-        logger.info('%s starts for %s ', phase_name, self.backend_name)
+        logger.info('%s starts for %s ', 'enrichment', self.backend_name)
 
         cfg = self.conf
 
@@ -363,6 +367,7 @@ class TaskEnrich(Task):
         if 'github' in self.conf and 'token' in self.conf['github']:
             github_token = self.conf['github']['token']
         only_studies = False
+        only_identities=False
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
 
@@ -389,11 +394,35 @@ class TaskEnrich(Task):
             except KeyError as e:
                 logger.exception(e)
 
-        time.sleep(random.randint(0,20)) # FIXME test purposes
+        time.sleep(5)  # Safety sleep tp avoid too quick execution
 
-        t3 = time.time()
-        spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
-        logger.info('%s finished for %s in %s' % (phase_name, self.backend_name, spent_time))
+        spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-time_start))
+        logger.info('%s finished for %s in %s', 'enrichment', self.backend_name, spent_time)
+
+    def __autorefresh(self):
+        logging.info("[%s] Refreshing project and identities " + \
+                     "fields for all items", self.backend_name)
+        # Refresh projects
+        if False:
+            # TODO: Waiting that the project info is loaded from yaml files
+            logging.info("Refreshing project field in enriched index")
+            enrich_backend = self.get_enrich_backend()
+            field_id = enrich_backend.get_field_unique_id()
+            eitems = refresh_projects(enrich_backend)
+            enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+
+        # Refresh identities
+        logging.info("Refreshing identities fields in enriched index")
+        enrich_backend = self.get_enrich_backend()
+        field_id = enrich_backend.get_field_unique_id()
+        eitems = refresh_identities(enrich_backend)
+        enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+
+
+    def run(self):
+        self.__enrich_items()
+        if self.conf['autorefresh']:
+            self.__autorefresh()
 
 
 class TasksManager(threading.Thread):
@@ -419,7 +448,7 @@ class TasksManager(threading.Thread):
         self.backend_name = backend_name
         self.repos = repos
         self.stopper = stopper  # To stop the thread from parent
-        self.rounds_limit = 1  # For debugging
+        self.rounds_limit = 0  # For debugging
 
     def add_task(self, task):
         self.tasks.append(task)
@@ -513,6 +542,7 @@ class Mordred:
 
         conf['es_collection'] = config.get('es_collection', 'url')
         conf['es_enrichment'] = config.get('es_enrichment', 'url')
+        conf['autorefresh'] = config.getboolean('es_enrichment', 'autorefresh')
 
         projects_file = config.get('projects','projects_file')
         conf['projects_file'] = projects_file
