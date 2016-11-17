@@ -212,7 +212,28 @@ class TaskPanels(Task):
         }
     }
 
+    def __remove_alias(self, es_url, alias):
+        alias_url = urljoin(es_url, "_alias/"+alias)
+        r = requests.get(alias_url)
+        if r.status_code == 200:
+            # The alias exists, let's remove it
+            real_index = list(r.json())[0]
+            logging.info("Removing alias %s to %s", alias, real_index)
+            aliases_url = urljoin(es_url, "_aliases")
+            action = """
+            {
+                "actions" : [
+                    {"remove" : { "index" : "%s",
+                               "alias" : "%s" }}
+               ]
+             }
+            """ % (real_index, alias)
+            r = requests.post(aliases_url, data=action)
+            r.raise_for_status()
+
     def __create_alias(self, es_url, es_index, alias):
+        self.__remove_alias(es_url, alias)
+        logging.info("Adding alias %s to %s", alias, es_index)
         alias_url = urljoin(es_url, "_aliases")
         action = """
         {
@@ -223,10 +244,7 @@ class TaskPanels(Task):
          }
         """ % (es_index, alias)
 
-        logger.debug("%s %s", alias_url, action)
-
         r = requests.post(alias_url, data=action)
-        print(r)
         r.raise_for_status()
 
     def __create_aliases(self):
@@ -234,22 +252,23 @@ class TaskPanels(Task):
         es_col_url = self.conf['es_collection']
         es_enrich_url = self.conf['es_enrichment']
 
-        for ds in self.aliases:
-            index_raw = self.conf[ds]['raw_index']
-            index_enrich = self.conf[ds]['enriched_index']
+        ds = self.backend_name
+        index_raw = self.conf[ds]['raw_index']
+        index_enrich = self.conf[ds]['enriched_index']
 
-            if 'raw' in ds:
-                for alias in ds['raw']:
-                    self.__create_alias(es_col_url, index_raw, alias)
-            else:
-                # Standard alias for the raw index
-                self.__create_alias(es_col_url, index_raw, ds+"-dev")
-            if 'enrich' in ds:
-                for alias in ds['enrich']:
-                    self.__create_alias(es_enrich_url, index_enrich, alias)
-            else:
-                # Standard alias for the enrich index
-                self.__create_alias(es_enrich_url, index_enrich, ds)
+        if 'raw' in self.aliases[ds]:
+            for alias in self.aliases[ds]['raw']:
+                self.__create_alias(es_col_url, index_raw, alias)
+        else:
+            # Standard alias for the raw index
+            self.__create_alias(es_col_url, index_raw, ds+"-dev")
+
+        if 'enrich' in self.aliases[ds]:
+            for alias in self.aliases[ds]['enrich']:
+                self.__create_alias(es_enrich_url, index_enrich, alias)
+        else:
+            # Standard alias for the enrich index
+            self.__create_alias(es_enrich_url, index_enrich, ds)
 
     def run(self):
         # Create the aliases
