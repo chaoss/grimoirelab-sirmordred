@@ -351,7 +351,7 @@ class TaskPanels(Task):
         self.__create_dashboard_menu(self.conf['es_enrichment'], self.dash_menu)
 
 
-class TaskCollect(Task):
+class TaskRawDataCollection(Task):
     """ Basic class shared by all collection tasks """
 
     def __init__(self, conf, repos=None, backend_name=None):
@@ -752,62 +752,53 @@ class Mordred:
 
     def run(self):
 
+        logger.debug("Starting Mordred engine ...")
+
+        self.update_conf(self.read_conf_files())
+
+        # check we have access to the needed ES
+        self.check_es_access()
+
+        # do we need ad-hoc scripts?
+
+        # projects database, do we need to feed it?
+        self.feed_orgs_tables()
+
+        tasks_cls = []
+
+        # phase one
+        # we get all the items with Perceval + identites browsing the
+        # raw items
+
+        if self.conf['collection_on']:
+            tasks_cls = [TaskRawDataCollection]
+            #self.execute_batch_tasks(tasks_cls)
+            if self.conf['identities_on']:
+                tasks_cls.append(TaskIdentitiesCollection)
+            self.execute_batch_tasks(tasks_cls)
+
+        if self.conf['identities_on']:
+            tasks_cls = [TaskSortingHat]
+            self.execute_batch_tasks(tasks_cls)
+
+        if self.conf['enrichment_on']:
+            # raw items + sh database with merged identities + affiliations
+            # will used to produce a enriched index
+            tasks_cls = [TaskEnrich]
+            self.execute_batch_tasks(tasks_cls)
+
+        if self.conf['panels_on']:
+            tasks_cls = [TaskPanels]
+            self.execute_batch_tasks(tasks_cls)
+
         while True:
 
-            logger.debug("Starting Mordred engine ...")
-
-            #FIXME with the parallel processes this is won't be read until restart
-            self.update_conf(self.read_conf_files())
-
-            # check section enabled
-            # check we have access the needed ES
-            self.check_es_access()
-
-
-            # do we need ad-hoc scripts?
-
-            # projects database, do we need to feed it?
-            self.feed_orgs_tables()
-
-
-            tasks_cls = []
-
-            # phase one
-            # we get all the items with Perceval + identites browsing the
-            # raw items
-
-            if self.conf['collection_on']:
-                tasks_cls.append(TaskCollect)
-                self.launch_task_manager(tasks_cls)
-
-            if self.conf['identities_on']:
-                tasks_cls.append(TaskSortingHat)
-                self.launch_task_manager(tasks_cls)
-                # unify + affiliates (phase one and a half)
-                # Merge: we unify all the identities and enrol them
-                # tasks = [TaskSortingHat(self.conf, unify=True, affiliate=True)]
-                # self.launch_task_manager(tasks)
-
-            if self.conf['enrichment_on']:
-                # raw items + sh database with merged identities + affiliations
-                # will used to produce a enriched index
-                tasks_cls = [TaskEnrich]
-                self.launch_task_manager(tasks_cls)
-
-            if self.conf['panels_on']:
-                tasks_cls = [TaskPanels]
-                self.launch_task_manager(tasks_cls)
-
-            break
-
-            # phase three
-            # for a fixed period of time we:
-            # a) update our raw data with Perceval
-            # b) get new identities and add them to SH (no merge done)
-            # c) convert raw data into enriched data
-            tasks = [TaskCollect(self.conf), TaskEnrich(self.conf)]
+            tasks = [TaskRawDataCollection,
+                    TaskIdentitiesCollection,
+                    TaskSortingHat,
+                    TaskEnrich]
             a_day = 86400
-            self.launch_task_manager(tasks, a_day)
+            self.execute_batch_tasks(tasks, a_day)
 
             # FIXME
             # reached this point a new index should be produced
