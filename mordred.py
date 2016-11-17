@@ -122,6 +122,39 @@ class Task():
         logger.debug("A bored task. It does nothing!")
 
 
+class TaskIdentitiesCollection(Task):
+    """ Class aimed to get identites from raw data """
+
+    def __init__(self, conf, load_ids=True):
+        super().__init__(conf)
+
+        #self.load_orgs = self.conf['sh_load_orgs']  # Load orgs from file
+        self.load_ids = load_ids  # Load identities from raw index
+        #self.unify = unify  # Unify identities
+        #self.autoprofile = autoprofile  # Execute autoprofile
+        #self.affiliate = affiliate # Affiliate identities
+        self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
+                        'database': self.db_sh, 'host': self.db_host,
+                        'port': None}
+
+    def run(self):
+
+        #FIXME this should be called just once
+        # code = 0 when command success
+        code = Init(**self.sh_kwargs).run(self.db_sh)
+
+        if not self.backend_name:
+            logging.error ("Backend not configured in TaskIdentitiesCollection.")
+            return
+
+        if self.load_ids:
+            logger.info("[%s] Loading identities from index raw" % self.backend_name)
+            enrich_backend = self.get_enrich_backend()
+            ocean_backend = self.get_ocean_backend(enrich_backend)
+            load_identities(ocean_backend, enrich_backend)
+            #FIXME get the number of ids gathered
+
+
 class TaskSortingHat(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
@@ -138,7 +171,13 @@ class TaskSortingHat(Task):
                         'database': self.db_sh, 'host': self.db_host,
                         'port': None}
 
+    def is_backend_task(self):
+        return False
+
     def run(self):
+
+        # code = 0 when command success
+        code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if not self.backend_name:
             logging.error ("Backend not configured in TaskSortingHat.")
@@ -149,12 +188,8 @@ class TaskSortingHat(Task):
             code = Load(**self.sh_kwargs).run("--orgs", self.conf['sh_orgs_file'])
             if code != CMD_SUCCESS:
                 logger.error("Error in org loading %s", self.conf['sh_orgs_file'])
-
-        if self.load_ids:
-            logger.info("Loading identities from index raw")
-            enrich_backend = self.get_enrich_backend()
-            ocean_backend = self.get_ocean_backend(enrich_backend)
-            load_identities(ocean_backend, enrich_backend)
+            orgs = api.registry(self.db)
+            #FIXME get the number of loaded orgs
 
         if self.unify:
             # default for all identities
