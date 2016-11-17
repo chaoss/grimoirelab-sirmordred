@@ -579,23 +579,36 @@ class Mordred:
 
         return conf
 
-    def check_write_permission(self):
+    def check_es_access(self):
         ##
         ## So far there is no way to distinguish between read and write permission
         ##
-        if self.conf['collection_on'] or \
-            self.conf['enrichment_on'] or \
-            self.conf['studies_on']:
-            es = self.conf['es_collection']
-            r = requests.get(es, verify=False)
-            if r.status_code != 200:
-                raise ElasticSearchError('Is the ElasticSearch for data collection accesible?')
 
-        if self.conf['enrichment_on'] or \
-            self.conf['studies_on']:
-            es = self.conf['es_enrichment']
+        def _ofuscate_server_uri(uri):
+            if uri.rfind('@') > 0:
+                pre, post = uri.split('@')
+                char_from = pre.rfind(':')
+                result = uri[0:char_from + 1] + '****@' + post
+                return result
+            else:
+                return uri
+
+        es = self.conf['es_collection']
+        try:
             r = requests.get(es, verify=False)
             if r.status_code != 200:
+                raise ElasticSearchError('Check the connection with server %s' % _ofuscate_server_uri(es))
+        except:
+            raise ElasticSearchError('Check the connection with server %s' % _ofuscate_server_uri(es))
+
+
+        if self.conf['enrichment_on'] or self.conf['studies_on']:
+            es = self.conf['es_enrichment']
+            try:
+                r = requests.get(es, verify=False)
+                if r.status_code != 200:
+                    raise ElasticSearchError('Is the ElasticSearch for data enrichment accesible?')
+            except:
                 raise ElasticSearchError('Is the ElasticSearch for data enrichment accesible?')
 
     def feed_orgs_tables(self):
@@ -682,7 +695,8 @@ class Mordred:
 
             # check section enabled
             # check we have access the needed ES
-            self.check_write_permission()
+            self.check_es_access()
+
 
             # do we need ad-hoc scripts?
 
