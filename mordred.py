@@ -212,6 +212,20 @@ class TaskPanels(Task):
         }
     }
 
+    dash_menu = """
+    {
+        "Overview": "Overview",
+        "Git": "Git",
+        "Issues": "GitHub-Issues",
+        "Pull Requests": "Github-Pull-Requests",
+        "Github Backlog": "Github-Backlog",
+        "PR Delays": "GitHub-Pull-Requests-Delays",
+        "Demographics": "Git-Demographics",
+        "Data Status": "Data-Status",
+        "About": "About"
+    }
+    """
+
     def __remove_alias(self, es_url, alias):
         alias_url = urljoin(es_url, "_alias/"+alias)
         r = requests.get(alias_url)
@@ -270,12 +284,23 @@ class TaskPanels(Task):
             # Standard alias for the enrich index
             self.__create_alias(es_enrich_url, index_enrich, ds)
 
+    def __create_dashboard_menu(self, es_url, dash_menu):
+        """ Create the menu definition to access the panels in a dashboard """
+        # TODO: only the menu for the self.backend_name should be added
+        # TODO: but howto add the global menu entries and define the order
+        logging.info("Adding dashboard menu definition")
+        alias_url = urljoin(es_url, ".kibana/metadashboard/main")
+        r = requests.post(alias_url, data=dash_menu)
+        r.raise_for_status()
+
     def run(self):
         # Create the aliases
         self.__create_aliases()
         # Create the panels which uses the aliases as data source
         for panel_file in self.panels[self.backend_name]:
             import_dashboard(self.conf['es_enrichment'], panel_file)
+        # Create the menu for accessing the dashboards
+        self.__create_dashboard_menu(self.conf['es_enrichment'], self.dash_menu)
 
 
 class TaskCollect(Task):
