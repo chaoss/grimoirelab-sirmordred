@@ -153,11 +153,11 @@ class TaskIdentitiesCollection(Task):
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if not self.backend_name:
-            logging.error ("Backend not configured in TaskIdentitiesCollection.")
+            logger.error ("Backend not configured in TaskIdentitiesCollection.")
             return
 
         if self.load_ids:
-            logger.info("[%s] Loading identities from index raw" % self.backend_name)
+            logger.info("[%s] Gathering identities from raw data" % self.backend_name)
             enrich_backend = self.get_enrich_backend()
             ocean_backend = self.get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)
@@ -189,7 +189,7 @@ class TaskSortingHat(Task):
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if not self.backend_name:
-            logging.error ("Backend not configured in TaskSortingHat.")
+            logger.error ("Backend not configured in TaskSortingHat.")
             return
 
         if self.load_orgs:
@@ -280,7 +280,7 @@ class TaskPanels(Task):
         if r.status_code == 200:
             # The alias exists, let's remove it
             real_index = list(r.json())[0]
-            logging.info("Removing alias %s to %s", alias, real_index)
+            logger.info("Removing alias %s to %s", alias, real_index)
             aliases_url = urljoin(es_url, "_aliases")
             action = """
             {
@@ -295,7 +295,7 @@ class TaskPanels(Task):
 
     def __create_alias(self, es_url, es_index, alias):
         self.__remove_alias(es_url, alias)
-        logging.info("Adding alias %s to %s", alias, es_index)
+        logger.info("Adding alias %s to %s", alias, es_index)
         alias_url = urljoin(es_url, "_aliases")
         action = """
         {
@@ -336,7 +336,7 @@ class TaskPanels(Task):
         """ Create the menu definition to access the panels in a dashboard """
         # TODO: only the menu for the self.backend_name should be added
         # TODO: but howto add the global menu entries and define the order
-        logging.info("Adding dashboard menu definition")
+        logger.info("Adding dashboard menu definition")
         alias_url = urljoin(es_url, ".kibana/metadashboard/main")
         r = requests.post(alias_url, data=dash_menu)
         r.raise_for_status()
@@ -364,13 +364,13 @@ class TaskRawDataCollection(Task):
 
     def run(self):
         t2 = time.time()
-        logger.info('Data collection starts for %s ', self.backend_name)
+        logger.info('[%s] raw data collection starts', self.backend_name)
         clean = False
         fetch_cache = False
         cfg = self.conf
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
-            logger.info('Collection starts for %s %s', self.backend_name, r)
+            logger.info('[%s] collection starts for %s', self.backend_name, r)
             feed_backend(cfg['es_collection'], clean, fetch_cache,
                         self.backend_name,
                         backend_args,
@@ -382,7 +382,7 @@ class TaskRawDataCollection(Task):
 
         t3 = time.time()
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
-        logger.info('Data collection finished for %s in %s' % (self.backend_name, spent_time))
+        logger.info('[%s] Data collection finished in %s' % (self.backend_name, spent_time))
 
 class TaskEnrich(Task):
     """ Basic class shared by all enriching tasks """
@@ -399,7 +399,8 @@ class TaskEnrich(Task):
         # TODO: avoid identities loading. It is done in TaskSortingHat
         time_start = time.time()
 
-        logger.info('%s starts for %s ', 'enrichment', self.backend_name)
+        #logger.info('%s starts for %s ', 'enrichment', self.backend_name)
+        logger.info('[%s] enrichment starts', self.backend_name)
 
         cfg = self.conf
 
@@ -413,7 +414,7 @@ class TaskEnrich(Task):
             backend_args = self.compose_perceval_params(self.backend_name, r)
 
             try:
-                logger.info('Enrichment starts for %s %s', self.backend_name, r)
+                logger.info('[%s] enrichment starts for %s', self.backend_name, r)
                 enrich_backend(cfg['es_collection'], self.clean, self.backend_name,
                                 backend_args, #FIXME #FIXME
                                 cfg[self.backend_name]['raw_index'],
@@ -438,7 +439,7 @@ class TaskEnrich(Task):
         time.sleep(5)  # Safety sleep tp avoid too quick execution
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-time_start))
-        logger.info('%s finished for %s in %s', 'enrichment', self.backend_name, spent_time)
+        logger.info('[%s] enrichment finished in %s', self.backend_name, spent_time)
 
     def __autorefresh(self):
         logging.info("[%s] Refreshing project and identities " + \
@@ -717,7 +718,7 @@ class Mordred:
                     global_t.append(t)
             return backend_t, global_t
 
-        logger.info('Task Manager starting .. ')
+        logger.info(' Task Manager starting .. ')
 
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
 
@@ -738,9 +739,9 @@ class Mordred:
         threads.append(gt)
         gt.start()
 
-        logger.info("Waiting for all threads to complete. This could take a while ..")
+        logger.info(" Waiting for all threads to complete. This could take a while ..")
         if timer:
-            logger.info("Waiting %s seconds before stopping", str(timer))
+            logger.info(" Waiting %s seconds before stopping", str(timer))
             time.sleep(timer)
         stopper.set()
 
@@ -748,11 +749,12 @@ class Mordred:
         for t in threads:
             t.join()
 
-        logger.debug("Task manager and all its tasks (threads) finished!")
+        logger.debug(" Task manager and all its tasks (threads) finished!")
 
     def run(self):
 
-        logger.debug("Starting Mordred engine ...")
+        #logger.debug("Starting Mordred engine ...")
+        logger.info("Starting Mordred engine ...")
 
         self.update_conf(self.read_conf_files())
 
