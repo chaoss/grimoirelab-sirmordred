@@ -713,7 +713,6 @@ class Mordred:
                 # will used to produce a enriched index
                 tasks_cls = [TaskEnrich]
                 self.launch_task_manager(tasks_cls)
-                break
 
             if self.conf['panels_on']:
                 tasks_cls = [TaskPanels]
