@@ -19,6 +19,7 @@
 #
 # Authors:
 #     Luis Cañas-Díaz <lcanas@bitergia.com>
+#     Alvaro del Castillo <acs@bitergia.com>
 #
 
 import configparser
@@ -381,7 +382,7 @@ class TaskEnrich(Task):
                                 cfg['sh_database'],
                                 no_incremental, only_identities,
                                 github_token,
-                                cfg['studies_enabled'],
+                                cfg['studies_on'],
                                 only_studies,
                                 cfg['es_enrichment'],
                                 None, #args.events_enrich
@@ -574,10 +575,10 @@ class Mordred:
             except configparser.NoSectionError:
                 pass
 
-        conf['collection_enabled'] = config.getboolean('phases','collection')
-        conf['identities_enabled'] = config.getboolean('phases','identities')
-        conf['enrichment_enabled'] = config.getboolean('phases','enrichment')
-        conf['panels_enabled'] = config.getboolean('phases','panels')
+        conf['collection_on'] = config.getboolean('phases','collection')
+        conf['identities_on'] = config.getboolean('phases','identities')
+        conf['enrichment_on'] = config.getboolean('phases','enrichment')
+        conf['panels_on'] = config.getboolean('phases','panels')
 
         return conf
 
@@ -585,16 +586,16 @@ class Mordred:
         ##
         ## So far there is no way to distinguish between read and write permission
         ##
-        if self.conf['collection_enabled'] or \
-            self.conf['enrichment_enabled'] or \
-            self.conf['studies_enabled']:
+        if self.conf['collection_on'] or \
+            self.conf['enrichment_on'] or \
+            self.conf['studies_on']:
             es = self.conf['es_collection']
             r = requests.get(es, verify=False)
             if r.status_code != 200:
                 raise ElasticSearchError('Is the ElasticSearch for data collection accesible?')
 
-        if self.conf['enrichment_enabled'] or \
-            self.conf['studies_enabled']:
+        if self.conf['enrichment_on'] or \
+            self.conf['studies_on']:
             es = self.conf['es_enrichment']
             r = requests.get(es, verify=False)
             if r.status_code != 200:
@@ -698,11 +699,11 @@ class Mordred:
             # we get all the items with Perceval + identites browsing the
             # raw items
 
-            if self.conf['collection_enabled']:
+            if self.conf['collection_on']:
                 tasks_cls.append(TaskCollect)
                 self.launch_task_manager(tasks_cls)
 
-            if self.conf['identities_enabled']:
+            if self.conf['identities_on']:
                 tasks_cls.append(TaskSortingHat)
                 self.launch_task_manager(tasks_cls)
                 # unify + affiliates (phase one and a half)
@@ -710,20 +711,20 @@ class Mordred:
                 # tasks = [TaskSortingHat(self.conf, unify=True, affiliate=True)]
                 # self.launch_task_manager(tasks)
 
-            if self.conf['enrichment_enabled']:
+            if self.conf['enrichment_on']:
                 # raw items + sh database with merged identities + affiliations
                 # will used to produce a enriched index
                 tasks_cls = [TaskEnrich]
                 self.launch_task_manager(tasks_cls)
                 break
 
-            if self.conf['studies_enabled']:
+            if self.conf['studies_on']:
                 # raw items + sh database with merged identities + affiliations
                 # will used to produce a enriched index
                 tasks_cls = [TaskStudies]
                 self.launch_task_manager(tasks_cls)
 
-            if self.conf['panels_enabled']:
+            if self.conf['panels_on']:
                 tasks_cls = [TaskPanels]
                 self.launch_task_manager(tasks_cls)
 
