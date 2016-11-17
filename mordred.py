@@ -44,6 +44,8 @@ from sortinghat.cmd.affiliate import Affiliate
 from sortinghat.cmd.autoprofile import AutoProfile
 from sortinghat.cmd.load import Load
 from sortinghat.cmd.unify import Unify
+from sortinghat.cmd.init import Init
+
 from sortinghat.command import CMD_SUCCESS
 
 logger = logging.getLogger(__name__)
@@ -116,6 +118,13 @@ class Task():
 
     def set_backend_name(self, backend_name):
         self.backend_name = backend_name
+
+    def is_backend_task(self):
+        """
+        Returns True if the Task is executed per backend.
+        i.e. SortingHat unify is not executed per backend.
+        """
+        return True
 
     def run(self):
         """ Execute the Task """
@@ -686,7 +695,8 @@ class Mordred:
     def identities_merge(self):
         logger.info("Not implemented")
 
-    def launch_task_manager(self, tasks_cls, timer=0):
+    #def execute_batch_tasks(self, tasks_cls, timer=0):
+    def execute_batch_tasks(self, tasks_cls, timer=0):
         """
         Start a task manger per backend to complete the tasks.
 
@@ -694,18 +704,39 @@ class Mordred:
         must be added to the task manager.
         """
 
+        def _split_tasks(tasks_cls):
+            """
+            we internally distinguish between tasks executed by backend
+            and tasks executed with no specific backend. """
+            backend_t = []
+            global_t = []
+            for t in tasks_cls:
+                if t.is_backend_task(t):
+                    backend_t.append(t)
+                else:
+                    global_t.append(t)
+            return backend_t, global_t
+
         logger.info('Task Manager starting .. ')
+
+        backend_tasks, global_tasks = _split_tasks(tasks_cls)
 
         threads = []
         stopper = threading.Event()
+
+        # launching threads for tasks by backend
         repos_backend = self.__get_repos_by_backend()
         for backend in repos_backend:
             # Start new Threads and add them to the threads list to complete
             t = TasksManager(tasks_cls, backend, repos_backend[backend],
                              stopper, self.conf)
-            # According to the conf we need to add tasks
             threads.append(t)
             t.start()
+
+        # launch thread for global tasks
+        gt = TasksManager(global_tasks, None, None, stopper, self.conf)
+        threads.append(gt)
+        gt.start()
 
         logger.info("Waiting for all threads to complete. This could take a while ..")
         if timer:
