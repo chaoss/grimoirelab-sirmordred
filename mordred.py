@@ -190,9 +190,6 @@ class TaskSortingHat(Task):
                     logger.error("Error in autoprofile %s", kwargs)
 
 
-class TaskStudies(Task):
-    """ Run studies for the data sources  """
-
 class TaskPanels(Task):
     """ Create the panels  """
 
@@ -382,7 +379,7 @@ class TaskEnrich(Task):
                                 cfg['sh_database'],
                                 no_incremental, only_identities,
                                 github_token,
-                                cfg['studies_on'],
+                                False, # studies are executed in its own Task
                                 only_studies,
                                 cfg['es_enrichment'],
                                 None, #args.events_enrich
@@ -717,12 +714,6 @@ class Mordred:
                 tasks_cls = [TaskEnrich]
                 self.launch_task_manager(tasks_cls)
                 break
-
-            if self.conf['studies_on']:
-                # raw items + sh database with merged identities + affiliations
-                # will used to produce a enriched index
-                tasks_cls = [TaskStudies]
-                self.launch_task_manager(tasks_cls)
 
             if self.conf['panels_on']:
                 tasks_cls = [TaskPanels]
