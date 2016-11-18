@@ -279,7 +279,7 @@ class TaskPanels(Task):
         if r.status_code == 200:
             # The alias exists, let's remove it
             real_index = list(r.json())[0]
-            logger.info("Removing alias %s to %s", alias, real_index)
+            logger.debug("Removing alias %s to %s", alias, real_index)
             aliases_url = urljoin(es_url, "_aliases")
             action = """
             {
@@ -294,7 +294,7 @@ class TaskPanels(Task):
 
     def __create_alias(self, es_url, es_index, alias):
         self.__remove_alias(es_url, alias)
-        logger.info("Adding alias %s to %s", alias, es_index)
+        logger.debug("Adding alias %s to %s", alias, es_index)
         alias_url = urljoin(es_url, "_aliases")
         action = """
         {
@@ -369,7 +369,7 @@ class TaskRawDataCollection(Task):
         cfg = self.conf
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
-            logger.info('[%s] collection starts for %s', self.backend_name, r)
+            logger.debug('[%s] collection starts for %s', self.backend_name, r)
             feed_backend(cfg['es_collection'], clean, fetch_cache,
                         self.backend_name,
                         backend_args,
@@ -546,9 +546,9 @@ class Mordred:
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("requests").setLevel(logging.WARNING)
 
-        #logging.basicConfig(filename='/tmp/mordred.log'level=logging.DEBUG)
-        # logger = logging.getLogger('mordred')
-        logger.setLevel(logging.DEBUG)
+        #logging.basicConfig(filename='mordred.log',level=logging.DEBUG)
+        #logger = logging.getLogger('mordred')
+        logger.setLevel(logging.INFO)
 
         fh = logging.FileHandler('spam.log')
         fh.setLevel(logging.DEBUG)
