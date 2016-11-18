@@ -40,11 +40,15 @@ from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
 from grimoire.panels import import_dashboard
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
 
+from sortinghat import api
+
 from sortinghat.cmd.affiliate import Affiliate
 from sortinghat.cmd.autoprofile import AutoProfile
-from sortinghat.cmd.load import Load
-from sortinghat.cmd.unify import Unify
 from sortinghat.cmd.init import Init
+from sortinghat.cmd.load import Load
+from sortinghat.cmd.organizations import Organizations
+from sortinghat.cmd.unify import Unify
+
 
 from sortinghat.command import CMD_SUCCESS
 
@@ -169,18 +173,13 @@ class TaskIdentitiesCollection(Task):
             #FIXME get the number of ids gathered
 
 
-class TaskSortingHat(Task):
+class TaskIdentitiesInit(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
-    def __init__(self, conf, load_orgs=True, load_ids=True, unify=True,
-                 autoprofile=True, affiliate=True):
+    def __init__(self, conf):
         super().__init__(conf)
 
         self.load_orgs = self.conf['sh_load_orgs']  # Load orgs from file
-        self.load_ids = load_ids  # Load identities from raw index
-        self.unify = unify  # Unify identities
-        self.autoprofile = autoprofile  # Execute autoprofile
-        self.affiliate = affiliate # Affiliate identities
         self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
                         'database': self.db_sh, 'host': self.db_host,
                         'port': None}
@@ -194,42 +193,55 @@ class TaskSortingHat(Task):
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if self.load_orgs:
-            logger.info("Loading orgs from file %s", self.conf['sh_orgs_file'])
+            logger.info("[sortinghat] Loading orgs from file %s", self.conf['sh_orgs_file'])
             code = Load(**self.sh_kwargs).run("--orgs", self.conf['sh_orgs_file'])
             if code != CMD_SUCCESS:
-                logger.error("Error in org loading %s", self.conf['sh_orgs_file'])
-            orgs = api.registry(self.db)
+                logger.error("[sortinghat] Error loading %s", self.conf['sh_orgs_file'])
             #FIXME get the number of loaded orgs
 
-        if self.unify:
-            # default for all identities
-            kwargs = {'matching':'default', 'fast_matching':True}
-            logger.info("Unifying identities %s", kwargs['matching'])
-            code = Unify(**self.sh_kwargs).unify(**kwargs)
-            if code != CMD_SUCCESS:
-                logger.error("Error in unify %s", kwargs)
 
-            # github for joining github-commits and github -> git
-            kwargs = {'matching':'github', 'fast_matching':True}
-            logger.info("Unifying identities %s", kwargs['matching'])
-            code = Unify(**self.sh_kwargs).unify(**kwargs)
-            if code != CMD_SUCCESS:
-                logger.error("Error in unify %s", kwargs)
+class TaskIdentitiesMerge(Task):
+    """ Basic class shared by all Sorting Hat tasks """
+
+    def __init__(self, conf, load_orgs=True, load_ids=True, unify=True,
+                 autoprofile=True, affiliate=True):
+        super().__init__(conf)
+
+        self.load_ids = load_ids  # Load identities from raw index
+        self.unify = unify  # Unify identities
+        self.autoprofile = autoprofile  # Execute autoprofile
+        self.affiliate = affiliate # Affiliate identities
+        self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
+                        'database': self.db_sh, 'host': self.db_host,
+                        'port': None}
+
+    def is_backend_task(self):
+        return False
+
+    def run(self):
+
+        if self.unify:
+            for algo in self.conf['sh_matching']:
+                kwargs = {'matching':algo, 'fast_matching':True}
+                logger.info("[sortinghat] Unifying identities using algorithm %s", kwargs['matching'])
+                code = Unify(**self.sh_kwargs).unify(**kwargs)
+                if code != CMD_SUCCESS:
+                    logger.error("[sortinghat] Error in unify %s", kwargs)
 
         if self.affiliate:
             # Global enrollments using domains
-            logger.info("Executing affiliate")
+            logger.info("[sortinghat] Executing affiliate")
             code = Affiliate(**self.sh_kwargs).affiliate()
             if code != CMD_SUCCESS:
-                logger.error("Error in affiliate %s", kwargs)
+                logger.error("[sortinghat] Error in affiliate %s", kwargs)
 
 
         if self.autoprofile:
-            logger.info("Executing autoprofile")
+            logger.info("[sortinghat] Executing autoprofile: %s", self.conf['sh_autoprofile'])
             if not 'sh_autoprofile' in self.conf:
-                logger.info("Autoprofile not configured. Skipping.")
+                logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
-                sources = self.conf['sh_autoprofile'].split()
+                sources = self.conf['sh_autoprofile']
                 code = AutoProfile(**self.sh_kwargs).autocomplete(sources)
                 if code != CMD_SUCCESS:
                     logger.error("Error in autoprofile %s", kwargs)
@@ -397,7 +409,6 @@ class TaskEnrich(Task):
         self.fetch_cache = False
 
     def __enrich_items(self):
-        # TODO: avoid identities loading. It is done in TaskSortingHat
         time_start = time.time()
 
         #logger.info('%s starts for %s ', 'enrichment', self.backend_name)
@@ -611,7 +622,10 @@ class Mordred:
         conf['sh_host'] = config.get('sortinghat', 'host')
         conf['sh_user'] = config.get('sortinghat', 'user')
         conf['sh_password'] = config.get('sortinghat', 'password')
-        conf['sh_autoprofile'] = config.get('sortinghat', 'autoprofile')
+        aux_matching = config.get('sortinghat', 'matching')
+        conf['sh_matching'] = aux_matching.replace(' ','').split(',')
+        aux_autoprofile = config.get('sortinghat', 'autoprofile')
+        conf['sh_autoprofile'] = aux_autoprofile.replace(' ','').split(',')
         conf['sh_orgs_file'] = config.get('sortinghat', 'orgs_file')
         conf['sh_load_orgs'] = config.getboolean('sortinghat', 'load_orgs')
 
@@ -790,6 +804,10 @@ class Mordred:
         # we get all the items with Perceval + identites browsing the
         # raw items
 
+        if self.conf['identities_on']:
+            tasks_cls = [TaskIdentitiesInit]
+            self.execute_batch_tasks(tasks_cls)
+
         if self.conf['collection_on']:
             tasks_cls = [TaskRawDataCollection]
             #self.execute_batch_tasks(tasks_cls)
@@ -798,7 +816,7 @@ class Mordred:
             self.execute_batch_tasks(tasks_cls)
 
         if self.conf['identities_on']:
-            tasks_cls = [TaskSortingHat]
+            tasks_cls = [TaskIdentitiesMerge]
             self.execute_batch_tasks(tasks_cls)
 
         if self.conf['enrichment_on']:
@@ -815,7 +833,7 @@ class Mordred:
 
             tasks = [TaskRawDataCollection,
                     TaskIdentitiesCollection,
-                    TaskSortingHat,
+                    TaskIdentitiesMerge,
                     TaskEnrich]
 
             self.execute_batch_tasks(tasks, self.conf['sh_sleep_for'])
