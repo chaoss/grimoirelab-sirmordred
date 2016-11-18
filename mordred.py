@@ -48,6 +48,9 @@ from sortinghat.cmd.init import Init
 
 from sortinghat.command import CMD_SUCCESS
 
+SLEEPFOR_ERROR = """You may be Arthur, King of the Britons. But you still """ + \
+"""need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
+
 logger = logging.getLogger(__name__)
 
 class Task():
@@ -187,10 +190,6 @@ class TaskSortingHat(Task):
 
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
-
-        if not self.backend_name:
-            logger.error ("Backend not configured in TaskSortingHat.")
-            return
 
         if self.load_orgs:
             logger.info("Loading orgs from file %s", self.conf['sh_orgs_file'])
@@ -599,6 +598,13 @@ class Mordred:
             projects = json.load(fd)
         conf['projects'] = projects
 
+        conf['collection_on'] = config.getboolean('phases','collection')
+        conf['identities_on'] = config.getboolean('phases','identities')
+        conf['enrichment_on'] = config.getboolean('phases','enrichment')
+        conf['panels_on'] = config.getboolean('phases','panels')
+
+        conf['update'] = config.getboolean('general','update')
+
         conf['sh_database'] = config.get('sortinghat', 'database')
         conf['sh_host'] = config.get('sortinghat', 'host')
         conf['sh_user'] = config.get('sortinghat', 'user')
@@ -606,6 +612,13 @@ class Mordred:
         conf['sh_autoprofile'] = config.get('sortinghat', 'autoprofile')
         conf['sh_orgs_file'] = config.get('sortinghat', 'orgs_file')
         conf['sh_load_orgs'] = config.getboolean('sortinghat', 'load_orgs')
+
+        try:
+            conf['sh_sleep_for'] = config.get('sortinghat','sleep_for')
+        except configparser.NoOptionError:
+            if conf['identities_on'] and conf['update']:
+                logging.error(SLEEPFOR_ERROR)
+            sys.exit(1)
 
         for backend in get_connectors().keys():
             try:
@@ -616,13 +629,6 @@ class Mordred:
                     conf[backend]['token'] = config.get(backend, 'token')
             except configparser.NoSectionError:
                 pass
-
-        conf['collection_on'] = config.getboolean('phases','collection')
-        conf['identities_on'] = config.getboolean('phases','identities')
-        conf['enrichment_on'] = config.getboolean('phases','enrichment')
-        conf['panels_on'] = config.getboolean('phases','panels')
-
-        conf['update'] = config.getboolean('general','update')
 
         return conf
 
@@ -728,25 +734,29 @@ class Mordred:
         stopper = threading.Event()
 
         # launching threads for tasks by backend
-        repos_backend = self.__get_repos_by_backend()
-        for backend in repos_backend:
-            # Start new Threads and add them to the threads list to complete
-            t = TasksManager(tasks_cls, backend, repos_backend[backend],
-                             stopper, self.conf)
-            threads.append(t)
-            t.start()
+        if len(backend_tasks) > 0:
+            repos_backend = self.__get_repos_by_backend()
+            for backend in repos_backend:
+                # Start new Threads and add them to the threads list to complete
+                t = TasksManager(tasks_cls, backend, repos_backend[backend],
+                                 stopper, self.conf)
+                threads.append(t)
+                t.start()
+
+        if timer:
+            if self.conf['identities_on']:
+                logger.info(" Identities merge will be executed in  %s seconds", str(timer))
+            time.sleep(timer)
 
         # launch thread for global tasks
-        gt = TasksManager(global_tasks, None, None, stopper, self.conf)
-        threads.append(gt)
-        gt.start()
+        if len(global_tasks) > 0:
+            gt = TasksManager(global_tasks, None, None, stopper, self.conf)
+            threads.append(gt)
+            gt.start()
 
-        logger.debug(" Waiting for all threads to complete. This could take a while ..")
-        if timer:
-            logger.debug(" Waiting %s seconds before stopping", str(timer))
-            time.sleep(timer)
         stopper.set()
 
+        logger.debug(" Waiting for all threads to complete. This could take a while ..")
         # Wait for all threads to complete
         for t in threads:
             t.join()
@@ -804,8 +814,8 @@ class Mordred:
                     TaskIdentitiesCollection,
                     TaskSortingHat,
                     TaskEnrich]
-            a_day = 86400
-            self.execute_batch_tasks(tasks, a_day)
+
+            self.execute_batch_tasks(tasks, self.conf['sh_sleep_for'])
 
             # FIXME
             # reached this point a new index should be produced
