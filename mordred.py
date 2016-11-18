@@ -48,8 +48,10 @@ from sortinghat.cmd.init import Init
 
 from sortinghat.command import CMD_SUCCESS
 
-SLEEPFOR_ERROR = """You may be Arthur, King of the Britons. But you still """ + \
+SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
 """need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
+ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
+"at '%(uri)s' is available!!\n - Mordred said."
 
 logger = logging.getLogger(__name__)
 
@@ -650,9 +652,9 @@ class Mordred:
         try:
             r = requests.get(es, verify=False)
             if r.status_code != 200:
-                raise ElasticSearchError('Check the connection with server %s' % _ofuscate_server_uri(es))
+                raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
         except:
-            raise ElasticSearchError('Check the connection with server %s' % _ofuscate_server_uri(es))
+            raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
         if self.conf['enrichment_on'] or self.conf['studies_on']:
@@ -660,9 +662,10 @@ class Mordred:
             try:
                 r = requests.get(es, verify=False)
                 if r.status_code != 200:
-                    raise ElasticSearchError('Is the ElasticSearch for data enrichment accesible?')
+                    raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
             except:
-                raise ElasticSearchError('Is the ElasticSearch for data enrichment accesible?')
+                raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
+
 
     def feed_orgs_tables(self):
         print("Not implemented")
