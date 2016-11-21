@@ -721,7 +721,6 @@ class Mordred:
     def identities_merge(self):
         logger.info("Not implemented")
 
-    #def execute_batch_tasks(self, tasks_cls, timer=0):
     def execute_batch_tasks(self, tasks_cls, timer=0):
         """
         Start a task manger per backend to complete the tasks.
@@ -831,12 +830,12 @@ class Mordred:
 
         while self.conf['update']:
 
-            tasks = [TaskRawDataCollection,
-                    TaskIdentitiesCollection,
-                    TaskIdentitiesMerge,
-                    TaskEnrich]
+            tasks_cls = [TaskRawDataCollection,
+                         TaskIdentitiesCollection,
+                         TaskIdentitiesMerge,
+                         TaskEnrich]
 
-            self.execute_batch_tasks(tasks, self.conf['sh_sleep_for'])
+            self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'])
 
             # FIXME
             # reached this point a new index should be produced
