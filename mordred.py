@@ -87,6 +87,18 @@ class Task():
             params.append('--sleep-for-rate')
             params.append('-t')
             params.append(self.conf['github']['token'])
+        elif backend_name == 'stackexchange':
+            tokens = repo.replace('https://','').replace('http://','').split('/')
+            tag = tokens[-1]
+            site = tokens[0]
+            params.append('--site')
+            params.append(site)
+            params.append('--tagged')
+            params.append(tag)
+            params.append('--tag') #this is the origin we record in our DB
+            params.append(repo)
+            params.append('--token')
+            params.append(self.conf['stackexchange']['token'])
         return params
 
     def get_enrich_backend(self):
@@ -102,8 +114,10 @@ class Task():
                                      clean, enrich_backend)
         enrich_backend.set_elastic(elastic_enrich)
 
-        gh_token = self.conf['github']['token']
-        if gh_token and self.backend_name == "git":
+        if 'github' in self.conf.keys() and \
+        'token' in self.conf['github'].keys() and\
+         self.backend_name == "git":
+            gh_token = self.conf['github']['token']
             enrich_backend.set_github_token(gh_token)
 
         return enrich_backend
@@ -641,7 +655,9 @@ class Mordred:
                 raw = config.get(backend, 'raw_index')
                 enriched = config.get(backend, 'enriched_index')
                 conf[backend] = {'raw_index':raw, 'enriched_index':enriched}
-                if backend == 'github':
+                if backend == 'github' or backend == 'stackexchange':
+                    # FIXME
+                    # token should be part of a secondary file
                     conf[backend]['token'] = config.get(backend, 'token')
             except configparser.NoSectionError:
                 pass
