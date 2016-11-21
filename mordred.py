@@ -690,7 +690,7 @@ class Mordred:
         conf['sh_load_orgs'] = config.getboolean('sortinghat', 'load_orgs')
 
         try:
-            conf['sh_sleep_for'] = config.get('sortinghat','sleep_for')
+            conf['sh_sleep_for'] = config.getint('sortinghat','sleep_for')
         except configparser.NoOptionError:
             if conf['identities_on'] and conf['update']:
                 logging.error(SLEEPFOR_ERROR)
