@@ -100,10 +100,10 @@ class Task():
         enrich_backend.set_elastic(elastic_enrich)
 
         if 'github' in self.conf.keys() and \
-            'token' in self.conf['github'].keys() and \
+            'backend_token' in self.conf['github'].keys() and \
             self.backend_name == "git":
 
-            gh_token = self.conf['github']['token']
+            gh_token = self.conf['github']['backend_token']
             enrich_backend.set_github_token(gh_token)
 
         return enrich_backend
@@ -418,7 +418,7 @@ class TaskEnrich(Task):
 
         no_incremental = False
         github_token = None
-        if 'github' in self.conf and 'token' in self.conf['github']:
+        if 'github' in self.conf and 'backend_token' in self.conf['github']:
             github_token = self.conf['github']['backend_token']
         only_studies = False
         only_identities=False
