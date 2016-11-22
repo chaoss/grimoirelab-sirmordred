@@ -40,13 +40,10 @@ from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
 from grimoire.panels import import_dashboard
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
 
-from sortinghat import api
-
 from sortinghat.cmd.affiliate import Affiliate
 from sortinghat.cmd.autoprofile import AutoProfile
 from sortinghat.cmd.init import Init
 from sortinghat.cmd.load import Load
-from sortinghat.cmd.organizations import Organizations
 from sortinghat.cmd.unify import Unify
 
 
@@ -62,6 +59,8 @@ logger = logging.getLogger(__name__)
 class Task():
     """ Basic class shared by all tasks """
 
+    ES_INDEX_FIELDS = ['enriched_index', 'raw_index']
+
     def __init__(self, conf):
         self.conf = conf
         self.db_sh = self.conf['sh_database']
@@ -69,36 +68,22 @@ class Task():
         self.db_password = self.conf['sh_password']
         self.db_host = self.conf['sh_host']
 
-    def __get_github_owner_repo(self, github_url):
-        owner = github_url.split('/')[-2]
-        repo = github_url.split('/')[-1]
-        return (owner, repo)
-
     def compose_perceval_params(self, backend_name, repo):
-        params = []
-        if backend_name == 'git':
-            params.append(str(repo))
-        elif backend_name == 'github':
-            owner, github_repo = self.__get_github_owner_repo(repo)
-            params.append('--owner')
-            params.append(owner)
-            params.append('--repository')
-            params.append(github_repo)
-            params.append('--sleep-for-rate')
-            params.append('-t')
-            params.append(self.conf['github']['token'])
-        elif backend_name == 'stackexchange':
-            tokens = repo.replace('https://','').replace('http://','').split('/')
-            tag = tokens[-1]
-            site = tokens[0]
-            params.append('--site')
-            params.append(site)
-            params.append('--tagged')
-            params.append(tag)
-            params.append('--tag') #this is the origin we record in our DB
-            params.append(repo)
-            params.append('--token')
-            params.append(self.conf['stackexchange']['token'])
+        connector = get_connector_from_name(self.backend_name)
+        ocean = connector[1]
+
+        # First add the params from the URL, which is backend specific
+        params = ocean.get_perceval_params_from_url(repo)
+
+        # Now add the backend params included in the config file
+        for p in self.conf[backend_name]:
+            if p in self.ES_INDEX_FIELDS:
+                # These params are not for the perceval backend
+                continue
+            params.append("--"+p)
+            if self.conf[backend_name][p]:
+                if type(self.conf[backend_name][p]) != bool:
+                    params.append(self.conf[backend_name][p])
         return params
 
     def get_enrich_backend(self):
@@ -115,8 +100,9 @@ class Task():
         enrich_backend.set_elastic(elastic_enrich)
 
         if 'github' in self.conf.keys() and \
-        'token' in self.conf['github'].keys() and\
-         self.backend_name == "git":
+            'token' in self.conf['github'].keys() and \
+            self.backend_name == "git":
+
             gh_token = self.conf['github']['token']
             enrich_backend.set_github_token(gh_token)
 
@@ -433,7 +419,7 @@ class TaskEnrich(Task):
         no_incremental = False
         github_token = None
         if 'github' in self.conf and 'token' in self.conf['github']:
-            github_token = self.conf['github']['token']
+            github_token = self.conf['github']['backend_token']
         only_studies = False
         only_identities=False
         for r in self.repos:
@@ -655,10 +641,11 @@ class Mordred:
                 raw = config.get(backend, 'raw_index')
                 enriched = config.get(backend, 'enriched_index')
                 conf[backend] = {'raw_index':raw, 'enriched_index':enriched}
-                if backend == 'github' or backend == 'stackexchange':
-                    # FIXME
-                    # token should be part of a secondary file
-                    conf[backend]['token'] = config.get(backend, 'token')
+                for p in config[backend]:
+                    try:
+                        conf[backend][p] = config.getboolean(backend, p)
+                    except ValueError:
+                        conf[backend][p] = config.get(backend, p)
             except configparser.NoSectionError:
                 pass
 
