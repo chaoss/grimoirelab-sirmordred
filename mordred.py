@@ -600,6 +600,7 @@ class Mordred:
             logger.error("'general' section is missing from %s " + \
                         "conf file", self.conf_file)
 
+        # FIXME: Read all options in a generic way
         conf['es_collection'] = config.get('es_collection', 'url')
         conf['es_enrichment'] = config.get('es_enrichment', 'url')
         conf['autorefresh_on'] = config.getboolean('es_enrichment', 'autorefresh')
@@ -684,9 +685,6 @@ class Mordred:
                 raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
-    def feed_orgs_tables(self):
-        print("Not implemented")
-
     def __get_repos_by_backend(self):
         #
         # return dict with backend and list of repositories
@@ -711,18 +709,6 @@ class Mordred:
 
         # logger.debug('repos to be retrieved: %s ', enabled)
         return enabled
-
-    def collect_identities(self):
-        self.data_enrichment(True)
-
-    def data_enrichment_studies(self):
-        logger.info("Not implemented")
-
-    def update_es_aliases(self):
-        logger.info("Not implemented")
-
-    def identities_merge(self):
-        logger.info("Not implemented")
 
     def execute_batch_tasks(self, tasks_cls, timer=0):
         """
@@ -796,9 +782,6 @@ class Mordred:
         self.check_es_access()
 
         # do we need ad-hoc scripts?
-
-        # projects database, do we need to feed it?
-        self.feed_orgs_tables()
 
         tasks_cls = []
 
