@@ -320,7 +320,7 @@ class TaskPanels(Task):
         },
         "discourse": {
             "raw":["discourse-dev"],
-            "enrich":["discourse_enrich"]
+            "enrich":["discourse"]
         },
         "stackexchange": {
             "raw":["stackexchange-dev"],
