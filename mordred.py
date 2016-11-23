@@ -304,6 +304,10 @@ class TaskPanels(Task):
                          ],
     }
 
+    panels_common = ["panels/dashboards/overview.json",
+                    "panels/dashboards/about.json",
+                    "panels/dashboards/data-status.json"]
+
     aliases = {
         "git": {
             "raw":["git-dev"],
@@ -372,6 +376,7 @@ class TaskPanels(Task):
          }
         """ % (es_index, alias)
 
+        print(alias_url, action)
         r = requests.post(alias_url, data=action)
         r.raise_for_status()
 
@@ -410,6 +415,9 @@ class TaskPanels(Task):
     def run(self):
         # Create the aliases
         self.__create_aliases()
+        # Create the commons panels
+        for panel_file in self.panels_common:
+            import_dashboard(self.conf['es_enrichment'], panel_file)
         # Create the panels which uses the aliases as data source
         for panel_file in self.panels[self.backend_name]:
             import_dashboard(self.conf['es_enrichment'], panel_file)
