@@ -341,13 +341,13 @@ class TaskPanels(Task):
     """
 
     def __remove_alias(self, es_url, alias):
-        alias_url = urljoin(es_url, "_alias/"+alias)
+        alias_url = urljoin(es_url+"/", "_alias/"+alias)
         r = requests.get(alias_url)
         if r.status_code == 200:
             # The alias exists, let's remove it
             real_index = list(r.json())[0]
             logger.debug("Removing alias %s to %s", alias, real_index)
-            aliases_url = urljoin(es_url, "_aliases")
+            aliases_url = urljoin(es_url+"/", "_aliases")
             action = """
             {
                 "actions" : [
@@ -362,7 +362,7 @@ class TaskPanels(Task):
     def __create_alias(self, es_url, es_index, alias):
         self.__remove_alias(es_url, alias)
         logger.debug("Adding alias %s to %s", alias, es_index)
-        alias_url = urljoin(es_url, "_aliases")
+        alias_url = urljoin(es_url+"/", "_aliases")
         action = """
         {
             "actions" : [
@@ -403,7 +403,7 @@ class TaskPanels(Task):
         # TODO: only the menu for the self.backend_name should be added
         # TODO: but howto add the global menu entries and define the order
         logger.info("Adding dashboard menu definition")
-        alias_url = urljoin(es_url, ".kibana/metadashboard/main")
+        alias_url = urljoin(es_url+"/", ".kibana/metadashboard/main")
         r = requests.post(alias_url, data=dash_menu)
         r.raise_for_status()
 
