@@ -47,5 +47,3 @@ ln -s /home/bitergia/panels /home/bitergia/mordred/panels
 
 cd /home/bitergia/mordred && \
 python3 mordred.py -c /home/bitergia/conf/setup.cfg
-
-sleep 86400
