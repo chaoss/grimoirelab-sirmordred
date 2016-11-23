@@ -40,14 +40,16 @@ from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
 from grimoire.panels import import_dashboard
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
 
+from sortinghat import api
 from sortinghat.cmd.affiliate import Affiliate
 from sortinghat.cmd.autoprofile import AutoProfile
 from sortinghat.cmd.init import Init
 from sortinghat.cmd.load import Load
 from sortinghat.cmd.unify import Unify
-
-
 from sortinghat.command import CMD_SUCCESS
+from sortinghat.db.database import Database
+from sortinghat.db.model import Profile
+
 
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
 """need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
@@ -204,22 +206,36 @@ class TaskIdentitiesMerge(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
     def __init__(self, conf, load_orgs=True, load_ids=True, unify=True,
-                 autoprofile=True, affiliate=True):
+                 autoprofile=True, affiliate=True, bots=True):
         super().__init__(conf)
 
         self.load_ids = load_ids  # Load identities from raw index
         self.unify = unify  # Unify identities
         self.autoprofile = autoprofile  # Execute autoprofile
         self.affiliate = affiliate # Affiliate identities
+        self.bots = bots # Mark bots in SH
         self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
                         'database': self.db_sh, 'host': self.db_host,
                         'port': None}
+        self.db = Database(**self.sh_kwargs)
 
     def is_backend_task(self):
         return False
 
-    def run(self):
+    def __get_uuids_from_profile_name(self, profile_name):
+        """ Get the uuid for a profile name """
+        uuids = []
 
+        with self.db.connect() as session:
+            query = session.query(Profile).\
+            filter(Profile.name == profile_name)
+            profiles = query.all()
+            if profiles:
+                for p in profiles:
+                    uuids.append(p.uuid)
+        return uuids
+
+    def run(self):
         if self.unify:
             for algo in self.conf['sh_matching']:
                 kwargs = {'matching':algo, 'fast_matching':True}
@@ -237,14 +253,37 @@ class TaskIdentitiesMerge(Task):
 
 
         if self.autoprofile:
-            logger.info("[sortinghat] Executing autoprofile: %s", self.conf['sh_autoprofile'])
             if not 'sh_autoprofile' in self.conf:
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
+                logger.info("[sortinghat] Executing autoprofile: %s", self.conf['sh_autoprofile'])
                 sources = self.conf['sh_autoprofile']
                 code = AutoProfile(**self.sh_kwargs).autocomplete(sources)
                 if code != CMD_SUCCESS:
                     logger.error("Error in autoprofile %s", kwargs)
+
+        if self.bots:
+            if not 'sh_bots_names' in self.conf:
+                logger.info("[sortinghat] Bots name list not configured. Skipping.")
+            else:
+                logger.info("[sortinghat] Marking bots: %s",
+                            self.conf['sh_bots_names'])
+                for name in self.conf['sh_bots_names']:
+                    # First we need the uuids for the profile name
+                    uuids = self.__get_uuids_from_profile_name(name)
+                    # Then we can modify the profile setting bot flag
+                    profile = {"is_bot": True}
+                    for uuid in uuids:
+                        api.edit_profile(self.db, uuid, **profile)
+                # For quitting the bot flag - debug feature
+                if 'sh_no_bots_names' in self.conf:
+                    logger.info("[sortinghat] Removing Marking bots: %s",
+                                self.conf['sh_no_bots_names'])
+                    for name in self.conf['sh_no_bots_names']:
+                        uuids = self.__get_uuids_from_profile_name(name)
+                        profile = {"is_bot": False}
+                        for uuid in uuids:
+                            api.edit_profile(self.db, uuid, **profile)
 
 
 class TaskPanels(Task):
@@ -619,6 +658,12 @@ class Mordred:
 
         conf['update'] = config.getboolean('general','update')
 
+        conf['sh_bots_names'] = config.get('sortinghat', 'bots_names').split(',')
+        # Optional config params
+        try:
+            conf['sh_no_bots_names'] = config.get('sortinghat', 'no_bots_names').split(',')
+        except configparser.NoOptionError:
+            pass
         conf['sh_database'] = config.get('sortinghat', 'database')
         conf['sh_host'] = config.get('sortinghat', 'host')
         conf['sh_user'] = config.get('sortinghat', 'user')
@@ -759,7 +804,8 @@ class Mordred:
             threads.append(gt)
             gt.start()
 
-        stopper.set()
+        time.sleep(1)  # Give enough time create and run all threads
+        stopper.set()  # All threads must stop in the next iteration
 
         logger.debug(" Waiting for all threads to complete. This could take a while ..")
         # Wait for all threads to complete
