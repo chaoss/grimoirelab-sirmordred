@@ -17,11 +17,15 @@ git clone https://github.com/grimoirelab/GrimoireELK && \
 
 # get Mordred repository
 cd /home/bitergia && \
-git clone https://github.com/grimoirelab/GrimoireELK GrimoireELK-mordred && \
-    cd GrimoireELK-mordred && \
+git clone https://github.com/Bitergia/mordred.git mordred && \
+    cd mordred && \
     git checkout $MORDRED
 
-ln -s /home/bitergia/GrimoireELK-mordred/mordred /home/bitergia/mordred
+# panels for the dashboard
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/panels.git panels && \
+    cd panels && \
+    git checkout $PANELS
 
 # get VizGrimoireUtils repository for tools like eclipse_projects
 cd /home/bitergia && \
@@ -36,4 +40,12 @@ git clone https://github.com/grimoirelab/perceval.git && \
     git checkout $PERCEVAL && \
     sudo python3 setup.py install
 
-/home/bitergia/mordred/bin/mordred.sh /home/bitergia/conf/setup.cfg
+
+# some links we need until GrimoireELK and panels can be installed
+ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
+ln -s /home/bitergia/panels /home/bitergia/mordred/panels
+
+cd /home/bitergia/mordred && \
+python3 mordred.py -c /home/bitergia/conf/setup.cfg
+
+sleep 86400
