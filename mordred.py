@@ -297,7 +297,11 @@ class TaskPanels(Task):
                    "panels/dashboards/github_issues-organizations.json",
                    "panels/dashboards/github_pullrequests_delays-organizations.json",
                    "panels/dashboards/github_pullrequests-organizations.json"
-                   ]
+                   ],
+        "discourse": ["panels/dashboards/discourse.json"
+                     ],
+        "stackexchange": ["panels/dashboards/stackoverflow.json"
+                         ],
     }
 
     aliases = {
@@ -309,6 +313,14 @@ class TaskPanels(Task):
             "raw":["github-dev"],
             "enrich":["github_issues", "github_issues_enrich", "issues_closed",
                       "issues_created", "issues_updated"]
+        },
+        "discourse": {
+            "raw":["discourse-dev"],
+            "enrich":["discourse_enrich"]
+        },
+        "stackexchange": {
+            "raw":["stackexchange-dev"],
+            "enrich":["stackoverflow"]
         }
     }
 
@@ -322,6 +334,8 @@ class TaskPanels(Task):
         "PR Delays": "GitHub-Pull-Requests-Delays",
         "Demographics": "Git-Demographics",
         "Data Status": "Data-Status",
+        "Discourse":"Discourse",
+        "Stackoverflow":"Stackoverflow",
         "About": "About"
     }
     """
@@ -873,9 +887,6 @@ class Mordred:
             # reached this point a new index should be produced
             # or the one we are using should be updated with the Changes
             # for unified identities + affiliations
-
-            # do aliases need to be changed?
-            self.update_es_aliases()
 
 def parse_args():
 
