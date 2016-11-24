@@ -22,8 +22,12 @@ git clone https://github.com/Bitergia/mordred.git mordred && \
     git checkout $MORDRED
 
 # panels for the dashboard
+#cd /home/bitergia && \
+#git clone https://github.com/grimoirelab/panels.git panels && \
+#    cd panels && \
+#    git checkout $PANELS
 cd /home/bitergia && \
-git clone https://github.com/grimoirelab/panels.git panels && \
+git clone https://github.com/acs/panels panels && \
     cd panels && \
     git checkout $PANELS
 
