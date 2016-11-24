@@ -201,6 +201,14 @@ class TaskIdentitiesInit(Task):
                 logger.error("[sortinghat] Error loading %s", self.conf['sh_orgs_file'])
             #FIXME get the number of loaded orgs
 
+        if 'sh_ids_file' in self.conf.keys():
+            filenames = self.conf['sh_ids_file'].split(',')
+            for f in filenames:
+                f = f.replace(' ','')
+                code = Load(**self.sh_kwargs).run("--identities", f )
+                if code != CMD_SUCCESS:
+                    logger.error("[sortinghat] Error loading %s", f)
+
 
 class TaskIdentitiesMerge(Task):
     """ Basic class shared by all Sorting Hat tasks """
@@ -703,6 +711,12 @@ class Mordred:
             if conf['identities_on'] and conf['update']:
                 logging.error(SLEEPFOR_ERROR)
             sys.exit(1)
+
+        try:
+            conf['sh_ids_file'] = config.get('sortinghat', 'identities_file')
+        except configparser.NoOptionError:
+            logger.info("No identities files")
+
 
         for backend in get_connectors().keys():
             try:
