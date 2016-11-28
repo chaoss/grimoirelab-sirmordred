@@ -24,7 +24,6 @@
 
 import configparser
 import logging
-import argparse
 import time
 import threading
 import json
@@ -618,34 +617,6 @@ class Mordred:
     def __init__(self, conf_file):
         self.conf_file = conf_file
         self.conf = None
-        logger = self.setup_logs()
-
-    def setup_logs(self):
-
-        # For gelk logging
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
-        # To control requests logging
-        logging.getLogger("urllib3").setLevel(logging.WARNING)
-        logging.getLogger("requests").setLevel(logging.WARNING)
-
-        #logging.basicConfig(filename='mordred.log',level=logging.DEBUG)
-        #logger = logging.getLogger('mordred')
-        logger.setLevel(logging.INFO)
-
-        fh = logging.FileHandler('spam.log')
-        fh.setLevel(logging.DEBUG)
-        # create console handler with a higher log level
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.ERROR)
-
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        fh.setFormatter(formatter)
-        # add the handlers to logger
-        logger.addHandler(ch)
-        logger.addHandler(fh)
-        #self.projects = None
-        return logger
 
     def update_conf(self, conf):
         self.conf = conf
@@ -909,26 +880,3 @@ class Mordred:
             # reached this point a new index should be produced
             # or the one we are using should be updated with the Changes
             # for unified identities + affiliations
-
-def parse_args():
-
-    parser = argparse.ArgumentParser(
-        description='Mordred, the friendly friend of p2o',
-        epilog='Software metrics for your peace of mind'
-        )
-
-    parser.add_argument('-c','--config', help='Configuration file',
-        required=True, dest='config_file')
-
-    args = parser.parse_args()
-    return args
-
-if __name__ == '__main__':
-    args = parse_args()
-    obj = Mordred(args.config_file)
-    try:
-        obj.run()
-    except ElasticSearchError as e:
-        s = 'Error: %s\n' % str(e)
-        sys.stderr.write(s)
-        sys.exit(1)
