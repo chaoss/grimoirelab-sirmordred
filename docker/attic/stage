@@ -1,0 +1,39 @@
+#!/bin/bash
+
+source /home/bitergia/conf/requirements.cfg
+
+# get SortingHat repository
+cd /home/bitergia && \
+git clone https://github.com/MetricsGrimoire/sortinghat.git && \
+    cd sortinghat && \
+    git checkout $SORTINGHAT && \
+    sudo python3 setup.py install
+
+# get GrimoireELK repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/GrimoireELK && \
+    cd GrimoireELK && \
+    git checkout $GRIMOIREELK
+
+# get Mordred repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/GrimoireELK GrimoireELK-mordred && \
+    cd GrimoireELK-mordred && \
+    git checkout $MORDRED
+
+ln -s /home/bitergia/GrimoireELK-mordred/mordred /home/bitergia/mordred
+
+# get VizGrimoireUtils repository for tools like eclipse_projects
+cd /home/bitergia && \
+git clone https://github.com/VizGrimoire/VizGrimoireUtils.git && \
+    cd VizGrimoireUtils && \
+    git checkout $VIZGRIMOIREUTILS
+
+# get Perceval repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/perceval.git && \
+    cd perceval && \
+    git checkout $PERCEVAL && \
+    sudo python3 setup.py install
+
+/home/bitergia/mordred/bin/mordred.sh /home/bitergia/conf/setup.cfg
