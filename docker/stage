@@ -44,6 +44,18 @@ git clone https://github.com/grimoirelab/perceval.git && \
     git checkout $PERCEVAL && \
     sudo python3 setup.py install
 
+# perceval extras
+
+# MOzilla ad-hoc backends
+
+if [ $PERCEVAL_MOZILLA ]
+    then
+    cd /home/bitergia && \
+        git clone https://github.com/grimoirelab/perceval-mozilla && \
+        cd perceval-mozilla && \
+        git checkout $PERCEVAL_MOZILLA && \
+        sudo python3 setup.py install
+fi
 
 # some links we need until GrimoireELK and panels can be installed
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
