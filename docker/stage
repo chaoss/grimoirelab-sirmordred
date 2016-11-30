@@ -50,4 +50,4 @@ ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
 ln -s /home/bitergia/panels /home/bitergia/mordred/panels
 
 cd /home/bitergia/mordred && \
-python3 mordred.py -c /home/bitergia/conf/setup.cfg
+python3 run -c /home/bitergia/conf/setup.cfg
