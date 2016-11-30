@@ -22,19 +22,35 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 #
 
-import logging
+
 import argparse
+import configparser
+import logging
+import os
 import sys
+
 from mordred import Mordred, ElasticSearchError
 
-def setup_logs():
+
+SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
+"""need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
+
+
+def setup_logs(logs_dir, debug_mode):
+
+    if debug_mode:
+        logging_mode = logging.DEBUG
+    else:
+        logging_mode = logging.INFO
 
     # create logger with 'spam_application'
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging_mode)
     # create file handler which logs even debug messages
-    fh = logging.FileHandler('mordred.log')
-    fh.setLevel(logging.DEBUG)
+
+    fh_filepath = os.path.join(logs_dir,'all.log')
+    fh = logging.FileHandler(fh_filepath)
+    fh.setLevel(logging_mode)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     ch.setLevel(logging.ERROR)
@@ -46,20 +62,23 @@ def setup_logs():
     logger.addHandler(fh)
     logger.addHandler(ch)
 
-    pfh = logging.FileHandler('perceval.log')
-    fh.setLevel(logging.DEBUG)
+    pfh_filepath = os.path.join(logs_dir,'perceval.log')
+    pfh = logging.FileHandler(pfh_filepath)
+    fh.setLevel(logging_mode)
     pfh.setFormatter(formatter)
     perceval_logger = logging.getLogger('perceval')
     perceval_logger.addHandler(pfh)
 
-    gfh = logging.FileHandler('grimoire.log')
-    fh.setLevel(logging.DEBUG)
+    gfh_filepath = os.path.join(logs_dir,'grimoire.log')
+    gfh = logging.FileHandler(gfh_filepath)
+    fh.setLevel(logging_mode)
     gfh.setFormatter(formatter)
     perceval_logger = logging.getLogger('grimoire')
     perceval_logger.addHandler(gfh)
 
-    wfh = logging.FileHandler('workflow.log')
-    wfh.setLevel(logging.DEBUG)
+    wfh_filepath = os.path.join(logs_dir,'mordred.log')
+    wfh = logging.FileHandler(wfh_filepath)
+    wfh.setLevel(logging_mode)
     wfh.setFormatter(formatter)
     workflow_logger = logging.getLogger('mordred')
     workflow_logger.addHandler(wfh)
@@ -72,7 +91,7 @@ def setup_logs():
 def parse_args():
 
     parser = argparse.ArgumentParser(
-        description='Mordred, the friendly friend of p2o',
+        description='Mordred, the friendly friend of GrimoireELK',
         epilog='Software metrics for your peace of mind'
         )
 
@@ -82,9 +101,41 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
+def log_conf_from(config_file):
+
+    config = configparser.ConfigParser()
+    config.read(config_file)
+
+    try:
+        logs_dir = config.get('general','logs_dir')
+    except:
+        print("Error reading the configuration file %s: 'logs_dir' variable in 'general' section is missing"% (str(config_file)))
+        sys.exit(1)
+
+    try:
+        debug_mode = config.getboolean('general', 'debug')
+    except:
+        debug_mode = False
+    return logs_dir, debug_mode
+
+def debug__dir_from(config_file):
+
+    config = configparser.ConfigParser()
+    config.read(config_file)
+
+    try:
+        logs_dir = config.get('general','logs_dir')
+    except:
+        print("Error reading the configuration file %s: 'logs_dir' variable in 'general' section is missing"% (str(config_file)))
+        sys.exit(1)
+    return logs_dir
+
+
 if __name__ == '__main__':
     args = parse_args()
-    logger = setup_logs()
+    logs_dir, debug_mode = log_conf_from(args.config_file)
+    logger = setup_logs(logs_dir, debug_mode)
     obj = Mordred(args.config_file)
     try:
         obj.run()
