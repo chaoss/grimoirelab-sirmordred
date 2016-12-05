@@ -771,14 +771,17 @@ class Mordred:
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], False)
+        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], 60, False)
 
-    def execute_batch_tasks(self, tasks_cls, timer=0, wait_for_threads = True):
+    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
         """
-        Start a task manger per backend to complete the tasks.
+        Start a task manager per backend to complete the tasks.
 
-        All the tasks that should be executed according to the config
-        must be added to the task manager.
+        :param task_cls: list of tasks classes to be executed
+        :param big_delay: seconds before global tasks are executed, should be days usually
+        :param small_delay: seconds before blackend tasks are executed, should be minutes
+        :param wait_for_threads: boolean to set when threads are infinite or
+                                should be synchronized in a meeting point
         """
 
         def _split_tasks(tasks_cls):
@@ -811,14 +814,14 @@ class Mordred:
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
                 t = TasksManager(backend_tasks, backend, repos_backend[backend],
-                                 stopper, self.conf)
+                                 stopper, self.conf, small_delay)
                 threads.append(t)
                 t.start()
 
         # launch thread for global tasks
         if len(global_tasks) > 0:
             #FIXME timer is applied to all global_tasks, does it make sense?
-            gt = TasksManager(global_tasks, None, None, stopper, self.conf, timer)
+            gt = TasksManager(global_tasks, None, None, stopper, self.conf, big_delay)
             threads.append(gt)
             gt.start()
 
