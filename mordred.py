@@ -29,7 +29,6 @@ import threading
 import json
 import sys
 import requests
-import random
 
 from datetime import datetime, timedelta
 
