@@ -205,6 +205,7 @@ class TaskIdentitiesInit(Task):
         if 'sh_ids_file' in self.conf.keys():
             filenames = self.conf['sh_ids_file'].split(',')
             for f in filenames:
+                logger.info("[sortinghat] Loading identities from file %s", f)
                 f = f.replace(' ','')
                 code = Load(**self.sh_kwargs).run("--identities", f )
                 if code != CMD_SUCCESS:
@@ -585,8 +586,10 @@ class TasksManager(threading.Thread):
         logger.debug('Starting Task Manager thread %s', self.backend_name)
 
         # Configure the tasks
-        for task_cls in self.tasks_cls:
-            task = task_cls(self.conf)  # create the real Task from the class
+        logger.debug(self.tasks_cls)
+        for tc in self.tasks_cls:
+            # create the real Task from the class
+            task = tc(self.conf)
             task.set_repos(self.repos)
             task.set_backend_name(self.backend_name)
             self.tasks.append(task)
@@ -596,8 +599,13 @@ class TasksManager(threading.Thread):
 
         logger.debug('run(tasks) - run(%s)' % (self.tasks))
         while not self.stopper.is_set():
+            # we give 1 extra second to the stopper, so this loop does
+            # not finish before it is set.
+            time.sleep(1)
+
             if self.timer > 0:
                 time.sleep(self.timer)
+
             for task in self.tasks:
                 task.run()
 
@@ -828,10 +836,8 @@ class Mordred:
                 when_str = when.strftime('%a, %d %b %Y %H:%M:%S %Z')
                 logger.info("%s will be executed on %s" % (global_tasks, when_str))
 
-
-        time.sleep(1)  # Give enough time create and run all threads
-
         if wait_for_threads:
+            time.sleep(1)  # Give enough time create and run all threads
             stopper.set()  # All threads must stop in the next iteration
             logger.debug(" Waiting for all threads to complete. This could take a while ..")
 
