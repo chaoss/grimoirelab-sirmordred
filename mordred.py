@@ -562,7 +562,7 @@ class TasksManager(threading.Thread):
 
     """
 
-    def __init__(self, tasks_cls, backend_name, repos, stopper, conf):
+    def __init__(self, tasks_cls, backend_name, repos, stopper, conf, timer = 0):
         """
         :tasks_cls : tasks classes to be executed using the backend
         :backend_name: perceval backend name
@@ -576,7 +576,7 @@ class TasksManager(threading.Thread):
         self.backend_name = backend_name
         self.repos = repos
         self.stopper = stopper  # To stop the thread from parent
-        self.rounds_limit = 0  # For debugging
+        self.timer = timer
 
     def add_task(self, task):
         self.tasks.append(task)
@@ -594,14 +594,13 @@ class TasksManager(threading.Thread):
         if not self.tasks:
             logger.debug('Task Manager thread %s without tasks', self.backend_name)
 
-        rounds = 0
-
+        logger.debug('run(tasks) - run(%s)' % (self.tasks))
         while not self.stopper.is_set():
+            if self.timer > 0:
+                time.sleep(self.timer)
+                logger.info("Task Manager waiting for %s seconds before executing %s", (str(self.timer), self.tasks))
             for task in self.tasks:
                 task.run()
-            rounds  += 1
-            if rounds > self.rounds_limit:
-                break
 
         logger.debug('Exiting Task Manager thread %s', self.backend_name)
 
@@ -762,7 +761,19 @@ class Mordred:
         # logger.debug('repos to be retrieved: %s ', enabled)
         return enabled
 
-    def execute_batch_tasks(self, tasks_cls, timer=0):
+    def execute_tasks (self, tasks_cls):
+        """
+            Just a wrapper to the execute_batch_tasks method
+        """
+        self.execute_batch_tasks(tasks_cls)
+
+    def execute_nonstop_tasks(self, tasks_cls):
+        """
+            Just a wrapper to the execute_batch_tasks method
+        """
+        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], False)
+
+    def execute_batch_tasks(self, tasks_cls, timer=0, wait_for_threads = True):
         """
         Start a task manger per backend to complete the tasks.
 
@@ -786,8 +797,12 @@ class Mordred:
         logger.debug(' Task Manager starting .. ')
 
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
+        logger.debug ('backend_tasks = %s' % (backend_tasks))
+        logger.debug ('global_tasks = %s' % (global_tasks))
 
         threads = []
+
+        # stopper won't be set unless wait_for_threads is True
         stopper = threading.Event()
 
         # launching threads for tasks by backend
@@ -795,26 +810,24 @@ class Mordred:
             repos_backend = self.__get_repos_by_backend()
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
-                t = TasksManager(tasks_cls, backend, repos_backend[backend],
+                t = TasksManager(backend_tasks, backend, repos_backend[backend],
                                  stopper, self.conf)
                 threads.append(t)
                 t.start()
 
-        if timer:
-            if self.conf['identities_on']:
-                logger.info(" Identities merge will be executed in  %s seconds", str(timer))
-            time.sleep(timer)
-
         # launch thread for global tasks
         if len(global_tasks) > 0:
-            gt = TasksManager(global_tasks, None, None, stopper, self.conf)
+            #FIXME timer is applied to all global_tasks, does it make sense?
+            gt = TasksManager(global_tasks, None, None, stopper, self.conf, timer)
             threads.append(gt)
             gt.start()
 
         time.sleep(1)  # Give enough time create and run all threads
-        stopper.set()  # All threads must stop in the next iteration
 
-        logger.debug(" Waiting for all threads to complete. This could take a while ..")
+        if wait_for_threads:
+            stopper.set()  # All threads must stop in the next iteration
+            logger.debug(" Waiting for all threads to complete. This could take a while ..")
+
         # Wait for all threads to complete
         for t in threads:
             t.join()
@@ -844,28 +857,32 @@ class Mordred:
 
         if self.conf['identities_on']:
             tasks_cls = [TaskIdentitiesInit]
-            self.execute_batch_tasks(tasks_cls)
+            self.execute_tasks(tasks_cls)
 
         if self.conf['collection_on']:
             tasks_cls = [TaskRawDataCollection]
-            #self.execute_batch_tasks(tasks_cls)
+            #self.execute_tasks(tasks_cls)
             if self.conf['identities_on']:
                 tasks_cls.append(TaskIdentitiesCollection)
-            self.execute_batch_tasks(tasks_cls)
+            self.execute_tasks(tasks_cls)
 
         if self.conf['identities_on']:
             tasks_cls = [TaskIdentitiesMerge]
-            self.execute_batch_tasks(tasks_cls)
+            self.execute_tasks(tasks_cls)
 
         if self.conf['enrichment_on']:
             # raw items + sh database with merged identities + affiliations
             # will used to produce a enriched index
             tasks_cls = [TaskEnrich]
-            self.execute_batch_tasks(tasks_cls)
+            self.execute_tasks(tasks_cls)
 
         if self.conf['panels_on']:
             tasks_cls = [TaskPanels]
-            self.execute_batch_tasks(tasks_cls)
+            self.execute_tasks(tasks_cls)
+
+        logger.debug(' - - ')
+        logger.debug('Meeting point 0 reached')
+        time.sleep(1)
 
         while self.conf['update']:
 
@@ -874,7 +891,10 @@ class Mordred:
                          TaskIdentitiesMerge,
                          TaskEnrich]
 
-            self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'])
+            self.execute_nonstop_tasks(tasks_cls)
+
+            logger.debug(' - - ')
+            logger.debug('Meeting point 1 reached')
 
             # FIXME
             # reached this point a new index should be produced
