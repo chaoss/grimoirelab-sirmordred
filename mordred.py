@@ -31,6 +31,8 @@ import sys
 import requests
 import random
 
+from datetime import datetime, timedelta
+
 from urllib.parse import urljoin
 
 from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
@@ -48,6 +50,7 @@ from sortinghat.cmd.unify import Unify
 from sortinghat.command import CMD_SUCCESS
 from sortinghat.db.database import Database
 from sortinghat.db.model import Profile
+
 
 
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
@@ -459,8 +462,6 @@ class TaskRawDataCollection(Task):
                         cfg[self.backend_name]['enriched_index'],
                         r)
 
-        time.sleep(random.randint(0,20)) # FIXME test purposes
-
         t3 = time.time()
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
         logger.info('[%s] Data collection finished in %s' % (self.backend_name, spent_time))
@@ -598,7 +599,6 @@ class TasksManager(threading.Thread):
         while not self.stopper.is_set():
             if self.timer > 0:
                 time.sleep(self.timer)
-                logger.info("Task Manager waiting for %s seconds before executing %s", (str(self.timer), self.tasks))
             for task in self.tasks:
                 task.run()
 
@@ -824,6 +824,11 @@ class Mordred:
             gt = TasksManager(global_tasks, None, None, stopper, self.conf, big_delay)
             threads.append(gt)
             gt.start()
+            if big_delay > 0:
+                when = datetime.now() + timedelta(seconds = big_delay)
+                when_str = when.strftime('%a, %d %b %Y %H:%M:%S %Z')
+                logger.info("%s will be executed on %s" % (global_tasks, when_str))
+
 
         time.sleep(1)  # Give enough time create and run all threads
 
@@ -895,11 +900,3 @@ class Mordred:
                          TaskEnrich]
 
             self.execute_nonstop_tasks(tasks_cls)
-
-            logger.debug(' - - ')
-            logger.debug('Meeting point 1 reached')
-
-            # FIXME
-            # reached this point a new index should be produced
-            # or the one we are using should be updated with the Changes
-            # for unified identities + affiliations
