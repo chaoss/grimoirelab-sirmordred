@@ -312,11 +312,14 @@ class TaskPanels(Task):
                      ],
         "stackexchange": ["panels/dashboards/stackoverflow.json"
                          ],
+        "bugzilla": ["panels/dashboards/bugzilla-organizations-projects.json",
+                     "panels/dashboards/bugzilla_backlog-organizations-projects.json"
+                    ]
     }
 
     panels_common = ["panels/dashboards/overview.json",
-                    "panels/dashboards/about.json",
-                    "panels/dashboards/data-status.json"]
+                     "panels/dashboards/about.json",
+                     "panels/dashboards/data-status.json"]
 
     aliases = {
         "git": {
@@ -335,6 +338,10 @@ class TaskPanels(Task):
         "stackexchange": {
             "raw":["stackexchange-dev"],
             "enrich":["stackoverflow"]
+        },
+        "bugzilla": {
+            "raw":["bugzilla-dev"],
+            "enrich":["bugzilla"]
         }
     }
 
