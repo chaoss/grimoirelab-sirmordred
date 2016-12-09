@@ -300,6 +300,18 @@ class TaskPanels(Task):
     """ Create the panels  """
 
     panels = {
+        "bugzilla": ["panels/dashboards/bugzilla-organizations-projects.json",
+                     "panels/dashboards/bugzilla_backlog-organizations-projects.json"
+                    ],
+        "bugzillarest": ["panels/dashboards/bugzilla-organizations-projects.json",
+                         "panels/dashboards/bugzilla_backlog-organizations-projects.json"
+                        ],
+        "confluence": ["panels/dashboards/confluence.json"],
+        "discourse": ["panels/dashboards/discourse.json"],
+        "gerrit": ["panels/dashboards/gerrit_backlog-organizations-projects.json",
+                   "panels/dashboards/gerrit-organizations.json",
+                   "panels/dashboards/gerrit_timing-organizations.json"
+                   ],
         "git": ["panels/dashboards/git-organizations-projects.json",
                 "panels/dashboards/git_demographics-organizations-projects.json"
                 ],
@@ -308,13 +320,25 @@ class TaskPanels(Task):
                    "panels/dashboards/github_pullrequests_delays-organizations.json",
                    "panels/dashboards/github_pullrequests-organizations.json"
                    ],
-        "discourse": ["panels/dashboards/discourse.json"
-                     ],
-        "stackexchange": ["panels/dashboards/stackoverflow.json"
-                         ],
-        "bugzilla": ["panels/dashboards/bugzilla-organizations-projects.json",
-                     "panels/dashboards/bugzilla_backlog-organizations-projects.json"
-                    ]
+        "jenkins": ["panels/dashboards/jenkins.json"],
+        "jira": ["panels/dashboards/jira_backlog-organizations.json",
+                 "panels/dashboards/jira-organizations.json",
+                 "panels/dashboards/jira-organizations-projects.json",
+                 "panels/dashboards/jira_timing-organizations-projects.json"
+                 ],
+        "kitsune": ["panels/dashboards/kitsune.json"],
+        "mediawiki": ["panels/dashboards/mediawiki.json"],
+        "pipermail": ["panels/dashboards/mailinglists-organizations.json",
+                      "panels/dashboards/mailinglists-organizations-projects.json"],
+        "phabricator": ["panels/dashboards/maniphest_backlog-organizations-projects.json",
+                        "panels/dashboards/maniphest-organizations-projects.json",
+                        "panels/dashboards/maniphest_timing-organizations-projects.json"
+                        ],
+        "redmine": ["panels/dashboards/redmine-backlog-projects.json",
+                    "panels/dashboards/redmine-projects.json",
+                    "panels/dashboards/redmine-timing-projects.json"],
+        "remo": ["panels/dashboards/reps2.json"],
+        "stackexchange": ["panels/dashboards/stackoverflow.json"]
     }
 
     panels_common = ["panels/dashboards/overview.json",
@@ -322,6 +346,26 @@ class TaskPanels(Task):
                      "panels/dashboards/data-status.json"]
 
     aliases = {
+        "bugzilla": {
+            "raw":["bugzilla-dev"],
+            "enrich":["bugzilla"]
+        },
+        "bugzillarest": {
+            "raw":["bugzilla-dev"],
+            "enrich":["bugzilla"]
+        },
+        "confluence": {
+            "raw":["confluence-dev"],
+            "enrich":["confluence"]
+        },
+        "discourse": {
+            "raw":["discourse-dev"],
+            "enrich":["discourse"]
+        },
+        "gerrit": {
+            "raw":["gerrit-dev"],
+            "enrich":["gerrit"]
+        },
         "git": {
             "raw":["git-dev"],
             "enrich":["git", "git_author", "git_enrich"]
@@ -331,17 +375,41 @@ class TaskPanels(Task):
             "enrich":["github_issues", "github_issues_enrich", "issues_closed",
                       "issues_created", "issues_updated"]
         },
-        "discourse": {
-            "raw":["discourse-dev"],
-            "enrich":["discourse"]
+        "jenkins": {
+            "raw":["jenkins-dev"],
+            "enrich":["jenkins", "jenkins_enrich"]
+        },
+        "jira": {
+            "raw":["jira-dev"],
+            "enrich":["jira"]
+        },
+        "kitsune": {
+            "raw":["kitsune-dev"],
+            "enrich":["kitsune"]
+        },
+        "mediawiki": {
+            "raw":["mediawiki-dev"],
+            "enrich":["mediawiki"]
+        },
+        "pipermail": {
+            "raw":["pipermail-dev"],
+            "enrich":["mbox", "mbox_enrich"]
+        },
+        "phabricator": {
+            "raw":["phabricator-dev"],
+            "enrich":["phabricator"]
+        },
+        "redmine": {
+            "raw":["redmine-dev"],
+            "enrich":["redmine"]
+        },
+        "remo": {
+            "raw":["remo-dev"],
+            "enrich":["remo", "remo2-events"]
         },
         "stackexchange": {
             "raw":["stackexchange-dev"],
             "enrich":["stackoverflow"]
-        },
-        "bugzilla": {
-            "raw":["bugzilla-dev"],
-            "enrich":["bugzilla"]
         }
     }
 
