@@ -327,6 +327,8 @@ class TaskPanels(Task):
                  "panels/dashboards/jira_timing-organizations-projects.json"
                  ],
         "kitsune": ["panels/dashboards/kitsune.json"],
+        "mbox": ["panels/dashboards/mailinglists-organizations.json",
+                      "panels/dashboards/mailinglists-organizations-projects.json"],
         "mediawiki": ["panels/dashboards/mediawiki.json"],
         "pipermail": ["panels/dashboards/mailinglists-organizations.json",
                       "panels/dashboards/mailinglists-organizations-projects.json"],
@@ -338,7 +340,8 @@ class TaskPanels(Task):
                     "panels/dashboards/redmine-projects.json",
                     "panels/dashboards/redmine-timing-projects.json"],
         "remo": ["panels/dashboards/reps2.json"],
-        "stackexchange": ["panels/dashboards/stackoverflow.json"]
+        "stackexchange": ["panels/dashboards/stackoverflow.json"],
+        "supybot": ["panels/dashboards/irc.json"]
     }
 
     panels_common = ["panels/dashboards/overview.json",
@@ -387,6 +390,10 @@ class TaskPanels(Task):
             "raw":["kitsune-dev"],
             "enrich":["kitsune"]
         },
+        "mbox": {
+            "raw":["mbox-dev"],
+            "enrich":["mbox", "mbox_enrich"]
+        },
         "mediawiki": {
             "raw":["mediawiki-dev"],
             "enrich":["mediawiki"]
@@ -410,6 +417,10 @@ class TaskPanels(Task):
         "stackexchange": {
             "raw":["stackexchange-dev"],
             "enrich":["stackoverflow"]
+        },
+        "supybot": {
+            "raw":["irc-dev"],
+            "enrich":["irc"]
         }
     }
 
@@ -529,6 +540,7 @@ class TaskRawDataCollection(Task):
         cfg = self.conf
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
+            logger.debug(backend_args)
             logger.debug('[%s] collection starts for %s', self.backend_name, r)
             feed_backend(cfg['es_collection'], clean, fetch_cache,
                         self.backend_name,
