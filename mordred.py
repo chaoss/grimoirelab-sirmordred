@@ -111,8 +111,8 @@ class Task():
 
         return enrich_backend
 
-    def get_ocean_backend(self, enrich_backend):
-        backend_cmd = None  # FIXME: Could we build a backend_cmd with params?
+    def __get_ocean_backend(self, enrich_backend):
+        backend_cmd = None
 
         no_incremental = False
         clean = False
@@ -171,7 +171,7 @@ class TaskIdentitiesCollection(Task):
         if self.load_ids:
             logger.info("[%s] Gathering identities from raw data" % self.backend_name)
             enrich_backend = self.get_enrich_backend()
-            ocean_backend = self.get_ocean_backend(enrich_backend)
+            ocean_backend = self.__get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)
             #FIXME get the number of ids gathered
 
@@ -320,6 +320,7 @@ class TaskPanels(Task):
                    "panels/dashboards/github_pullrequests_delays-organizations.json",
                    "panels/dashboards/github_pullrequests-organizations.json"
                    ],
+        "google_hits": ["panels/dashboards/google-hits.json"],
         "jenkins": ["panels/dashboards/jenkins.json"],
         "jira": ["panels/dashboards/jira_backlog-organizations.json",
                  "panels/dashboards/jira-organizations.json",
@@ -342,7 +343,8 @@ class TaskPanels(Task):
         "remo": ["panels/dashboards/reps2.json"],
         "stackexchange": ["panels/dashboards/stackoverflow.json"],
         "supybot": ["panels/dashboards/irc.json"],
-        "telegram": ["panels/dashboards/telegram.json"]
+        "telegram": ["panels/dashboards/telegram.json"],
+        "twitter": ["panels/dashboards/twitter.json"]
     }
 
     panels_common = ["panels/dashboards/overview.json",
@@ -383,6 +385,10 @@ class TaskPanels(Task):
             "raw":["jenkins-dev"],
             "enrich":["jenkins", "jenkins_enrich"]
         },
+        "google_hits": {
+            "raw":["google-hits-dev"],
+            "enrich":["google-hits"]
+        },
         "jira": {
             "raw":["jira-dev"],
             "enrich":["jira"]
@@ -405,7 +411,7 @@ class TaskPanels(Task):
         },
         "phabricator": {
             "raw":["phabricator-dev"],
-            "enrich":["phabricator"]
+            "enrich":["phabricator", "maniphest"]
         },
         "redmine": {
             "raw":["redmine-dev"],
@@ -426,6 +432,10 @@ class TaskPanels(Task):
         "telegram": {
             "raw":["telegram-dev"],
             "enrich":["telegram"]
+        },
+        "twitter": {
+            "raw":["twitter-dev"],
+            "enrich":["twitter"]
         }
     }
 
@@ -539,11 +549,17 @@ class TaskRawDataCollection(Task):
         self.fetch_cache = False
 
     def run(self):
+        cfg = self.conf
+
+        if 'collect' in cfg[self.backend_name] and \
+            cfg[self.backend_name]['collect'] == False:
+            logging.info('%s collect disabled', self.backend_name)
+            return
+
         t2 = time.time()
         logger.info('[%s] raw data collection starts', self.backend_name)
         clean = False
         fetch_cache = False
-        cfg = self.conf
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
             logger.debug(backend_args)
@@ -557,7 +573,8 @@ class TaskRawDataCollection(Task):
 
         t3 = time.time()
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
-        logger.info('[%s] Data collection finished in %s' % (self.backend_name, spent_time))
+        logger.info('[%s] Data collection finished in %s',
+                    self.backend_name, spent_time)
 
 class TaskEnrich(Task):
     """ Basic class shared by all enriching tasks """
@@ -640,6 +657,11 @@ class TaskEnrich(Task):
         do_studies(enrich_backend)
 
     def run(self):
+        if 'enrich' in self.conf[self.backend_name] and \
+            self.conf[self.backend_name]['enrich'] == False:
+            logging.info('%s enrich disabled', self.backend_name)
+            return
+
         self.__enrich_items()
         if self.conf['autorefresh_on']:
             self.__autorefresh()
@@ -788,7 +810,7 @@ class Mordred:
             logger.info("No identities files")
 
 
-        for backend in get_connectors().keys():
+        for backend in self.__get_backends():
             try:
                 raw = config.get(backend, 'raw_index')
                 enriched = config.get(backend, 'enriched_index')
@@ -836,6 +858,12 @@ class Mordred:
                 raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
+    def __get_backends(self):
+        gelk_backends = list(get_connectors().keys())
+        extra_backends = ["google_hits"]
+
+        return gelk_backends + extra_backends
+
     def __get_repos_by_backend(self):
         #
         # return dict with backend and list of repositories
@@ -843,7 +871,7 @@ class Mordred:
         output = {}
         projects = self.conf['projects']
 
-        for backend in get_connectors().keys():
+        for backend in self.__get_backends():
             for pro in projects:
                 if backend in projects[pro]:
                     if not backend in output:
