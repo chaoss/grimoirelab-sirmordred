@@ -341,7 +341,8 @@ class TaskPanels(Task):
                     "panels/dashboards/redmine-timing-projects.json"],
         "remo": ["panels/dashboards/reps2.json"],
         "stackexchange": ["panels/dashboards/stackoverflow.json"],
-        "supybot": ["panels/dashboards/irc.json"]
+        "supybot": ["panels/dashboards/irc.json"],
+        "telegram": ["panels/dashboards/telegram.json"]
     }
 
     panels_common = ["panels/dashboards/overview.json",
@@ -421,6 +422,10 @@ class TaskPanels(Task):
         "supybot": {
             "raw":["irc-dev"],
             "enrich":["irc"]
+        },
+        "telegram": {
+            "raw":["telegram-dev"],
+            "enrich":["telegram"]
         }
     }
 
@@ -436,6 +441,7 @@ class TaskPanels(Task):
         "Data Status": "Data-Status",
         "Discourse":"Discourse",
         "Stackoverflow":"Stackoverflow",
+        "Telegram":"Telegram",
         "About": "About"
     }
     """
