@@ -546,7 +546,7 @@ class TaskRawDataCollection(Task):
         self.backend_name = backend_name
         # This will be options in next iteration
         self.clean = False
-        self.fetch_cache = False
+        self.fetch_cache = conf['fetch_cache']
 
     def run(self):
         cfg = self.conf
@@ -559,12 +559,11 @@ class TaskRawDataCollection(Task):
         t2 = time.time()
         logger.info('[%s] raw data collection starts', self.backend_name)
         clean = False
-        fetch_cache = False
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
             logger.debug(backend_args)
             logger.debug('[%s] collection starts for %s', self.backend_name, r)
-            feed_backend(cfg['es_collection'], clean, fetch_cache,
+            feed_backend(cfg['es_collection'], clean, self.fetch_cache,
                         self.backend_name,
                         backend_args,
                         cfg[self.backend_name]['raw_index'],
@@ -760,6 +759,11 @@ class Mordred:
         except KeyError:
             logger.error("'general' section is missing from %s " + \
                         "conf file", self.conf_file)
+
+        try:
+            conf['fetch_cache'] = config.getboolean('general', 'fetch_cache')
+        except configparser.NoOptionError:
+            conf['fetch_cache'] = False
 
         # FIXME: Read all options in a generic way
         conf['es_collection'] = config.get('es_collection', 'url')
