@@ -111,7 +111,7 @@ class Task():
 
         return enrich_backend
 
-    def __get_ocean_backend(self, enrich_backend):
+    def _get_ocean_backend(self, enrich_backend):
         backend_cmd = None
 
         no_incremental = False
@@ -171,7 +171,7 @@ class TaskIdentitiesCollection(Task):
         if self.load_ids:
             logger.info("[%s] Gathering identities from raw data" % self.backend_name)
             enrich_backend = self.get_enrich_backend()
-            ocean_backend = self.__get_ocean_backend(enrich_backend)
+            ocean_backend = self._get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)
             #FIXME get the number of ids gathered
 
@@ -546,7 +546,6 @@ class TaskRawDataCollection(Task):
         self.backend_name = backend_name
         # This will be options in next iteration
         self.clean = False
-        self.fetch_cache = conf['fetch_cache']
 
     def run(self):
         cfg = self.conf
@@ -559,11 +558,17 @@ class TaskRawDataCollection(Task):
         t2 = time.time()
         logger.info('[%s] raw data collection starts', self.backend_name)
         clean = False
+
+        fetch_cache = False
+        if 'fetch-cache' in self.conf[self.backend_name] and \
+            self.conf[self.backend_name]['fetch-cache']:
+            fetch_cache = True
+
         for r in self.repos:
             backend_args = self.compose_perceval_params(self.backend_name, r)
             logger.debug(backend_args)
             logger.debug('[%s] collection starts for %s', self.backend_name, r)
-            feed_backend(cfg['es_collection'], clean, self.fetch_cache,
+            feed_backend(cfg['es_collection'], clean, fetch_cache,
                         self.backend_name,
                         backend_args,
                         cfg[self.backend_name]['raw_index'],
@@ -584,7 +589,6 @@ class TaskEnrich(Task):
         self.backend_name = backend_name
         # This will be options in next iteration
         self.clean = False
-        self.fetch_cache = False
 
     def __enrich_items(self):
         time_start = time.time()
@@ -606,7 +610,7 @@ class TaskEnrich(Task):
             try:
                 logger.debug('[%s] enrichment starts for %s', self.backend_name, r)
                 enrich_backend(cfg['es_collection'], self.clean, self.backend_name,
-                                backend_args, #FIXME #FIXME
+                                backend_args,
                                 cfg[self.backend_name]['raw_index'],
                                 cfg[self.backend_name]['enriched_index'],
                                 None, #projects_db is deprecated
@@ -759,11 +763,6 @@ class Mordred:
         except KeyError:
             logger.error("'general' section is missing from %s " + \
                         "conf file", self.conf_file)
-
-        try:
-            conf['fetch_cache'] = config.getboolean('general', 'fetch_cache')
-        except configparser.NoOptionError:
-            conf['fetch_cache'] = False
 
         # FIXME: Read all options in a generic way
         conf['es_collection'] = config.get('es_collection', 'url')
@@ -1029,4 +1028,4 @@ class Mordred:
                          TaskIdentitiesMerge,
                          TaskEnrich]
 
-            self.execute_nonstop_tasks(tasks_cls)
+        logger.info("Finished Mordred engine ...")
