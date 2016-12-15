@@ -753,16 +753,12 @@ class Mordred:
         config.read(self.conf_file)
         logger.debug(config.sections())
 
-        try:
-            if 'sleep' in config['general'].keys():
-                sleep = config.get('general','sleep')
-            else:
-                sleep = 0
-            conf['sleep'] = sleep
-
-        except KeyError:
-            logger.error("'general' section is missing from %s " + \
-                        "conf file", self.conf_file)
+        if 'min_update_delay' in config['general'].keys():
+            conf['min_update_delay'] = config.getint('general','min_update_delay')
+        else:
+            # if no parameter is included, the update won't be performed more
+            # than once every minute
+            conf['min_update_delay'] = 60
 
         # FIXME: Read all options in a generic way
         conf['es_collection'] = config.get('es_collection', 'url')
@@ -902,7 +898,7 @@ class Mordred:
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], 60, False)
+        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], self.conf['min_update_delay'], False)
 
     def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
         """
