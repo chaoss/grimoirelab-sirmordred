@@ -1028,4 +1028,6 @@ class Mordred:
                          TaskIdentitiesMerge,
                          TaskEnrich]
 
+            self.execute_nonstop_tasks(tasks_cls)
+
         logger.info("Finished Mordred engine ...")
