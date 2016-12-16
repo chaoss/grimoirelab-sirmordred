@@ -1,0 +1,20 @@
+{
+    "GrimoireLab": {
+            "github": [
+                "https://github.com/grimoirelab/arthur",
+                "https://github.com/grimoirelab/GrimoireELK",
+                "https://github.com/grimoirelab/grimoirelab.github.io",
+                "https://github.com/grimoirelab/panels",
+                "https://github.com/grimoirelab/perceval",
+                "https://github.com/grimoirelab/use_cases"
+            ],
+            "git": [
+                "https://github.com/grimoirelab/arthur",
+                "https://github.com/grimoirelab/GrimoireELK.git",
+                "https://github.com/grimoirelab/grimoirelab.github.io.git",
+                "https://github.com/grimoirelab/panels.git",
+                "https://github.com/grimoirelab/perceval.git",
+                "https://github.com/grimoirelab/use_cases.git"
+            ]
+        }
+}
