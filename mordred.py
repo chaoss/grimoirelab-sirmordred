@@ -513,7 +513,7 @@ class TaskPanels(Task):
          }
         """ % (es_index, alias)
 
-        print(alias_url, action)
+        logger.debug(alias_url, action)
         r = requests.post(alias_url, data=action)
         r.raise_for_status()
 
