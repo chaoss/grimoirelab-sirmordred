@@ -72,6 +72,9 @@ class Task():
         self.db_host = self.conf['sh_host']
 
     def compose_perceval_params(self, backend_name, repo):
+        # Params that are lists separated by white space
+        list_params_spaces = ['blacklist-jobs']
+
         connector = get_connector_from_name(self.backend_name)
         ocean = connector[1]
 
@@ -86,7 +89,13 @@ class Task():
             params.append("--"+p)
             if self.conf[backend_name][p]:
                 if type(self.conf[backend_name][p]) != bool:
-                    params.append(self.conf[backend_name][p])
+                    if p in list_params_spaces:
+                        # '--blacklist-jobs', 'a', 'b', 'c'
+                        # 'a', 'b', 'c' must be added as items in the list
+                        list_params = self.conf[backend_name][p].split()
+                        params += list_params
+                    else:
+                        params.append(self.conf[backend_name][p])
         return params
 
     def get_enrich_backend(self):
