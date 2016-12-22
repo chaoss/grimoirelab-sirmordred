@@ -300,6 +300,7 @@ class TaskPanels(Task):
     """ Create the panels  """
 
     panels = {
+        "askbot": ["panels/dashboards/askbot.json"],
         "bugzilla": ["panels/dashboards/bugzilla-organizations-projects.json",
                      "panels/dashboards/bugzilla_backlog-organizations-projects.json"
                     ],
@@ -331,6 +332,7 @@ class TaskPanels(Task):
         "mbox": ["panels/dashboards/mailinglists-organizations.json",
                       "panels/dashboards/mailinglists-organizations-projects.json"],
         "mediawiki": ["panels/dashboards/mediawiki.json"],
+        "meetup": ["panels/dashboards/meetup.json"],
         "pipermail": ["panels/dashboards/mailinglists-organizations.json",
                       "panels/dashboards/mailinglists-organizations-projects.json"],
         "phabricator": ["panels/dashboards/maniphest_backlog-organizations-projects.json",
@@ -341,6 +343,7 @@ class TaskPanels(Task):
                     "panels/dashboards/redmine-projects.json",
                     "panels/dashboards/redmine-timing-projects.json"],
         "remo": ["panels/dashboards/reps2.json"],
+        "rss": ["panels/dashboards/rss.json"],
         "stackexchange": ["panels/dashboards/stackoverflow.json"],
         "supybot": ["panels/dashboards/irc.json"],
         "telegram": ["panels/dashboards/telegram.json"],
@@ -352,6 +355,10 @@ class TaskPanels(Task):
                      "panels/dashboards/data-status.json"]
 
     aliases = {
+        "askbot": {
+            "raw":["askbot-dev"],
+            "enrich":["askbot"]
+        },
         "bugzilla": {
             "raw":["bugzilla-dev"],
             "enrich":["bugzilla"]
@@ -405,6 +412,10 @@ class TaskPanels(Task):
             "raw":["mediawiki-dev"],
             "enrich":["mediawiki"]
         },
+        "meetup": {
+            "raw":["meetup-dev"],
+            "enrich":["meetup"]
+        },
         "pipermail": {
             "raw":["pipermail-dev"],
             "enrich":["mbox", "mbox_enrich"]
@@ -420,6 +431,10 @@ class TaskPanels(Task):
         "remo": {
             "raw":["remo-dev"],
             "enrich":["remo", "remo2-events"]
+        },
+        "rss": {
+            "raw":["rss-dev"],
+            "enrich":["rss"]
         },
         "stackexchange": {
             "raw":["stackexchange-dev"],
@@ -439,6 +454,7 @@ class TaskPanels(Task):
         }
     }
 
+    # TODO: missing several data source panels
     dash_menu = """
     {
         "Overview": "Overview",
