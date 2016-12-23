@@ -1008,6 +1008,7 @@ class Mordred:
         # do we need ad-hoc scripts?
 
         tasks_cls = []
+        all_tasks_cls = []
 
         # phase one
         # we get all the items with Perceval + identites browsing the
@@ -1022,16 +1023,19 @@ class Mordred:
             #self.execute_tasks(tasks_cls)
             if self.conf['identities_on']:
                 tasks_cls.append(TaskIdentitiesCollection)
+            all_tasks_cls += tasks_cls
             self.execute_tasks(tasks_cls)
 
         if self.conf['identities_on']:
             tasks_cls = [TaskIdentitiesMerge]
+            all_tasks_cls += tasks_cls
             self.execute_tasks(tasks_cls)
 
         if self.conf['enrichment_on']:
             # raw items + sh database with merged identities + affiliations
             # will used to produce a enriched index
             tasks_cls = [TaskEnrich]
+            all_tasks_cls += tasks_cls
             self.execute_tasks(tasks_cls)
 
         if self.conf['panels_on']:
@@ -1043,12 +1047,6 @@ class Mordred:
         time.sleep(1)
 
         while self.conf['update']:
-
-            tasks_cls = [TaskRawDataCollection,
-                         TaskIdentitiesCollection,
-                         TaskIdentitiesMerge,
-                         TaskEnrich]
-
-            self.execute_nonstop_tasks(tasks_cls)
+            self.execute_nonstop_tasks(all_tasks_cls)
 
         logger.info("Finished Mordred engine ...")
