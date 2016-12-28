@@ -62,7 +62,8 @@ logger = logging.getLogger(__name__)
 class Task():
     """ Basic class shared by all tasks """
 
-    ES_INDEX_FIELDS = ['enriched_index', 'raw_index']
+    # filter-raw is used to filter the raw index to do partial enrichment
+    ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'filter-raw']
 
     def __init__(self, conf):
         self.conf = conf
@@ -627,6 +628,9 @@ class TaskEnrich(Task):
         github_token = None
         if 'github' in self.conf and 'backend_token' in self.conf['github']:
             github_token = self.conf['github']['backend_token']
+        filter_raw = None
+        if 'filter-raw' in cfg[self.backend_name]:
+            filter_raw = cfg[self.backend_name]['filter-raw']
         only_studies = False
         only_identities=False
         for r in self.repos:
@@ -651,7 +655,10 @@ class TaskEnrich(Task):
                                 cfg['sh_password'],
                                 cfg['sh_host'],
                                 None, #args.refresh_projects,
-                                None) #args.refresh_identities)
+                                None, #args.refresh_identities,
+                                author_id=None,
+                                author_uuid=None,
+                                filter_raw=filter_raw)
             except KeyError as e:
                 logger.exception(e)
 
