@@ -498,27 +498,47 @@ class TaskPanels(Task):
         es_url = self.conf['es_enrichment']
         alias_url = urljoin(es_url+"/", ".kibana/metadashboard/main")
         r = requests.get(alias_url)
-        r.raise_for_status()
         rjson = r.json()
         if '_source' in rjson:
             current_menu = rjson['_source']
 
         if current_menu:
             # Clean the common entries that are added always
-            for f in self.menu_panels_common:
-                current_menu.pop(f)
+            if 'kibana' in self.conf and self.conf['kibana'] == '4':
+                for f in self.menu_panels_common:
+                    current_menu.pop(f)
 
         omenu = OrderedDict()
-        # First the Overview
-        omenu["Overview"] = self.menu_panels_common['Overview']
-        # TODO: The the data sources should be in alphabetical order
-        ds_menu = self.__get_menu_entries()
-        for entry in ds_menu:
-            omenu[entry] = ds_menu[entry]
-        omenu.update(current_menu)
-        # At the end Data Status, About
-        omenu["Data Status"] = self.menu_panels_common['Data Status']
-        omenu["About"] = self.menu_panels_common['About']
+        if 'kibana' in self.conf and self.conf['kibana'] == '5':
+            # Kibana5 menu version
+            # First Main with Overview, Data Status and About
+            omenu["Main"] = {"Overview": self.menu_panels_common['Overview']}
+            omenu["Main"].update({"Data Status": self.menu_panels_common['Data Status']})
+            omenu["Main"].update({"About": self.menu_panels_common['About']})
+            # TODO: The data sources should be in alphabetical order
+            ds_menu = self.__get_menu_entries()
+            omenu[self.backend_name] = {}
+            for entry in ds_menu:
+                # name is visible in the menu in the dashboard
+                try:
+                    # Remove the backend from the name of the entry
+                    name = entry[entry.index("-")+1:]
+                    name = name.replace("-", " ")
+                except ValueError:
+                    name = entry
+                omenu[self.backend_name][name] = ds_menu[entry]
+            omenu.update(current_menu)
+        else:
+            # First the Overview
+            omenu["Overview"] = self.menu_panels_common['Overview']
+            # TODO: The data sources should be in alphabetical order
+            ds_menu = self.__get_menu_entries()
+            for entry in ds_menu:
+                omenu[entry] = ds_menu[entry]
+            omenu.update(current_menu)
+            # At the end Data Status, About
+            omenu["Data Status"] = self.menu_panels_common['Data Status']
+            omenu["About"] = self.menu_panels_common['About']
 
         return omenu
 
@@ -778,6 +798,10 @@ class Mordred:
         conf['panels_on'] = config.getboolean('phases','panels')
 
         conf['update'] = config.getboolean('general','update')
+        try:
+            conf['kibana'] = config.get('general','kibana')
+        except configparser.NoOptionError:
+            pass
 
         conf['sh_bots_names'] = config.get('sortinghat', 'bots_names').split(',')
         # Optional config params
