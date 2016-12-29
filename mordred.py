@@ -30,6 +30,7 @@ import json
 import sys
 import requests
 
+from collections import OrderedDict
 from datetime import datetime, timedelta
 
 from urllib.parse import urljoin
@@ -37,7 +38,7 @@ from urllib.parse import urljoin
 from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
                              load_identities, do_studies,
                              refresh_projects, refresh_identities)
-from grimoire.panels import import_dashboard
+from grimoire.panels import import_dashboard, get_dashboard_name
 from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
 
 from sortinghat import api
@@ -364,30 +365,11 @@ class TaskPanels(Task):
                      "panels/dashboards/about.json",
                      "panels/dashboards/data-status.json"]
 
+    # aliases not following the ds-dev and ds rule
     aliases = {
-        "askbot": {
-            "raw":["askbot-dev"],
-            "enrich":["askbot"]
-        },
-        "bugzilla": {
-            "raw":["bugzilla-dev"],
-            "enrich":["bugzilla"]
-        },
         "bugzillarest": {
             "raw":["bugzilla-dev"],
             "enrich":["bugzilla"]
-        },
-        "confluence": {
-            "raw":["confluence-dev"],
-            "enrich":["confluence"]
-        },
-        "discourse": {
-            "raw":["discourse-dev"],
-            "enrich":["discourse"]
-        },
-        "gerrit": {
-            "raw":["gerrit-dev"],
-            "enrich":["gerrit"]
         },
         "git": {
             "raw":["git-dev"],
@@ -402,29 +384,9 @@ class TaskPanels(Task):
             "raw":["jenkins-dev"],
             "enrich":["jenkins", "jenkins_enrich"]
         },
-        "google_hits": {
-            "raw":["google-hits-dev"],
-            "enrich":["google-hits"]
-        },
-        "jira": {
-            "raw":["jira-dev"],
-            "enrich":["jira"]
-        },
-        "kitsune": {
-            "raw":["kitsune-dev"],
-            "enrich":["kitsune"]
-        },
         "mbox": {
             "raw":["mbox-dev"],
             "enrich":["mbox", "mbox_enrich"]
-        },
-        "mediawiki": {
-            "raw":["mediawiki-dev"],
-            "enrich":["mediawiki"]
-        },
-        "meetup": {
-            "raw":["meetup-dev"],
-            "enrich":["meetup"]
         },
         "pipermail": {
             "raw":["pipermail-dev"],
@@ -434,17 +396,9 @@ class TaskPanels(Task):
             "raw":["phabricator-dev"],
             "enrich":["phabricator", "maniphest"]
         },
-        "redmine": {
-            "raw":["redmine-dev"],
-            "enrich":["redmine"]
-        },
         "remo": {
             "raw":["remo-dev"],
             "enrich":["remo", "remo2-events"]
-        },
-        "rss": {
-            "raw":["rss-dev"],
-            "enrich":["rss"]
         },
         "stackexchange": {
             "raw":["stackexchange-dev"],
@@ -453,34 +407,14 @@ class TaskPanels(Task):
         "supybot": {
             "raw":["irc-dev"],
             "enrich":["irc"]
-        },
-        "telegram": {
-            "raw":["telegram-dev"],
-            "enrich":["telegram"]
-        },
-        "twitter": {
-            "raw":["twitter-dev"],
-            "enrich":["twitter"]
         }
     }
 
-    # TODO: missing several data source panels
-    dash_menu = """
-    {
+    menu_panels_common = {
         "Overview": "Overview",
-        "Git": "Git",
-        "Issues": "GitHub-Issues",
-        "Pull Requests": "Github-Pull-Requests",
-        "Github Backlog": "Github-Backlog",
-        "PR Delays": "GitHub-Pull-Requests-Delays",
-        "Demographics": "Git-Demographics",
-        "Data Status": "Data-Status",
-        "Discourse":"Discourse",
-        "Stackoverflow":"Stackoverflow",
-        "Telegram":"Telegram",
-        "About": "About"
+        "About": "About",
+        "Data Status": "Data-Status"
     }
-    """
 
     def __remove_alias(self, es_url, alias):
         alias_url = urljoin(es_url+"/", "_alias/"+alias)
@@ -514,7 +448,7 @@ class TaskPanels(Task):
          }
         """ % (es_index, alias)
 
-        logger.debug(alias_url, action)
+        logger.debug("%s %s", alias_url, action)
         r = requests.post(alias_url, data=action)
         r.raise_for_status()
 
@@ -527,14 +461,14 @@ class TaskPanels(Task):
         index_raw = self.conf[ds]['raw_index']
         index_enrich = self.conf[ds]['enriched_index']
 
-        if 'raw' in self.aliases[ds]:
+        if ds in self.aliases and 'raw' in self.aliases[ds]:
             for alias in self.aliases[ds]['raw']:
                 self.__create_alias(es_col_url, index_raw, alias)
         else:
             # Standard alias for the raw index
             self.__create_alias(es_col_url, index_raw, ds+"-dev")
 
-        if 'enrich' in self.aliases[ds]:
+        if ds in self.aliases and 'enrich' in self.aliases[ds]:
             for alias in self.aliases[ds]['enrich']:
                 self.__create_alias(es_enrich_url, index_enrich, alias)
         else:
@@ -543,24 +477,85 @@ class TaskPanels(Task):
 
     def __create_dashboard_menu(self, es_url, dash_menu):
         """ Create the menu definition to access the panels in a dashboard """
-        # TODO: only the menu for the self.backend_name should be added
-        # TODO: but howto add the global menu entries and define the order
         logger.info("Adding dashboard menu definition")
         alias_url = urljoin(es_url+"/", ".kibana/metadashboard/main")
-        r = requests.post(alias_url, data=dash_menu)
+        r = requests.post(alias_url, data=json.dumps(dash_menu))
         r.raise_for_status()
+
+    def __get_menu_entries(self):
+        """ Get the menu entries from the panel definition """
+        menu_entries = {}
+        for panel_file in self.panels[self.backend_name]:
+            name = get_dashboard_name(panel_file)
+            menu_entries[name] = name
+
+        return menu_entries
+
+    def __get_dash_menu(self):
+        """ Order the dashboard menu """
+        # We need to get the current entries and add the new one
+        current_menu = {}
+
+        es_url = self.conf['es_enrichment']
+        alias_url = urljoin(es_url+"/", ".kibana/metadashboard/main")
+        r = requests.get(alias_url)
+        rjson = r.json()
+        if '_source' in rjson:
+            current_menu = rjson['_source']
+
+        if current_menu:
+            # Clean the common entries that are added always
+            if 'kibana' in self.conf and self.conf['kibana'] == '4':
+                for f in self.menu_panels_common:
+                    current_menu.pop(f)
+
+        omenu = OrderedDict()
+        if 'kibana' in self.conf and self.conf['kibana'] == '5':
+            # Kibana5 menu version
+            # First Main with Overview, Data Status and About
+            omenu["Main"] = {"Overview": self.menu_panels_common['Overview']}
+            omenu["Main"].update({"Data Status": self.menu_panels_common['Data Status']})
+            omenu["Main"].update({"About": self.menu_panels_common['About']})
+            # TODO: The data sources should be in alphabetical order
+            ds_menu = self.__get_menu_entries()
+            omenu[self.backend_name] = {}
+            for entry in ds_menu:
+                # name is visible in the menu in the dashboard
+                try:
+                    # Remove the backend from the name of the entry
+                    name = entry[entry.index("-")+1:]
+                    name = name.replace("-", " ")
+                except ValueError:
+                    name = entry
+                omenu[self.backend_name][name] = ds_menu[entry]
+            omenu.update(current_menu)
+        else:
+            # First the Overview
+            omenu["Overview"] = self.menu_panels_common['Overview']
+            # TODO: The data sources should be in alphabetical order
+            ds_menu = self.__get_menu_entries()
+            for entry in ds_menu:
+                omenu[entry] = ds_menu[entry]
+            omenu.update(current_menu)
+            # At the end Data Status, About
+            omenu["Data Status"] = self.menu_panels_common['Data Status']
+            omenu["About"] = self.menu_panels_common['About']
+
+        return omenu
+
 
     def run(self):
         # Create the aliases
         self.__create_aliases()
         # Create the commons panels
+        # TODO: do it only one time, not for every backend
         for panel_file in self.panels_common:
             import_dashboard(self.conf['es_enrichment'], panel_file)
         # Create the panels which uses the aliases as data source
         for panel_file in self.panels[self.backend_name]:
             import_dashboard(self.conf['es_enrichment'], panel_file)
-        # Create the menu for accessing the dashboards
-        self.__create_dashboard_menu(self.conf['es_enrichment'], self.dash_menu)
+        menu = self.__get_dash_menu()
+        self.__create_dashboard_menu(self.conf['es_enrichment'], menu)
 
 
 class TaskRawDataCollection(Task):
@@ -810,6 +805,10 @@ class Mordred:
         conf['panels_on'] = config.getboolean('phases','panels')
 
         conf['update'] = config.getboolean('general','update')
+        try:
+            conf['kibana'] = config.get('general','kibana')
+        except configparser.NoOptionError:
+            pass
 
         conf['sh_bots_names'] = config.get('sortinghat', 'bots_names').split(',')
         # Optional config params
