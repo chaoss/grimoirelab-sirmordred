@@ -534,7 +534,8 @@ class TaskPanels(Task):
             # TODO: The data sources should be in alphabetical order
             ds_menu = self.__get_menu_entries()
             for entry in ds_menu:
-                omenu[entry] = ds_menu[entry]
+                name = entry.replace("-", " ")
+                omenu[name] = ds_menu[entry]
             omenu.update(current_menu)
             # At the end Data Status, About
             omenu["Data Status"] = self.menu_panels_common['Data Status']
