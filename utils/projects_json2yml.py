@@ -50,31 +50,45 @@ def read_arguments():
 
     return args
 
-if __name__ == "__main__":
-    args = read_arguments()
-    json_file = args.json_file
-    json_data = open_file(json_file)
-
+def get_hierarchy_list(json_data):
     hierarchy_list = {}
-    repos = {}
-    not_backend = ["title", "description", "dev_list", "gerrit_repo"]
     for data in json_data["projects"]:
-        #hierarchy
         if len(json_data["projects"][data]['parent_project']) == 0:
             hierarchy_list[data] = []
         else:
             for key in json_data["projects"][data]['parent_project']:
                 hierarchy_list[data][key] = []
 
-        #projects_repo
-        repos[data] = {"meta": {"title": json_data["projects"][data]["title"].lower()}}
+    return hierarchy_list
+
+def get_repo_list(json_data, not_backend, special_backend):
+    repo_to_return = {}
+    for data in json_data["projects"]:
+        repo_to_return[data] = {"meta": {"title": json_data["projects"][data]["title"].lower()}}
         for backend_name in json_data["projects"][data]:
             backend = json_data["projects"][data][backend_name]
+
             if len(backend) > 0 and backend_name not in not_backend or backend_name == "gerrit_repo" and len(backend[0]) > 0:
                 repo_list = []
                 for repo in backend:
-                    repo_list.append(repo['url'])
-                repos[data][backend_name] = repo_list
+                    if backend_name not in special_backend:
+                        repo_list.append(repo['url'])
+                    else:
+                        repo_list.append(repo['url']+" "+repo['path'])
+                repo_to_return[data][backend_name] = repo_list
+
+    return repo_to_return
+
+if __name__ == "__main__":
+    args = read_arguments()
+    json_file = args.json_file
+    json_data = open_file(json_file)
+
+    not_backend = ["title", "description", "dev_list", "gerrit_repo"]
+    special_backend = ["irc", "supybot", "mbox"]
+
+    hierarchy_list = get_hierarchy_list(json_data)
+    repo_list = get_repo_list(json_data, not_backend, special_backend)
 
     write_yaml("hierarchy.yml", hierarchy_list)
-    write_yaml("projects-repos.yml", repos)
+    write_yaml("projects-repos.yml", repo_list)
