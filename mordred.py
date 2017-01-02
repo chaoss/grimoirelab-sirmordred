@@ -35,11 +35,11 @@ from datetime import datetime, timedelta
 
 from urllib.parse import urljoin
 
-from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
+from grimoire_elk.arthur import (feed_backend, enrich_backend, get_ocean_backend,
                              load_identities, do_studies,
                              refresh_projects, refresh_identities)
-from grimoire.panels import import_dashboard, get_dashboard_name
-from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
+from grimoire_elk.panels import import_dashboard, get_dashboard_name
+from grimoire_elk.utils import get_connectors, get_connector_from_name, get_elastic
 
 from sortinghat import api
 from sortinghat.cmd.affiliate import Affiliate
