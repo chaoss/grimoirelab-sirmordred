@@ -36,8 +36,8 @@ from datetime import datetime, timedelta
 from urllib.parse import urljoin
 
 from grimoire_elk.arthur import (feed_backend, enrich_backend, get_ocean_backend,
-                             load_identities, do_studies,
-                             refresh_projects, refresh_identities)
+                                 load_identities, do_studies,
+                                 refresh_projects, refresh_identities)
 from grimoire_elk.panels import import_dashboard, get_dashboard_name
 from grimoire_elk.utils import get_connectors, get_connector_from_name, get_elastic
 
@@ -63,8 +63,7 @@ logger = logging.getLogger(__name__)
 class Task():
     """ Basic class shared by all tasks """
 
-    # filter-raw is used to filter the raw index to do partial enrichment
-    ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'filter-raw']
+    ES_INDEX_FIELDS = ['enriched_index', 'raw_index']
 
     def __init__(self, conf):
         self.conf = conf
@@ -72,6 +71,19 @@ class Task():
         self.db_user = self.conf['sh_user']
         self.db_password = self.conf['sh_password']
         self.db_host = self.conf['sh_host']
+
+    def compose_p2o_params(self, backend_name, repo):
+        # get p2o params included in the projects list
+        params = {}
+
+        connector = get_connector_from_name(self.backend_name)
+        ocean = connector[1]
+
+        # First add the params from the URL, which is backend specific
+        params = ocean.get_p2o_params_from_url(repo)
+
+        return params
+
 
     def compose_perceval_params(self, backend_name, repo):
         # Params that are lists separated by white space
@@ -624,16 +636,18 @@ class TaskEnrich(Task):
         github_token = None
         if 'github' in self.conf and 'backend_token' in self.conf['github']:
             github_token = self.conf['github']['backend_token']
-        filter_raw = None
-        if 'filter-raw' in cfg[self.backend_name]:
-            filter_raw = cfg[self.backend_name]['filter-raw']
         only_studies = False
         only_identities=False
-        for r in self.repos:
-            backend_args = self.compose_perceval_params(self.backend_name, r)
+        for repo in self.repos:
+            # First process p2o params from repo
+            p2o_args = self.compose_p2o_params(self.backend_name, repo)
+            filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+            url = p2o_args['url']
+            # Second process perceval params from repo
+            backend_args = self.compose_perceval_params(self.backend_name, url)
 
             try:
-                logger.debug('[%s] enrichment starts for %s', self.backend_name, r)
+                logger.debug('[%s] enrichment starts for %s', self.backend_name, repo)
                 enrich_backend(cfg['es_collection'], self.clean, self.backend_name,
                                 backend_args,
                                 cfg[self.backend_name]['raw_index'],
