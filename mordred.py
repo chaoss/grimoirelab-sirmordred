@@ -35,11 +35,11 @@ from datetime import datetime, timedelta
 
 from urllib.parse import urljoin
 
-from grimoire.arthur import (feed_backend, enrich_backend, get_ocean_backend,
+from grimoire_elk.arthur import (feed_backend, enrich_backend, get_ocean_backend,
                              load_identities, do_studies,
                              refresh_projects, refresh_identities)
-from grimoire.panels import import_dashboard, get_dashboard_name
-from grimoire.utils import get_connectors, get_connector_from_name, get_elastic
+from grimoire_elk.panels import import_dashboard, get_dashboard_name
+from grimoire_elk.utils import get_connectors, get_connector_from_name, get_elastic
 
 from sortinghat import api
 from sortinghat.cmd.affiliate import Affiliate
@@ -535,7 +535,8 @@ class TaskPanels(Task):
             # TODO: The data sources should be in alphabetical order
             ds_menu = self.__get_menu_entries()
             for entry in ds_menu:
-                omenu[entry] = ds_menu[entry]
+                name = entry.replace("-", " ")
+                omenu[name] = ds_menu[entry]
             omenu.update(current_menu)
             # At the end Data Status, About
             omenu["Data Status"] = self.menu_panels_common['Data Status']
