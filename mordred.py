@@ -598,17 +598,24 @@ class TaskRawDataCollection(Task):
             self.conf[self.backend_name]['fetch-cache']:
             fetch_cache = True
 
-        for r in self.repos:
-            backend_args = self.compose_perceval_params(self.backend_name, r)
+        for repo in self.repos:
+            p2o_args = self.compose_p2o_params(self.backend_name, repo)
+            filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+            if filter_raw:
+                # If filter-raw exists the goal is to enrich already collected
+                # data, so don't collect anything
+                logging.warning("Not collecting filter raw repository: %s", repo)
+                continue
+            url = p2o_args['url']
+            backend_args = self.compose_perceval_params(self.backend_name, repo)
             logger.debug(backend_args)
-            logger.debug('[%s] collection starts for %s', self.backend_name, r)
+            logger.debug('[%s] collection starts for %s', self.backend_name, repo)
             feed_backend(cfg['es_collection'], clean, fetch_cache,
-                        self.backend_name,
-                        backend_args,
-                        cfg[self.backend_name]['raw_index'],
-                        cfg[self.backend_name]['enriched_index'],
-                        r)
-
+                         self.backend_name,
+                         backend_args,
+                         cfg[self.backend_name]['raw_index'],
+                         cfg[self.backend_name]['enriched_index'],
+                         url)
         t3 = time.time()
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
         logger.info('[%s] Data collection finished in %s',
