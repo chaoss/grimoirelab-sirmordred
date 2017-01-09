@@ -59,6 +59,7 @@ fi
 
 # some links we need until GrimoireELK and panels can be installed
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
+ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
 ln -s /home/bitergia/panels /home/bitergia/mordred/panels
 
 cd /home/bitergia/mordred && \
