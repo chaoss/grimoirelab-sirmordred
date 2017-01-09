@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 class Task():
     """ Basic class shared by all tasks """
 
-    ES_INDEX_FIELDS = ['enriched_index', 'raw_index']
+    ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url']
 
     def __init__(self, conf):
         self.conf = conf
@@ -112,6 +112,12 @@ class Task():
                         params.append(self.conf[backend_name][p])
         return params
 
+    def _get_collection_url(self):
+        es_col_url = self.conf['es_collection']
+        if 'es_collection_url' in self.conf[self.backend_name]:
+            es_col_url = self.conf[self.backend_name]['es_collection_url']
+        return es_col_url
+
     def get_enrich_backend(self):
         db_projects_map = None
         json_projects_map = None
@@ -141,7 +147,7 @@ class Task():
         clean = False
 
         ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
-        elastic_ocean = get_elastic(self.conf['es_collection'],
+        elastic_ocean = get_elastic(self._get_collection_url(),
                                     self.conf[self.backend_name]['raw_index'],
                                     clean, ocean_backend)
         ocean_backend.set_elastic(elastic_ocean)
@@ -466,10 +472,10 @@ class TaskPanels(Task):
 
     def __create_aliases(self):
         """ Create aliases in ElasticSearch used by the panels """
-        es_col_url = self.conf['es_collection']
+        ds = self.backend_name
+        es_col_url = self._get_collection_url()
         es_enrich_url = self.conf['es_enrichment']
 
-        ds = self.backend_name
         index_raw = self.conf[ds]['raw_index']
         index_enrich = self.conf[ds]['enriched_index']
 
@@ -610,12 +616,10 @@ class TaskRawDataCollection(Task):
             backend_args = self.compose_perceval_params(self.backend_name, repo)
             logger.debug(backend_args)
             logger.debug('[%s] collection starts for %s', self.backend_name, repo)
-            feed_backend(cfg['es_collection'], clean, fetch_cache,
-                         self.backend_name,
-                         backend_args,
-                         cfg[self.backend_name]['raw_index'],
-                         cfg[self.backend_name]['enriched_index'],
-                         url)
+            es_col_url = self._get_collection_url()
+            ds = self.backend_name
+            feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
+                         cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
         t3 = time.time()
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
         logger.info('[%s] Data collection finished in %s',
@@ -654,8 +658,9 @@ class TaskEnrich(Task):
             backend_args = self.compose_perceval_params(self.backend_name, url)
 
             try:
+                es_col_url = self._get_collection_url()
                 logger.debug('[%s] enrichment starts for %s', self.backend_name, repo)
-                enrich_backend(cfg['es_collection'], self.clean, self.backend_name,
+                enrich_backend(es_col_url, self.clean, self.backend_name,
                                 backend_args,
                                 cfg[self.backend_name]['raw_index'],
                                 cfg[self.backend_name]['enriched_index'],
