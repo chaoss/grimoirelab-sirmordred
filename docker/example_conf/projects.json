@@ -15,6 +15,12 @@
                 "https://github.com/grimoirelab/panels.git",
                 "https://github.com/grimoirelab/perceval.git",
                 "https://github.com/grimoirelab/use_cases.git"
-            ]
+            ],
+	    "stackexchange": [
+		"http://stackoverflow.com/questions/tagged/cowsay",
+		"http://stackoverflow.com/questions/tagged/cobol",
+		"http://stackoverflow.com/questions/tagged/ada",
+		"http://stackoverflow.com/questions/tagged/metrics"
+	    ]
         }
 }
