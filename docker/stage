@@ -2,6 +2,26 @@
 
 source /home/bitergia/conf/requirements.cfg
 
+# if RELEASE param is set, we download the info from
+# https://github.com/Bitergia/mordred/tree/master/docker/unified_releases/
+if [ $RELEASE ];
+    then
+    unset SORTINGHAT
+    unset GRIMOIREELK
+    unset MORDRED
+    unset PANELS
+    unset VIZGRIMOIREUTILS
+    unset PERCEVAL
+    unset PERCEVAL_MOZILLA
+    TMPFILE=`mktemp`
+    wget https://raw.githubusercontent.com/Bitergia/mordred/master/docker/unified_releases/$RELEASE -O $TMPFILE
+    source $TMPFILE
+    rm $TMPFILE
+    echo $RELEASE > /home/bitergia/release
+else
+    echo "customized release, see requirements.cfg file" > /home/bitergia/release
+fi
+
 # get SortingHat repository
 cd /home/bitergia && \
 git clone https://github.com/MetricsGrimoire/sortinghat.git && \
