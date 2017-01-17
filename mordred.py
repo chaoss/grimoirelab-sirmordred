@@ -468,7 +468,11 @@ class TaskPanels(Task):
 
         logger.debug("%s %s", alias_url, action)
         r = requests.post(alias_url, data=action)
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError:
+            logger.error("Can't create in %s %s", alias_url, action)
+            raise
 
     def __create_aliases(self):
         """ Create aliases in ElasticSearch used by the panels """
