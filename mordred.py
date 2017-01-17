@@ -610,6 +610,7 @@ class TaskPanels(Task):
 class TaskRawDataArthurCollection(Task):
     """ Basic class to control arthur for data collection """
 
+    ARTHUR_URL = 'http://127.0.0.1:8080'
     ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
     REPOSITORY_DIR = "/tmp"
 
@@ -686,13 +687,13 @@ class TaskRawDataArthurCollection(Task):
             url = p2o_args['url']
             backend_args = self.compose_perceval_params(self.backend_name, repo)
             logger.debug(backend_args)
-            logger.debug('[%s] collection configured in arthur for %s', self.backend_name, repo)
             arthur_repo_json = self.__create_arthur_json(repo, backend_args)
-            logger.debug('JSON config for arthur %s', arthur_repo_json)
-            # es_col_url = self._get_collection_url()
-            # ds = self.backend_name
-            # feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
-            #              cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
+            logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json))
+            headers = {'Content-type': 'application/json'}
+            r = requests.post(self.ARTHUR_URL+"/add", json=arthur_repo_json)
+            r.raise_for_status()
+            logger.info('[%s] collection configured in arthur for %s', self.backend_name, repo)
+
 
 class TaskRawDataCollection(Task):
     """ Basic class shared by all collection tasks """
