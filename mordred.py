@@ -27,6 +27,7 @@ import logging
 import time
 import threading
 import json
+import os
 import sys
 import requests
 
@@ -64,6 +65,7 @@ class Task():
     """ Basic class shared by all tasks """
 
     ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url']
+    PARAMS_WITH_SPACES = ['blacklist-jobs']
 
     def __init__(self, conf):
         self.conf = conf
@@ -84,10 +86,35 @@ class Task():
 
         return params
 
+    def compose_arthur_params(self, backend_name, repo):
+        # Params for the backends must be in a dictionary for arthur
+
+        params = {}
+
+        connector = get_connector_from_name(self.backend_name)
+        ocean = connector[1]
+
+        # First add the params from the URL, which is backend specific
+        params_list = ocean.get_perceval_params_from_url(repo)
+        # TODO: We need to convert the param list to a dict and add to params
+
+        # Now add the backend params included in the config file
+        for p in self.conf[backend_name]:
+            if p in self.ES_INDEX_FIELDS:
+                # These params are not for the perceval backend
+                continue
+            if self.conf[backend_name][p]:
+                if p in self.PARAMS_WITH_SPACES:
+                    # '--blacklist-jobs', 'a', 'b', 'c'
+                    # 'a', 'b', 'c' must be added as items in the list
+                    list_params = self.conf[backend_name][p].split()
+                    params[p] = list_params
+                else:
+                    params[p] = self.conf[backend_name][p]
+        return params
 
     def compose_perceval_params(self, backend_name, repo):
-        # Params that are lists separated by white space
-        list_params_spaces = ['blacklist-jobs']
+        # Params for perceval for the backends must be in a dictionary
 
         connector = get_connector_from_name(self.backend_name)
         ocean = connector[1]
@@ -103,7 +130,7 @@ class Task():
             params.append("--"+p)
             if self.conf[backend_name][p]:
                 if type(self.conf[backend_name][p]) != bool:
-                    if p in list_params_spaces:
+                    if p in self.PARAMS_WITH_SPACES:
                         # '--blacklist-jobs', 'a', 'b', 'c'
                         # 'a', 'b', 'c' must be added as items in the list
                         list_params = self.conf[backend_name][p].split()
@@ -580,6 +607,92 @@ class TaskPanels(Task):
         menu = self.__get_dash_menu()
         self.__create_dashboard_menu(self.conf['es_enrichment'], menu)
 
+class TaskRawDataArthurCollection(Task):
+    """ Basic class to control arthur for data collection """
+
+    ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
+    REPOSITORY_DIR = "/tmp"
+
+    def __init__(self, conf, repos=None, backend_name=None):
+        super().__init__(conf)
+        self.repos = repos
+        self.backend_name = backend_name
+
+    def __create_arthur_json(self, repo, backend_args):
+        """ Create the JSON for configuring arthur to collect data
+
+        https://github.com/grimoirelab/arthur#adding-tasks
+        Sample for git:
+
+        {
+        "tasks": [
+            {
+                "task_id": "arthur.git",
+                "backend": "git",
+                "backend_args": {
+                    "gitpath": "/tmp/arthur_git/",
+                    "uri": "https://github.com/grimoirelab/arthur.git"
+                },
+                "cache": {
+                    "cache": true,
+                    "fetch_from_cache": false
+                },
+                "scheduler": {
+                    "delay": 10
+                }
+            }
+        ]
+        }
+        """
+
+        ajson = {"tasks":[{}]}
+        ajson["tasks"][0]['task_id'] = repo
+        ajson["tasks"][0]['backend'] = self.backend_name
+        backend_args = self.compose_arthur_params(self.backend_name, repo)
+        backend_args['uri'] = repo
+        if self.backend_name == 'git':
+            backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
+        ajson["tasks"][0]['backend_args'] = backend_args
+        ajson["tasks"][0]['cache'] = {"cache": True, "fetch_from_cache": False}
+        ajson["tasks"][0]['scheduler'] = {"delay": self.ARTHUR_TASK_DELAY}
+
+        return(ajson)
+
+    def run(self):
+        cfg = self.conf
+
+        if 'collect' in cfg[self.backend_name] and \
+            cfg[self.backend_name]['collect'] == False:
+            logging.info('%s collect disabled', self.backend_name)
+            return
+
+        t2 = time.time()
+        logger.info('Programming arthur for [%s] raw data collection', self.backend_name)
+        clean = False
+
+        fetch_cache = False
+        if 'fetch-cache' in self.conf[self.backend_name] and \
+            self.conf[self.backend_name]['fetch-cache']:
+            fetch_cache = True
+
+        for repo in self.repos:
+            p2o_args = self.compose_p2o_params(self.backend_name, repo)
+            filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+            if filter_raw:
+                # If filter-raw exists the goal is to enrich already collected
+                # data, so don't collect anything
+                logging.warning("Not collecting filter raw repository: %s", repo)
+                continue
+            url = p2o_args['url']
+            backend_args = self.compose_perceval_params(self.backend_name, repo)
+            logger.debug(backend_args)
+            logger.debug('[%s] collection configured in arthur for %s', self.backend_name, repo)
+            arthur_repo_json = self.__create_arthur_json(repo, backend_args)
+            logger.debug('JSON config for arthur %s', arthur_repo_json)
+            # es_col_url = self._get_collection_url()
+            # ds = self.backend_name
+            # feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
+            #              cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
 
 class TaskRawDataCollection(Task):
     """ Basic class shared by all collection tasks """
@@ -820,6 +933,9 @@ class Mordred:
 
         # FIXME: Read all options in a generic way
         conf['es_collection'] = config.get('es_collection', 'url')
+        conf['arthur_on'] = False
+        if 'arthur' in config['es_collection'].keys():
+            conf['arthur_on'] = config.getboolean('es_collection','arthur')
         conf['es_enrichment'] = config.get('es_enrichment', 'url')
         conf['autorefresh_on'] = config.getboolean('es_enrichment', 'autorefresh')
         conf['studies_on'] = config.getboolean('es_enrichment', 'studies')
@@ -1056,7 +1172,10 @@ class Mordred:
             self.execute_tasks(tasks_cls)
 
         if self.conf['collection_on']:
-            tasks_cls = [TaskRawDataCollection]
+            if not self.conf['arthur_on']:
+                tasks_cls = [TaskRawDataCollection]
+            else:
+                tasks_cls = [TaskRawDataArthurCollection]
             #self.execute_tasks(tasks_cls)
             if self.conf['identities_on']:
                 tasks_cls.append(TaskIdentitiesCollection)
