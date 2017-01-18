@@ -95,8 +95,7 @@ class Task():
         ocean = connector[1]
 
         # First add the params from the URL, which is backend specific
-        params_list = ocean.get_perceval_params_from_url(repo)
-        # TODO: We need to convert the param list to a dict and add to params
+        params.update(ocean.get_arthur_params_from_url(repo))
 
         # Now add the backend params included in the config file
         for p in self.conf[backend_name]:
@@ -104,13 +103,16 @@ class Task():
                 # These params are not for the perceval backend
                 continue
             if self.conf[backend_name][p]:
+                # Command line - in param is converted to _ in python variable
+                p_ = p.replace("-", "_")
                 if p in self.PARAMS_WITH_SPACES:
                     # '--blacklist-jobs', 'a', 'b', 'c'
                     # 'a', 'b', 'c' must be added as items in the list
                     list_params = self.conf[backend_name][p].split()
-                    params[p] = list_params
+                    params[p_] = list_params
                 else:
-                    params[p] = self.conf[backend_name][p]
+                    params[p_] = self.conf[backend_name][p]
+
         return params
 
     def compose_perceval_params(self, backend_name, repo):
@@ -650,7 +652,6 @@ class TaskRawDataArthurCollection(Task):
         ajson["tasks"][0]['task_id'] = repo
         ajson["tasks"][0]['backend'] = self.backend_name
         backend_args = self.compose_arthur_params(self.backend_name, repo)
-        backend_args['uri'] = repo
         if self.backend_name == 'git':
             backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
         ajson["tasks"][0]['backend_args'] = backend_args
@@ -689,10 +690,18 @@ class TaskRawDataArthurCollection(Task):
             logger.debug(backend_args)
             arthur_repo_json = self.__create_arthur_json(repo, backend_args)
             logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json))
-            headers = {'Content-type': 'application/json'}
-            r = requests.post(self.ARTHUR_URL+"/add", json=arthur_repo_json)
-            r.raise_for_status()
-            logger.info('[%s] collection configured in arthur for %s', self.backend_name, repo)
+            # First check is the task already exists
+            r = requests.post(self.ARTHUR_URL+"/tasks")
+            task_ids = [task['task_id'] for task in r.json()['tasks']]
+            new_task_ids = [task['task_id'] for task in arthur_repo_json['tasks']]
+            # TODO: if a tasks already exists maybe we should delete and readd it
+            already_tasks = list(set(task_ids).intersection(set(new_task_ids)))
+            if len(already_tasks) > 0:
+                logger.warning("Tasks not added to arthur because there are already existing tasks %s", already_tasks)
+            else:
+                r = requests.post(self.ARTHUR_URL+"/add", json=arthur_repo_json)
+                r.raise_for_status()
+                logger.info('[%s] collection configured in arthur for %s', self.backend_name, repo)
 
 
 class TaskRawDataCollection(Task):
