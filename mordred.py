@@ -368,9 +368,9 @@ class TaskPanels(Task):
                         "panels/dashboards/maniphest-organizations-projects.json",
                         "panels/dashboards/maniphest_timing-organizations-projects.json"
                         ],
-        "redmine": ["panels/dashboards/redmine-backlog-projects.json",
+        "redmine": ["panels/dashboards/redmine_backlog-projects.json",
                     "panels/dashboards/redmine-projects.json",
-                    "panels/dashboards/redmine-timing-projects.json"],
+                    "panels/dashboards/redmine_timing-projects.json"],
         "remo": ["panels/dashboards/reps2.json"],
         "rss": ["panels/dashboards/rss.json"],
         "stackexchange": ["panels/dashboards/stackoverflow.json"],
