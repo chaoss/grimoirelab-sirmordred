@@ -2,7 +2,7 @@
 
 ## Intro
 
-Mordred Docker container will help you to deploy a Bitergia Analytics dashboard
+Mordred Docker container will help you to deploy the Bitergia Analytics dashboard
 using a set of configuration files. In the documentation below we assume you
 already have a running MariaDB server, ElasticSearch 2.2 and Kibiter (our fork for Kibana
 which container is bitergia/kibiter:4.4.1). If you don't want to install Kibiter
@@ -105,19 +105,13 @@ backend-token = [your github token]
 
 ## requirements.cfg
 
-Place here our latest release file. Current one is named 'atom_girl' and
-you can get it from https://github.com/Bitergia/mordred/blob/master/docker/unified_releases/atom_girl
+Place here our latest release file. Current one is named 'catwoman.beta' and
+you can get it from https://github.com/Bitergia/mordred/blob/master/docker/unified_releases/catwoman.beta
 
-This is the content
+If you don't need so much detail (it includes the different versions of the Bitergia stack) just include the name of the release in a variable named "RELEASE" as I did below:
 ```
 #!/bin/bash
-SORTINGHAT='cc07e9bad23df2fbda785418773ab5eb0cc2fa8e'
-GRIMOIREELK='0.17-1-g9c08bb2'
-MORDRED='1.1.1-10-g1334b1c'
-VIZGRIMOIREUTILS='f5db1da9982484ec7d437d69358e69f609128717'
-PERCEVAL='0.4.0-46-g555adb1'
-PERCEVAL_MOZILLA='d2298b851d7ac69f253b45018167c7356e24f935'
-PANELS='fa236773c8c7b4d39c5c4dc34df7ba761569f076'
+RELEASE='catwoman.beta'
 ```
 
 ## projects.json and orgs_file
@@ -207,7 +201,7 @@ kibana-ro:
 ## execute it!
 
 Start the docker containers and the result should be available while you grab
-a tea of coffee.
+a tea or coffee.
 
 ```
 luis@hogaza ~/docker-containers/mordred » docker-compose up -d
@@ -233,6 +227,15 @@ ready!
 
 tip: you'll be able to edit all the dashboards using the same URL replacing the
 port 8091 with 8081
+
+## upgrade to a newer version
+
+In order to upgrade to a newer version:
+- stop the mordred container (docker-compose stop)
+- remove the mordred container (docker rm mordred_container)
+- identify its name at https://github.com/Bitergia/mordred/blob/master/docker/unified_releases and updated the requirements.cfg file.
+- deploy the new tools (docker-compose up -d)
+
 
 ## did you find any bugs?
 
