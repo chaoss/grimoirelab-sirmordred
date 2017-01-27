@@ -26,6 +26,7 @@ RUN apt-get update && \
         python3-pandas \
         python-mysqldb \
         python3-cherrypy3 \
+        python3-yaml \
         gcc make libmysqlclient-dev mariadb-client \
         unzip curl wget sudo ssh\
         && \
