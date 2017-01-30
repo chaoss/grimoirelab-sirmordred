@@ -20,7 +20,7 @@ RUN apt-get update && \
         tree ccze \
         psmisc \
         python python3 pep8 \
-        python3-dateutil python3-bs4 \
+        python3-bs4 \
         python3-pip python3-dev python3-redis \
         python3-flask \
         python3-pandas \
