@@ -32,14 +32,13 @@ import threading
 
 from datetime import datetime, timedelta
 
-
 from grimoire_elk.utils import get_connectors
 
-from mordred.task import TasksManager
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
-from mordred.task_panels import TaskPanels, TaskPanelsMenu
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
+from mordred.task_manager import TasksManager
+from mordred.task_panels import TaskPanels, TaskPanelsMenu
 
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
 """need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
