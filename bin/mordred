@@ -29,7 +29,8 @@ import logging
 import os
 import sys
 
-from mordred import Mordred, ElasticSearchError
+sys.path.insert(1, '.')
+from mordred.mordred import Mordred, ElasticSearchError
 
 
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
