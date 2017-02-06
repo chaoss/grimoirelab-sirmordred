@@ -100,8 +100,11 @@ class Task():
 
     def _get_collection_url(self):
         es_col_url = self.conf['es_collection']
-        if 'es_collection_url' in self.conf[self.backend_name]:
-            es_col_url = self.conf[self.backend_name]['es_collection_url']
+        if self.backend_name and self.backend_name in self.conf:
+            if 'es_collection_url' in self.conf[self.backend_name]:
+                es_col_url = self.conf[self.backend_name]['es_collection_url']
+        else:
+            logger.warning("No config for the backend %s", self.backend_name)
         return es_col_url
 
     def _get_enrich_backend(self):

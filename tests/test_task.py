@@ -38,6 +38,8 @@ from mordred.mordred import Mordred
 
 CONF_FILE = 'test.cfg'
 BACKEND_NAME = 'stackexchange'
+COLLECTION_URL = 'http://localhost:9200'
+COLLECTION_URL_STACKEXCHANGE = 'http://elasticsearch:9200'
 REPO_NAME = 'https://stackoverflow.com/questions/tagged/ovirt'
 
 class TestTask(unittest.TestCase):
@@ -84,8 +86,9 @@ class TestTask(unittest.TestCase):
         """Test whether the collection url could be overried in a backend"""
         morderer = Mordred(CONF_FILE)
         task = Task(morderer.conf)
-        print(task.conf['es_collection'])
-        print(task._get_collection_url())
+        task.backend_name = BACKEND_NAME
+        self.assertEqual(task.conf['es_collection'], COLLECTION_URL)
+        self.assertEqual(task._get_collection_url(), COLLECTION_URL_STACKEXCHANGE)
 
 
 if __name__ == "__main__":
