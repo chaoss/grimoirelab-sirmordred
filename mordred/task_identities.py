@@ -67,7 +67,7 @@ class TaskIdentitiesCollection(Task):
 
         if self.load_ids:
             logger.info("[%s] Gathering identities from raw data" % self.backend_name)
-            enrich_backend = self.get_enrich_backend()
+            enrich_backend = self._get_enrich_backend()
             ocean_backend = self._get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)
             #FIXME get the number of ids gathered

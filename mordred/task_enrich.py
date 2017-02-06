@@ -60,11 +60,11 @@ class TaskEnrich(Task):
         only_identities=False
         for repo in self.repos:
             # First process p2o params from repo
-            p2o_args = self.compose_p2o_params(self.backend_name, repo)
+            p2o_args = self._compose_p2o_params(self.backend_name, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
             url = p2o_args['url']
             # Second process perceval params from repo
-            backend_args = self.compose_perceval_params(self.backend_name, url)
+            backend_args = self._compose_perceval_params(self.backend_name, url)
 
             try:
                 es_col_url = self._get_collection_url()
@@ -105,21 +105,21 @@ class TaskEnrich(Task):
         if False:
             # TODO: Waiting that the project info is loaded from yaml files
             logging.info("Refreshing project field in enriched index")
-            enrich_backend = self.get_enrich_backend()
+            enrich_backend = self._get_enrich_backend()
             field_id = enrich_backend.get_field_unique_id()
             eitems = refresh_projects(enrich_backend)
             enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
 
         # Refresh identities
         logging.info("Refreshing identities fields in enriched index")
-        enrich_backend = self.get_enrich_backend()
+        enrich_backend = self._get_enrich_backend()
         field_id = enrich_backend.get_field_unique_id()
         eitems = refresh_identities(enrich_backend)
         enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
 
     def __studies(self):
         logging.info("Executing %s studies ...", self.backend_name)
-        enrich_backend = self.get_enrich_backend()
+        enrich_backend = self._get_enrich_backend()
         do_studies(enrich_backend)
 
     def run(self):

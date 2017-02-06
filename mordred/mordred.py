@@ -58,11 +58,9 @@ class Mordred:
     def __init__(self, conf_file):
         self.conf_file = conf_file
         self.conf = None
+        self.conf = self.__read_conf_files()
 
-    def update_conf(self, conf):
-        self.conf = conf
-
-    def read_conf_files(self):
+    def __read_conf_files(self):
         conf = {}
 
         logger.debug("Reading conf files")
@@ -295,8 +293,6 @@ class Mordred:
         logger.info("----------------------------")
         logger.info("Starting Mordred engine ...")
         logger.info("- - - - - - - - - - - - - - ")
-
-        self.update_conf(self.read_conf_files())
 
         # check we have access to the needed ES
         self.check_es_access()

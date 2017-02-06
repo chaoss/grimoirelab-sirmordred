@@ -59,7 +59,7 @@ class TaskRawDataCollection(Task):
             fetch_cache = True
 
         for repo in self.repos:
-            p2o_args = self.compose_p2o_params(self.backend_name, repo)
+            p2o_args = self._compose_p2o_params(self.backend_name, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
             if filter_raw:
                 # If filter-raw exists the goal is to enrich already collected
@@ -67,7 +67,7 @@ class TaskRawDataCollection(Task):
                 logging.warning("Not collecting filter raw repository: %s", repo)
                 continue
             url = p2o_args['url']
-            backend_args = self.compose_perceval_params(self.backend_name, repo)
+            backend_args = self._compose_perceval_params(self.backend_name, repo)
             logger.debug(backend_args)
             logger.debug('[%s] collection starts for %s', self.backend_name, repo)
             es_col_url = self._get_collection_url()

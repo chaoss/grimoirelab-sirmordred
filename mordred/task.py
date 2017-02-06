@@ -35,17 +35,35 @@ class Task():
     ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url']
 
     def __init__(self, conf):
+        self.backend_name = None
         self.conf = conf
         self.db_sh = self.conf['sh_database']
         self.db_user = self.conf['sh_user']
         self.db_password = self.conf['sh_password']
         self.db_host = self.conf['sh_host']
 
-    def compose_p2o_params(self, backend_name, repo):
+    def is_backend_task(self):
+        """
+        Returns True if the Task is executed per backend.
+        i.e. SortingHat unify is not executed per backend.
+        """
+        return True
+
+    def run(self):
+        """ Execute the Task """
+        logger.debug("A bored task. It does nothing!")
+
+    def set_repos(self, repos):
+        self.repos = repos
+
+    def set_backend_name(self, backend_name):
+        self.backend_name = backend_name
+
+    def _compose_p2o_params(self, backend_name, repo):
         # get p2o params included in the projects list
         params = {}
 
-        connector = get_connector_from_name(self.backend_name)
+        connector = get_connector_from_name(backend_name)
         ocean = connector[1]
 
         # First add the params from the URL, which is backend specific
@@ -53,12 +71,11 @@ class Task():
 
         return params
 
-
-    def compose_perceval_params(self, backend_name, repo):
+    def _compose_perceval_params(self, backend_name, repo):
         # Params that are lists separated by white space
         list_params_spaces = ['blacklist-jobs']
 
-        connector = get_connector_from_name(self.backend_name)
+        connector = get_connector_from_name(backend_name)
         ocean = connector[1]
 
         # First add the params from the URL, which is backend specific
@@ -87,7 +104,7 @@ class Task():
             es_col_url = self.conf[self.backend_name]['es_collection_url']
         return es_col_url
 
-    def get_enrich_backend(self):
+    def _get_enrich_backend(self):
         db_projects_map = None
         json_projects_map = None
         clean = False
@@ -122,20 +139,3 @@ class Task():
         ocean_backend.set_elastic(elastic_ocean)
 
         return ocean_backend
-
-    def set_repos(self, repos):
-        self.repos = repos
-
-    def set_backend_name(self, backend_name):
-        self.backend_name = backend_name
-
-    def is_backend_task(self):
-        """
-        Returns True if the Task is executed per backend.
-        i.e. SortingHat unify is not executed per backend.
-        """
-        return True
-
-    def run(self):
-        """ Execute the Task """
-        logger.debug("A bored task. It does nothing!")
