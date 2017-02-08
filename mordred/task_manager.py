@@ -24,6 +24,7 @@
 
 import logging
 import threading
+import sys
 import time
 
 from grimoire_elk.arthur import get_ocean_backend
@@ -40,7 +41,7 @@ class TasksManager(threading.Thread):
 
     """
 
-    def __init__(self, tasks_cls, backend_name, repos, stopper, conf, timer = 0):
+    def __init__(self, tasks_cls, backend_name, repos, stopper, conf, communication_queue, timer = 0):
         """
         :tasks_cls : tasks classes to be executed using the backend
         :backend_name: perceval backend name
@@ -55,6 +56,7 @@ class TasksManager(threading.Thread):
         self.repos = repos
         self.stopper = stopper  # To stop the thread from parent
         self.timer = timer
+        self.queue = communication_queue
 
     def add_task(self, task):
         self.tasks.append(task)
@@ -84,7 +86,9 @@ class TasksManager(threading.Thread):
                 time.sleep(self.timer)
 
             for task in self.tasks:
-                task.run()
+                try:
+                    task.run()
+                except:
+                    self.queue.put(sys.exc_info())
 
         logger.debug('Exiting Task Manager thread %s', self.backend_name)
-

@@ -27,6 +27,7 @@ import time
 
 from grimoire_elk.arthur import feed_backend
 from mordred.task import Task
+from mordred.error import DataCollectionError
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class TaskRawDataCollection(Task):
         super().__init__(conf)
         self.repos = repos
         self.backend_name = backend_name
-        # This will be options in next iteration
+        # This will be optional in next iteration
         self.clean = False
 
     def run(self):
@@ -61,20 +62,30 @@ class TaskRawDataCollection(Task):
         for repo in self.repos:
             p2o_args = self.compose_p2o_params(self.backend_name, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+
             if filter_raw:
                 # If filter-raw exists the goal is to enrich already collected
                 # data, so don't collect anything
                 logging.warning("Not collecting filter raw repository: %s", repo)
                 continue
+
             url = p2o_args['url']
             backend_args = self.compose_perceval_params(self.backend_name, repo)
             logger.debug(backend_args)
             logger.debug('[%s] collection starts for %s', self.backend_name, repo)
             es_col_url = self._get_collection_url()
             ds = self.backend_name
-            feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
+
+            try:
+                feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
                          cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
+            except:
+                logger.error("Something went wrong collecting data from this %s repo: %s . " \
+                             "Using the backend_args: %s " % (ds, url, str(backend_args)))
+                raise DataCollectionError('Failed to collect data from %s' % url)
+
+
         t3 = time.time()
+
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
-        logger.info('[%s] Data collection finished in %s',
-                    self.backend_name, spent_time)
+        logger.info('[%s] Data collection finished in %s', self.backend_name, spent_time)

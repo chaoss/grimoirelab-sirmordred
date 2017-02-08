@@ -28,6 +28,7 @@ import time
 from grimoire_elk.arthur import (do_studies, enrich_backend, refresh_projects,
                                  refresh_identities)
 from mordred.task import Task
+from mordred.error import DataEnrichmentError
 
 
 
@@ -90,8 +91,10 @@ class TaskEnrich(Task):
                                 author_id=None,
                                 author_uuid=None,
                                 filter_raw=filter_raw)
-            except KeyError as e:
-                logger.exception(e)
+            except:
+                logger.error("Something went wrong producing enriched data for %s . " \
+                             "Using the backend_args: %s " % (self.backend_name, str(backend_args)))
+                raise DataEnrichmentError('Failed to produce enriched data for %s' % self.backend_name)
 
         time.sleep(5)  # Safety sleep tp avoid too quick execution
 

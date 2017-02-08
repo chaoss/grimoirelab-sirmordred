@@ -28,9 +28,13 @@ import configparser
 import logging
 import os
 import sys
+import traceback
 
 sys.path.insert(1, '.')
-from mordred.mordred import Mordred, ElasticSearchError
+
+from mordred.error import ElasticSearchError
+from mordred.error import DataCollectionError
+from mordred.mordred import Mordred
 
 
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
@@ -144,3 +148,15 @@ if __name__ == '__main__':
         s = 'Error: %s\n' % str(e)
         sys.stderr.write(s)
         sys.exit(1)
+    except:
+        logger.info("OTHER EXCEPTION") #FIXME
+        var = traceback.format_exc()
+        logger.error("Unexpected error. See the traceback below")
+        logger.error(var)
+        sys.exit(1)
+    """except DataCollectionError as e:
+        logger.info("DataCollectionError") #FIXME
+        logger.error(str(e))
+        var = traceback.format_exc()
+        logger.error(var)
+        pass"""
