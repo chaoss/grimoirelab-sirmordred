@@ -22,12 +22,10 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 #
 
-import shutil
+
 import sys
-import tempfile
 import unittest
 
-import httpretty
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
