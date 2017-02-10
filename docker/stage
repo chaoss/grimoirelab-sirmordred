@@ -10,7 +10,6 @@ if [ $RELEASE ];
     unset GRIMOIREELK
     unset MORDRED
     unset PANELS
-    unset VIZGRIMOIREUTILS
     unset PERCEVAL
     unset PERCEVAL_MOZILLA
     TMPFILE=`mktemp`
@@ -51,12 +50,6 @@ git clone https://github.com/acs/panels panels && \
     cd panels && \
     git checkout $PANELS
 
-# get VizGrimoireUtils repository for tools like eclipse_projects
-cd /home/bitergia && \
-git clone https://github.com/VizGrimoire/VizGrimoireUtils.git && \
-    cd VizGrimoireUtils && \
-    git checkout $VIZGRIMOIREUTILS
-
 # get Perceval repository
 cd /home/bitergia && \
 git clone https://github.com/grimoirelab/perceval.git && \
@@ -83,4 +76,4 @@ ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_el
 ln -s /home/bitergia/panels /home/bitergia/mordred/panels
 
 cd /home/bitergia/mordred && \
-python3 run -c /home/bitergia/conf/setup.cfg
+bin/mordred -c /home/bitergia/conf/setup.cfg
