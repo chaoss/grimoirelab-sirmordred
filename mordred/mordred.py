@@ -34,7 +34,7 @@ from datetime import datetime, timedelta
 
 from grimoire_elk.utils import get_connectors
 
-from mordred.task_collection import TaskRawDataCollection
+from mordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
@@ -77,6 +77,9 @@ class Mordred:
 
         # FIXME: Read all options in a generic way
         conf['es_collection'] = config.get('es_collection', 'url')
+        conf['arthur_on'] = False
+        if 'arthur' in config['es_collection'].keys():
+            conf['arthur_on'] = config.getboolean('es_collection','arthur')
         conf['es_enrichment'] = config.get('es_enrichment', 'url')
         conf['autorefresh_on'] = config.getboolean('es_enrichment', 'autorefresh')
         conf['studies_on'] = config.getboolean('es_enrichment', 'studies')
@@ -311,7 +314,10 @@ class Mordred:
             self.execute_tasks(tasks_cls)
 
         if self.conf['collection_on']:
-            tasks_cls = [TaskRawDataCollection]
+            if not self.conf['arthur_on']:
+                tasks_cls = [TaskRawDataCollection]
+            else:
+                tasks_cls = [TaskRawDataArthurCollection]
             #self.execute_tasks(tasks_cls)
             if self.conf['identities_on']:
                 tasks_cls.append(TaskIdentitiesCollection)
