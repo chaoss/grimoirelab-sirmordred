@@ -24,6 +24,7 @@
 
 import json
 import logging
+import os
 import time
 
 import requests
@@ -122,11 +123,13 @@ class TaskRawDataArthurCollection(Task):
         """
 
         ajson = {"tasks":[{}]}
-        ajson["tasks"][0]['task_id'] = repo
+        # This is the perceval tag
+        ajson["tasks"][0]['task_id'] = repo + "_" + self.backend_name
         ajson["tasks"][0]['backend'] = self.backend_name
         backend_args = self._compose_arthur_params(self.backend_name, repo)
         if self.backend_name == 'git':
             backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
+        backend_args['tag'] = ajson["tasks"][0]['task_id']
         ajson["tasks"][0]['backend_args'] = backend_args
         ajson["tasks"][0]['cache'] = {"cache": True, "fetch_from_cache": False}
         ajson["tasks"][0]['scheduler'] = {"delay": self.ARTHUR_TASK_DELAY}
