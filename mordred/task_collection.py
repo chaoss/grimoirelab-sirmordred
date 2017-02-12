@@ -25,6 +25,7 @@
 import json
 import logging
 import os
+import sys
 import time
 
 import requests
@@ -166,8 +167,14 @@ class TaskRawDataArthurCollection(Task):
             logger.debug(backend_args)
             arthur_repo_json = self.__create_arthur_json(repo, backend_args)
             logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json))
+
             # First check is the task already exists
-            r = requests.post(self.ARTHUR_URL+"/tasks")
+            try:
+                r = requests.post(self.ARTHUR_URL+"/tasks")
+            except requests.exceptions.ConnectionError as ex:
+                logging.error("Can not connect to %s", self.ARTHUR_URL)
+                sys.exit(1)
+
             task_ids = [task['task_id'] for task in r.json()['tasks']]
             new_task_ids = [task['task_id'] for task in arthur_repo_json['tasks']]
             # TODO: if a tasks already exists maybe we should delete and readd it
