@@ -131,6 +131,7 @@ class Mordred:
             logger.info("No identities files")
 
 
+        params_int = ['offset']  # Hack until we fix config management
         for backend in self.__get_backends():
             try:
                 raw = config.get(backend, 'raw_index')
@@ -141,6 +142,9 @@ class Mordred:
                         conf[backend][p] = config.getboolean(backend, p)
                     except ValueError:
                         conf[backend][p] = config.get(backend, p)
+                        if p in params_int:
+                            conf[backend][p] = int(conf[backend][p])
+
             except configparser.NoSectionError:
                 pass
 
