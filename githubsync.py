@@ -53,6 +53,28 @@ class GitHubSync:
 
         return url
 
+    def add_repo(self, git, github, r, fork):
+        """ Add html_url and clone_url from a github project only if is new.
+
+        :param git: list clone_url
+        :param github: list html_url
+        :param r: requests
+        :param fork: If fork is true, include the fork repositories
+
+        :returns: Two list git and github repositories
+        """
+        for repo in r.json():
+            if repo['html_url'] not in github:
+                if not fork:
+                    if not repo['fork']:
+                        github.append(repo['html_url'])
+                        git.append(repo['clone_url'])
+                else:
+                    github.append(repo['html_url'])
+                    git.append(repo['clone_url'])
+
+        return git, github
+
     def get_repo(self, fork):
         """ Get all html_url and clone_url from a github project.
 
@@ -65,21 +87,14 @@ class GitHubSync:
         github = []
 
         url = GITHUB_API_URL+"/users/"+self.project+"/repos"
-        page = 0
+        page = 1
         last_page = 0
 
         r = requests.get(url+"?page="+str(page),
                          headers=self.__get_headers())
         r.raise_for_status()
 
-        for repo in r.json():
-            if not fork:
-                if repo['html_url'] and not repo['fork']:
-                    github.append(repo['html_url'])
-                    git.append(repo['clone_url'])
-            else:
-                github.append(repo['html_url'])
-                git.append(repo['clone_url'])
+        git, github = self.add_repo(git, github, r, fork)
 
         if 'last' in r.links:
             last_url = r.links['last']['url']
@@ -92,17 +107,9 @@ class GitHubSync:
                              headers=self.__get_headers())
             r.raise_for_status()
 
-            for repo in r.json():
-                if not fork:
-                    if repo['html_url'] and not repo['fork']:
-                        github.append(repo['html_url'])
-                        git.append(repo['clone_url'])
-                else:
-                    github.append(repo['html_url'])
-                    git.append(repo['clone_url'])
+            git, github = self.add_repo(git, github, r, fork)
 
         return git, github
-
 
     def update_json(self, projects_file, repo_type, repo_list):
         """ Update the JSON file with the new repositories.
@@ -219,7 +226,7 @@ class GitHubSync:
 
         destination = "./githubsync/"
 
-        fd = open('githubsync.log', 'w+')
+        fd = open("githubsync.log", 'w+')
 
         pr = subprocess.Popen(['/usr/bin/git', 'clone', url_git, "githubsync"],
                               stdout=fd,
