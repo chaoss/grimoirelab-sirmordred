@@ -22,6 +22,7 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 #
 
+import inspect
 import json
 import logging
 import os
@@ -31,6 +32,8 @@ import time
 import requests
 
 from grimoire_elk.arthur import feed_backend
+from grimoire_elk.elk.elastic import ElasticSearch
+from grimoire_elk.utils import get_connector_from_name
 from mordred.task import Task
 
 logger = logging.getLogger(__name__)
@@ -132,9 +135,29 @@ class TaskRawDataArthurCollection(Task):
             backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
         backend_args['tag'] = ajson["tasks"][0]['task_id']
         ajson["tasks"][0]['backend_args'] = backend_args
-        ajson["tasks"][0]['cache'] = {"cache": True, "fetch_from_cache": False}
+        ajson["tasks"][0]['cache'] = {"cache": True,
+                                      "fetch_from_cache": False,
+                                      "cache_path": None}
         ajson["tasks"][0]['scheduler'] = {"delay": self.ARTHUR_TASK_DELAY}
+        # from-date or offset param must be added
+        es_col_url = self._get_collection_url()
+        es_index =  self.conf[self.backend_name]['raw_index']
+        # Get the last activity for the data source
+        es = ElasticSearch(es_col_url, es_index)
+        connector = get_connector_from_name(self.backend_name)
+        klass = connector[0]  # Backend for the connector
+        signature = inspect.signature(klass.fetch)
 
+        filter_ = {"name" : "tag", "value" : backend_args['tag']}
+        if 'from_date' in signature.parameters:
+            last_activity = es.get_last_item_field('metadata__updated_on', [filter_])
+            if last_activity:
+                ajson["tasks"][0]['backend_args']['from_date'] = last_activity.isoformat()
+        elif 'offset' in signature.parameters:
+            last_activity = es.get_last_item_field('offset', [filter_])
+            if last_activity:
+                ajson["tasks"][0]['backend_args']['offset'] = last_activity
+        logging.info("Getting raw item with arthur since %s", last_activity)
         return(ajson)
 
     def run(self):
