@@ -6,12 +6,13 @@ source /home/bitergia/conf/requirements.cfg
 # https://github.com/Bitergia/mordred/tree/master/docker/unified_releases/
 if [ $RELEASE ];
     then
-    unset SORTINGHAT
+    unset ARTHUR
     unset GRIMOIREELK
     unset MORDRED
     unset PANELS
     unset PERCEVAL
     unset PERCEVAL_MOZILLA
+    unset SORTINGHAT
     TMPFILE=`mktemp`
     wget https://raw.githubusercontent.com/Bitergia/mordred/master/docker/unified_releases/$RELEASE -O $TMPFILE
     source $TMPFILE
@@ -21,9 +22,16 @@ else
     echo "customized release, see requirements.cfg file" > /home/bitergia/release
 fi
 
+# get Arthur repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/arthur.git && \
+    cd arthur && \
+    git checkout $ARTHUR && \
+    sudo python3 setup.py install
+
 # get SortingHat repository
 cd /home/bitergia && \
-git clone https://github.com/MetricsGrimoire/sortinghat.git && \
+git clone https://github.com/grimoirelab/sortinghat.git && \
     cd sortinghat && \
     git checkout $SORTINGHAT && \
     sudo python3 setup.py install
@@ -41,12 +49,8 @@ git clone https://github.com/Bitergia/mordred.git mordred && \
     git checkout $MORDRED
 
 # panels for the dashboard
-#cd /home/bitergia && \
-#git clone https://github.com/grimoirelab/panels.git panels && \
-#    cd panels && \
-#    git checkout $PANELS
 cd /home/bitergia && \
-git clone https://github.com/acs/panels panels && \
+git clone https://github.com/grimoirelab/panels.git panels && \
     cd panels && \
     git checkout $PANELS
 
@@ -57,10 +61,7 @@ git clone https://github.com/grimoirelab/perceval.git && \
     git checkout $PERCEVAL && \
     sudo python3 setup.py install
 
-# perceval extras
-
-# MOzilla ad-hoc backends
-
+# get Perceval Mozilla ad-hoc backends
 if [ $PERCEVAL_MOZILLA ]
     then
     cd /home/bitergia && \
@@ -70,10 +71,27 @@ if [ $PERCEVAL_MOZILLA ]
         sudo python3 setup.py install
 fi
 
+# get Perceval Puppet ad-hoc backends
+if [ $PERCEVAL_PUPPET ]
+    then
+    cd /home/bitergia && \
+        git clone https://github.com/grimoirelab/perceval-puppet && \
+        cd perceval-puppet && \
+        git checkout $PERCEVAL_PUPPET && \
+        sudo python3 setup.py install
+fi
+
 # some links we need until GrimoireELK and panels can be installed
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
 ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
 ln -s /home/bitergia/panels /home/bitergia/mordred/panels
+ln -s /home/bitergia/panels/dashboards5 /home/bitergia/panels/dashboards
+
+# arthur on
+arthurd -g -d redis://localhost/8 --es-index $ARTHUR_ELASTICSEARCH_INDEX --log-path /home/bitergia/logs/arthurd --no-cache
+# Two workers
+arthurw -g -d redis://localhost/8 > /home/bitergia/logs/worker-collect.log 2>&1
+arthurw -g -d redis://localhost/8 update > /home/bitergia/logs/worker-update.log 2>&1
 
 cd /home/bitergia/mordred && \
 bin/mordred -c /home/bitergia/conf/setup.cfg
