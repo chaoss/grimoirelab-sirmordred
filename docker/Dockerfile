@@ -1,8 +1,8 @@
-# Copyright (C) 2016 Bitergia
+# Copyright (C) 2016-2017 Bitergia
 # GPLv3 License
 
 FROM debian:8
-MAINTAINER Luis Cañas-Díaz <lcanas@bitergia.com>
+MAINTAINER Luis Cañas-Díaz <lcanas@bitergia.com>, Alvaro del Castillo <acs@bitergia.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEPLOY_USER bitergia
@@ -27,6 +27,7 @@ RUN apt-get update && \
         python3-pandas \
         python-mysqldb \
         python3-cherrypy3 \
+        python3-redis \
         python3-yaml \
         gcc make libmysqlclient-dev mariadb-client \
         unzip curl wget sudo ssh\
@@ -42,9 +43,6 @@ RUN pip3 install requests
 
 # solves issues with UNICODE and SH
 RUN pip3 install sqlalchemy
-
-# sortinghat needs pandas
-# RUN pip3 install pandas # it crashes so we use the .deb
 
 RUN echo "${DEPLOY_USER}    ALL=NOPASSWD: ALL" >> /etc/sudoers
 
