@@ -114,6 +114,8 @@ If you don't need so much detail (it includes the different versions of the Bite
 RELEASE='catwoman.beta'
 ```
 
+**NOTE**: in case you are using a version =< catwoman you'll need to use a special image of the docker image. It is called bitergia/mordred:catwoman, insted of bitergia/mordred:latest
+
 ## projects.json and orgs_file
 
 The projects.json file contains a list of projects and the data source associated
@@ -235,6 +237,9 @@ In order to upgrade to a newer version:
 - remove the mordred container (docker rm mordred_container)
 - identify its name at https://github.com/Bitergia/mordred/blob/master/docker/unified_releases and updated the requirements.cfg file.
 - deploy the new tools (docker-compose up -d)
+
+
+**NOTE**: in case you are using a version =< catwoman you'll need to use a special image of the docker image. It is called bitergia/mordred:catwoman, insted of bitergia/mordred:latest
 
 
 ## did you find any bugs?
