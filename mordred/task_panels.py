@@ -176,8 +176,11 @@ class TaskPanels(Task):
         for panel_file in self.panels_common:
             import_dashboard(self.conf['es_enrichment'], panel_file)
         # Create the panels which uses the aliases as data source
-        for panel_file in self.panels[self.backend_name]:
-            import_dashboard(self.conf['es_enrichment'], panel_file)
+        if self.backend_name in self.panels:
+            for panel_file in self.panels[self.backend_name]:
+                import_dashboard(self.conf['es_enrichment'], panel_file)
+        else:
+            logger.warning("No panels found for %s", self.backend_name)
 
 
 
