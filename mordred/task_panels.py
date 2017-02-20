@@ -176,7 +176,7 @@ class TaskPanels(Task):
         for panel_file in self.panels_common:
             import_dashboard(self.conf['es_enrichment'], panel_file)
         # Create the panels which uses the aliases as data source
-        for panel_file in self.panels[self.backend_name]:
+        for panel_file in self.panels[self.get_backend(self.backend_name)]:
             import_dashboard(self.conf['es_enrichment'], panel_file)
 
 

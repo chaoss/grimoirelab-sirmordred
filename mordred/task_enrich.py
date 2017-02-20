@@ -69,8 +69,8 @@ class TaskEnrich(Task):
             try:
                 es_col_url = self._get_collection_url()
                 logger.debug('[%s] enrichment starts for %s', self.backend_name, repo)
-                enrich_backend(es_col_url, self.clean, self.backend_name,
-                                backend_args,
+                backend = self.get_backend(self.backend_name)
+                enrich_backend(es_col_url, self.clean, backend, backend_args,
                                 cfg[self.backend_name]['raw_index'],
                                 cfg[self.backend_name]['enriched_index'],
                                 None, #projects_db is deprecated

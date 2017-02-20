@@ -56,6 +56,14 @@ class Task():
     def set_repos(self, repos):
         self.repos = repos
 
+    @classmethod
+    def get_backend(self, backend_name):
+        # To support the same data source with different configs
+        # remo:activitites is like remo but with an extra param
+        # category = activity
+        backend = backend_name.split(":")[0]
+        return backend
+
     def set_backend_name(self, backend_name):
         self.backend_name = backend_name
 
@@ -63,7 +71,8 @@ class Task():
         # get p2o params included in the projects list
         params = {}
 
-        connector = get_connector_from_name(backend_name)
+        backend = self.get_backend(backend_name)
+        connector = get_connector_from_name(backend)
         ocean = connector[1]
 
         # First add the params from the URL, which is backend specific
@@ -75,7 +84,8 @@ class Task():
         # Params that are lists separated by white space
         list_params_spaces = ['blacklist-jobs']
 
-        connector = get_connector_from_name(backend_name)
+        backend = self.get_backend(backend_name)
+        connector = get_connector_from_name(backend)
         ocean = connector[1]
 
         # First add the params from the URL, which is backend specific
@@ -111,7 +121,7 @@ class Task():
         db_projects_map = None
         json_projects_map = None
         clean = False
-        connector = get_connector_from_name(self.backend_name)
+        connector = get_connector_from_name(self.get_backend(self.backend_name))
 
         enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
                                       self.db_user, self.db_password, self.db_host)

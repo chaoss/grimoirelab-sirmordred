@@ -34,6 +34,7 @@ from datetime import datetime, timedelta
 
 from grimoire_elk.utils import get_connectors
 
+from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
@@ -128,7 +129,7 @@ class Mordred:
             logger.info("No identities files")
 
 
-        for backend in self.__get_backends():
+        for backend in self.__get_backend_names():
             try:
                 raw = config.get(backend, 'raw_index')
                 enriched = config.get(backend, 'enriched_index')
@@ -176,9 +177,11 @@ class Mordred:
                 raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
-    def __get_backends(self):
+    def __get_backend_names(self):
+        # a backend name could include and extra ":<param>"
+        # to have several backend entries with different configs
         gelk_backends = list(get_connectors().keys())
-        extra_backends = ["google_hits"]
+        extra_backends = ["google_hits", "remo:activities"]
 
         return gelk_backends + extra_backends
 
@@ -189,13 +192,14 @@ class Mordred:
         output = {}
         projects = self.conf['projects']
 
-        for backend in self.__get_backends():
+        for backend_name in self.__get_backend_names():
             for pro in projects:
+                backend = Task.get_backend(backend_name)
                 if backend in projects[pro]:
-                    if not backend in output:
-                        output[backend]  = projects[pro][backend]
+                    if not backend_name in output:
+                        output[backend_name]  = projects[pro][backend]
                     else:
-                        output[backend] = output[backend] + projects[pro][backend]
+                        output[backend_name] += projects[pro][backend]
 
         # backend could be in project/repo file but not enabled in
         # mordred conf file
@@ -217,9 +221,11 @@ class Mordred:
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], self.conf['min_update_delay'], False)
+        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'],
+                                 self.conf['min_update_delay'], False)
 
-    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
+    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0,
+                            wait_for_threads = True):
         """
         Start a task manager per backend to complete the tasks.
 
