@@ -4,178 +4,178 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/git-organizations-projects.json
+    panel: panels/dashboards5/git-organizations-projects.json
   - name: Attraction/Retention
-    panel: panels/dashboards/git_demographics-organizations-projects.json
+    panel: panels/dashboards5/git_demographics-organizations-projects.json
 - name: Gerrit
   source: gerrit
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/gerrit-organizations.json
+    panel: panels/dashboards5/gerrit-organizations.json
   - name: Backlog
-    panel: panels/dashboards/gerrit_backlog-organizations-projects.json
+    panel: panels/dashboards5/gerrit_backlog-organizations-projects.json
   - name: Timing
-    panel: panels/dashboards/gerrit_timing-organizations.json
+    panel: panels/dashboards5/gerrit_timing-organizations.json
 - name: GitHub Pull Requests
   source: github
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/github_pullrequests-organizations.json
+    panel: panels/dashboards5/github_pullrequests-organizations.json
   - name: Backlog
-    panel: panels/dashboards/github_backlog_organizations.json
+    panel: panels/dashboards5/github_backlog_organizations.json
   - name: Timing
-    panel: panels/dashboards/github_pullrequests_delays-organizations.json
+    panel: panels/dashboards5/github_pullrequests_delays-organizations.json
 - name: GitHub Issues
   source: github
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/github_issues-organizations.json
+    panel: panels/dashboards5/github_issues-organizations.json
   - name: Backlog
-    panel: panels/dashboards/github_backlog_organizations.json
+    panel: panels/dashboards5/github_backlog_organizations.json
   - name: Timing
-    panel: panels/dashboards/github_issues_timing-organizations.json
+    panel: panels/dashboards5/github_issues_timing-organizations.json
 - name: Phabricator
   source: phabricator
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/maniphest-organizations-projects.json
+    panel: panels/dashboards5/maniphest-organizations-projects.json
   - name: Backlog
-    panel: panels/dashboards/maniphest_backlog-organizations-projects.json
+    panel: panels/dashboards5/maniphest_backlog-organizations-projects.json
   - name: Timing
-    panel: panels/dashboards/maniphest_timing-organizations-projects.json
+    panel: panels/dashboards5/maniphest_timing-organizations-projects.json
 - name: Redmine
   source: redmine
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/redmine-projects.json
+    panel: panels/dashboards5/redmine-projects.json
   - name: Backlog
-    panel: panels/dashboards/redmine_backlog-projects.json
+    panel: panels/dashboards5/redmine_backlog-projects.json
   - name: Timing
-    panel: panels/dashboards/redmine_timing-projects.json
+    panel: panels/dashboards5/redmine_timing-projects.json
 - name: Jira
   source: jira
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/jira-organizations.json
+    panel: panels/dashboards5/jira-organizations.json
   - name: Backlog
-    panel: panels/dashboards/jira_backlog-organizations.json
+    panel: panels/dashboards5/jira_backlog-organizations.json
   - name: Timing
-    panel: panels/dashboards/jira_timing-organizations-projects.json
+    panel: panels/dashboards5/jira_timing-organizations-projects.json
 - name: Bugzilla
   source: bugzilla
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/bugzilla-organizations-projects.json
+    panel: panels/dashboards5/bugzilla-organizations-projects.json
   - name: Backlog
-    panel: panels/dashboards/bugzilla_backlog-organizations-projects.json
+    panel: panels/dashboards5/bugzilla_backlog-organizations-projects.json
 - name: Bugzilla
   source: bugzillarest
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/bugzilla-organizations-projects.json
+    panel: panels/dashboards5/bugzilla-organizations-projects.json
   - name: Backlog
-    panel: panels/dashboards/bugzilla_backlog-organizations-projects.json
+    panel: panels/dashboards5/bugzilla_backlog-organizations-projects.json
 - name: Confluence
   source: confluence
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/confluence.json
+    panel: panels/dashboards5/confluence.json
 - name: MediaWiki
   source: mediawiki
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/mediawiki.json
+    panel: panels/dashboards5/mediawiki.json
 - name: Mailing Lists
   source: mbox
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/mailinglists-organizations-projects.json
+    panel: panels/dashboards5/mailinglists-organizations-projects.json
 - name: Mailing Lists
   source: pipermail
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/mailinglists-organizations-projects.json
+    panel: panels/dashboards5/mailinglists-organizations-projects.json
 - name: Discourse
   source: discourse
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/discourse.json
+    panel: panels/dashboards5/discourse.json
 - name: Blogs (RSS)
   source: rss
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/rss.json
+    panel: panels/dashboards5/rss.json
 - name: IRC
   source: supybot
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/irc.json
+    panel: panels/dashboards5/irc.json
 - name: Telegram
   source: telegram
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/telegram.json
+    panel: panels/dashboards5/telegram.json
 - name: Twitter
   source: twitter
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/twitter.json
+    panel: panels/dashboards5/twitter.json
 - name: Kitsune
   source: kitsune
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/kitsune.json
+    panel: panels/dashboards5/kitsune.json
 - name: Askbot Q&A
   source: askbot
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/askbot.json
+    panel: panels/dashboards5/askbot.json
 - name: StackOverflow
   source: stackexchange
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/stackoverflow.json
+    panel: panels/dashboards5/stackoverflow.json
 - name: Jenkins
   source: jenkins
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/jenkins.json
+    panel: panels/dashboards5/jenkins.json
 - name: Mozilla Reps
   source: remo
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/reps2.json
+    panel: panels/dashboards5/reps2.json
 - name: Meetup
   source: meetup
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/meetup.json
+    panel: panels/dashboards5/meetup.json
 - name: Google Hits
   source: google_hits
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/dashboards/google-hits.json
+    panel: panels/dashboards5/google-hits.json

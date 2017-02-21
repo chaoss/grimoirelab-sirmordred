@@ -39,9 +39,9 @@ logger = logging.getLogger(__name__)
 class TaskPanels(Task):
     """ Create the panels  """
 
-    panels_common = ["panels/dashboards/overview.json",
-                     "panels/dashboards/about.json",
-                     "panels/dashboards/data-status.json"]
+    panels_common = ["panels/dashboards5/overview.json",
+                     "panels/dashboards5/about.json",
+                     "panels/dashboards5/data-status.json"]
 
     # aliases not following the ds-dev and ds rule
     aliases = {
@@ -116,7 +116,7 @@ class TaskPanels(Task):
             {
                 "actions" : [
                     {"remove" : { "index" : "%s",
-                               "alias" : "%s" }}
+                                  "alias" : "%s" }}
                ]
              }
             """ % (real_index, alias)
