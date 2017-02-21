@@ -72,8 +72,9 @@ class TaskRawDataCollection(Task):
             logger.debug('[%s] collection starts for %s', self.backend_name, repo)
             es_col_url = self._get_collection_url()
             ds = self.backend_name
+            project = url
             feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
-                         cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
+                         cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project)
         t3 = time.time()
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
         logger.info('[%s] Data collection finished in %s',
