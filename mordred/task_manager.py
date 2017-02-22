@@ -43,7 +43,7 @@ class TasksManager(threading.Thread):
     def __init__(self, tasks_cls, backend_section, repos, stopper, conf, timer = 0):
         """
         :tasks_cls : tasks classes to be executed using the backend
-        :backend_section: perceval backend name
+        :backend_section: perceval backend section name
         :repos: list of repositories to be managed
         :conf: conf for the manager
         """
