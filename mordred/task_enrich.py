@@ -62,6 +62,7 @@ class TaskEnrich(Task):
             # First process p2o params from repo
             p2o_args = self._compose_p2o_params(self.backend_name, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+            filters_raw_prefix = p2o_args['filters-raw-prefix'] if 'filters-raw-prefix' in p2o_args else None
             url = p2o_args['url']
             # Second process perceval params from repo
             backend_args = self._compose_perceval_params(self.backend_name, url)
@@ -89,7 +90,8 @@ class TaskEnrich(Task):
                                 None, #args.refresh_identities,
                                 author_id=None,
                                 author_uuid=None,
-                                filter_raw=filter_raw)
+                                filter_raw=filter_raw,
+                                filters_raw_prefix=filters_raw_prefix)
             except KeyError as e:
                 logger.exception(e)
 

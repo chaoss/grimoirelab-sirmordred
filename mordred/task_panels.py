@@ -39,9 +39,9 @@ logger = logging.getLogger(__name__)
 class TaskPanels(Task):
     """ Create the panels  """
 
-    panels_common = ["panels/dashboards/overview.json",
-                     "panels/dashboards/about.json",
-                     "panels/dashboards/data-status.json"]
+    panels_common = ["panels/dashboards5/overview.json",
+                     "panels/dashboards5/about.json",
+                     "panels/dashboards5/data-status.json"]
 
     # aliases not following the ds-dev and ds rule
     aliases = {
@@ -116,7 +116,7 @@ class TaskPanels(Task):
             {
                 "actions" : [
                     {"remove" : { "index" : "%s",
-                               "alias" : "%s" }}
+                                  "alias" : "%s" }}
                ]
              }
             """ % (real_index, alias)
@@ -176,9 +176,11 @@ class TaskPanels(Task):
         for panel_file in self.panels_common:
             import_dashboard(self.conf['es_enrichment'], panel_file)
         # Create the panels which uses the aliases as data source
-        for panel_file in self.panels[self.get_backend(self.backend_name)]:
-            import_dashboard(self.conf['es_enrichment'], panel_file)
-
+        if self.backend_name in self.panels:
+            for panel_file in self.panels[self.get_backend(self.backend_name)]:
+                import_dashboard(self.conf['es_enrichment'], panel_file)
+        else:
+            logger.warning("No panels found for %s", self.backend_name)
 
 
 class TaskPanelsMenu(Task):
