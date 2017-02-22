@@ -165,8 +165,10 @@
   source: remo
   icon: default.png
   menu:
-  - name: Overview
+  - name: Events
     panel: panels/dashboards5/reps2.json
+  - name: Activities
+    panel: panels/dashboards5/reps2_activities.json
 - name: Meetup
   source: meetup
   icon: default.png
