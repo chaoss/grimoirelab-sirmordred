@@ -35,7 +35,7 @@ class Task():
     ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url']
 
     def __init__(self, conf):
-        self.backend_name = None
+        self.backend_section = None
         self.conf = conf
         self.db_sh = self.conf['sh_database']
         self.db_user = self.conf['sh_user']
@@ -57,21 +57,21 @@ class Task():
         self.repos = repos
 
     @classmethod
-    def get_backend(self, backend_name):
+    def get_backend(self, backend_section):
         # To support the same data source with different configs
         # remo:activitites is like remo but with an extra param
         # category = activity
-        backend = backend_name.split(":")[0]
+        backend = backend_section.split(":")[0]
         return backend
 
-    def set_backend_name(self, backend_name):
-        self.backend_name = backend_name
+    def set_backend_section(self, backend_section):
+        self.backend_section = backend_section
 
-    def _compose_p2o_params(self, backend_name, repo):
+    def _compose_p2o_params(self, backend_section, repo):
         # get p2o params included in the projects list
         params = {}
 
-        backend = self.get_backend(backend_name)
+        backend = self.get_backend(backend_section)
         connector = get_connector_from_name(backend)
         ocean = connector[1]
 
@@ -80,11 +80,11 @@ class Task():
 
         return params
 
-    def _compose_perceval_params(self, backend_name, repo):
+    def _compose_perceval_params(self, backend_section, repo):
         # Params that are lists separated by white space
         list_params_spaces = ['blacklist-jobs']
 
-        backend = self.get_backend(backend_name)
+        backend = self.get_backend(backend_section)
         connector = get_connector_from_name(backend)
         ocean = connector[1]
 
@@ -92,47 +92,47 @@ class Task():
         params = ocean.get_perceval_params_from_url(repo)
 
         # Now add the backend params included in the config file
-        for p in self.conf[backend_name]:
+        for p in self.conf[backend_section]:
             if p in self.ES_INDEX_FIELDS:
                 # These params are not for the perceval backend
                 continue
             params.append("--"+p)
-            if self.conf[backend_name][p]:
-                if type(self.conf[backend_name][p]) != bool:
+            if self.conf[backend_section][p]:
+                if type(self.conf[backend_section][p]) != bool:
                     if p in list_params_spaces:
                         # '--blacklist-jobs', 'a', 'b', 'c'
                         # 'a', 'b', 'c' must be added as items in the list
-                        list_params = self.conf[backend_name][p].split()
+                        list_params = self.conf[backend_section][p].split()
                         params += list_params
                     else:
-                        params.append(self.conf[backend_name][p])
+                        params.append(self.conf[backend_section][p])
         return params
 
     def _get_collection_url(self):
         es_col_url = self.conf['es_collection']
-        if self.backend_name and self.backend_name in self.conf:
-            if 'es_collection_url' in self.conf[self.backend_name]:
-                es_col_url = self.conf[self.backend_name]['es_collection_url']
+        if self.backend_section and self.backend_section in self.conf:
+            if 'es_collection_url' in self.conf[self.backend_section]:
+                es_col_url = self.conf[self.backend_section]['es_collection_url']
         else:
-            logger.warning("No config for the backend %s", self.backend_name)
+            logger.warning("No config for the backend %s", self.backend_section)
         return es_col_url
 
     def _get_enrich_backend(self):
         db_projects_map = None
         json_projects_map = None
         clean = False
-        connector = get_connector_from_name(self.get_backend(self.backend_name))
+        connector = get_connector_from_name(self.get_backend(self.backend_section))
 
         enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
                                       self.db_user, self.db_password, self.db_host)
         elastic_enrich = get_elastic(self.conf['es_enrichment'],
-                                     self.conf[self.backend_name]['enriched_index'],
+                                     self.conf[self.backend_section]['enriched_index'],
                                      clean, enrich_backend)
         enrich_backend.set_elastic(elastic_enrich)
 
         if 'github' in self.conf.keys() and \
             'backend_token' in self.conf['github'].keys() and \
-            self.backend_name == "git":
+            self.get_backend(self.backend_section) == "git":
 
             gh_token = self.conf['github']['backend_token']
             enrich_backend.set_github_token(gh_token)
@@ -147,7 +147,7 @@ class Task():
 
         ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
         elastic_ocean = get_elastic(self._get_collection_url(),
-                                    self.conf[self.backend_name]['raw_index'],
+                                    self.conf[self.backend_section]['raw_index'],
                                     clean, ocean_backend)
         ocean_backend.set_elastic(elastic_ocean)
 

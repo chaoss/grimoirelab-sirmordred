@@ -61,12 +61,12 @@ class TaskIdentitiesCollection(Task):
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
-        if not self.backend_name:
+        if not self.backend_section:
             logger.error ("Backend not configured in TaskIdentitiesCollection.")
             return
 
         if self.load_ids:
-            logger.info("[%s] Gathering identities from raw data" % self.backend_name)
+            logger.info("[%s] Gathering identities from raw data" % self.backend_section)
             enrich_backend = self._get_enrich_backend()
             ocean_backend = self._get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)

@@ -146,7 +146,7 @@ class TaskPanels(Task):
 
     def __create_aliases(self):
         """ Create aliases in ElasticSearch used by the panels """
-        ds = self.backend_name
+        ds = self.backend_section
         es_col_url = self._get_collection_url()
         es_enrich_url = self.conf['es_enrichment']
 
@@ -176,11 +176,11 @@ class TaskPanels(Task):
         for panel_file in self.panels_common:
             import_dashboard(self.conf['es_enrichment'], panel_file)
         # Create the panels which uses the aliases as data source
-        if self.backend_name in self.panels:
-            for panel_file in self.panels[self.get_backend(self.backend_name)]:
+        if self.backend_section in self.panels:
+            for panel_file in self.panels[self.get_backend(self.backend_section)]:
                 import_dashboard(self.conf['es_enrichment'], panel_file)
         else:
-            logger.warning("No panels found for %s", self.backend_name)
+            logger.warning("No panels found for %s", self.backend_section)
 
 
 class TaskPanelsMenu(Task):

@@ -129,7 +129,7 @@ class Mordred:
             logger.info("No identities files")
 
 
-        for backend in self.__get_backend_names():
+        for backend in self.__get_backend_sections():
             try:
                 raw = config.get(backend, 'raw_index')
                 enriched = config.get(backend, 'enriched_index')
@@ -177,7 +177,7 @@ class Mordred:
                 raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
-    def __get_backend_names(self):
+    def __get_backend_sections(self):
         # a backend name could include and extra ":<param>"
         # to have several backend entries with different configs
         gelk_backends = list(get_connectors().keys())
@@ -192,14 +192,14 @@ class Mordred:
         output = {}
         projects = self.conf['projects']
 
-        for backend_name in self.__get_backend_names():
+        for backend_section in self.__get_backend_sections():
             for pro in projects:
-                backend = Task.get_backend(backend_name)
+                backend = Task.get_backend(backend_section)
                 if backend in projects[pro]:
-                    if not backend_name in output:
-                        output[backend_name]  = projects[pro][backend]
+                    if not backend_section in output:
+                        output[backend_section]  = projects[pro][backend]
                     else:
-                        output[backend_name] += projects[pro][backend]
+                        output[backend_section] += projects[pro][backend]
 
         # backend could be in project/repo file but not enabled in
         # mordred conf file

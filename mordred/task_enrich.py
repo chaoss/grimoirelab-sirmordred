@@ -37,18 +37,18 @@ logger = logging.getLogger(__name__)
 class TaskEnrich(Task):
     """ Basic class shared by all enriching tasks """
 
-    def __init__(self, conf, repos=None, backend_name=None):
+    def __init__(self, conf, repos=None, backend_section=None):
         super().__init__(conf)
         self.repos = repos
-        self.backend_name = backend_name
+        self.backend_section = backend_section
         # This will be options in next iteration
         self.clean = False
 
     def __enrich_items(self):
         time_start = time.time()
 
-        #logger.info('%s starts for %s ', 'enrichment', self.backend_name)
-        logger.info('[%s] enrichment starts', self.backend_name)
+        #logger.info('%s starts for %s ', 'enrichment', self.backend_section)
+        logger.info('[%s] enrichment starts', self.backend_section)
 
         cfg = self.conf
 
@@ -60,20 +60,20 @@ class TaskEnrich(Task):
         only_identities=False
         for repo in self.repos:
             # First process p2o params from repo
-            p2o_args = self._compose_p2o_params(self.backend_name, repo)
+            p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
             filters_raw_prefix = p2o_args['filters-raw-prefix'] if 'filters-raw-prefix' in p2o_args else None
             url = p2o_args['url']
             # Second process perceval params from repo
-            backend_args = self._compose_perceval_params(self.backend_name, url)
+            backend_args = self._compose_perceval_params(self.backend_section, url)
 
             try:
                 es_col_url = self._get_collection_url()
-                logger.debug('[%s] enrichment starts for %s', self.backend_name, repo)
-                backend = self.get_backend(self.backend_name)
+                logger.debug('[%s] enrichment starts for %s', self.backend_section, repo)
+                backend = self.get_backend(self.backend_section)
                 enrich_backend(es_col_url, self.clean, backend, backend_args,
-                                cfg[self.backend_name]['raw_index'],
-                                cfg[self.backend_name]['enriched_index'],
+                                cfg[self.backend_section]['raw_index'],
+                                cfg[self.backend_section]['enriched_index'],
                                 None, #projects_db is deprecated
                                 cfg['projects_file'],
                                 cfg['sh_database'],
@@ -98,11 +98,11 @@ class TaskEnrich(Task):
         time.sleep(5)  # Safety sleep tp avoid too quick execution
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-time_start))
-        logger.info('[%s] enrichment finished in %s', self.backend_name, spent_time)
+        logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
 
     def __autorefresh(self):
         logging.info("[%s] Refreshing project and identities " + \
-                     "fields for all items", self.backend_name)
+                     "fields for all items", self.backend_section)
         # Refresh projects
         if False:
             # TODO: Waiting that the project info is loaded from yaml files
@@ -120,14 +120,14 @@ class TaskEnrich(Task):
         enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
 
     def __studies(self):
-        logging.info("Executing %s studies ...", self.backend_name)
+        logging.info("Executing %s studies ...", self.backend_section)
         enrich_backend = self._get_enrich_backend()
         do_studies(enrich_backend)
 
     def run(self):
-        if 'enrich' in self.conf[self.backend_name] and \
-            self.conf[self.backend_name]['enrich'] == False:
-            logging.info('%s enrich disabled', self.backend_name)
+        if 'enrich' in self.conf[self.backend_section] and \
+            self.conf[self.backend_section]['enrich'] == False:
+            logging.info('%s enrich disabled', self.backend_section)
             return
 
         self.__enrich_items()
