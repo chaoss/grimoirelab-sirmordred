@@ -35,32 +35,32 @@ logger = logging.getLogger(__name__)
 class TaskRawDataCollection(Task):
     """ Basic class shared by all collection tasks """
 
-    def __init__(self, conf, repos=None, backend_name=None):
+    def __init__(self, conf, repos=None, backend_section=None):
         super().__init__(conf)
         self.repos = repos
-        self.backend_name = backend_name
-        # This will be optional in next iteration
+        self.backend_section = backend_section
+        # This will be options in next iteration
         self.clean = False
 
     def run(self):
         cfg = self.conf
 
-        if 'collect' in cfg[self.backend_name] and \
-            cfg[self.backend_name]['collect'] == False:
-            logging.info('%s collect disabled', self.backend_name)
+        if 'collect' in cfg[self.backend_section] and \
+            cfg[self.backend_section]['collect'] == False:
+            logging.info('%s collect disabled', self.backend_section)
             return
 
         t2 = time.time()
-        logger.info('[%s] raw data collection starts', self.backend_name)
+        logger.info('[%s] raw data collection starts', self.backend_section)
         clean = False
 
         fetch_cache = False
-        if 'fetch-cache' in self.conf[self.backend_name] and \
-            self.conf[self.backend_name]['fetch-cache']:
+        if 'fetch-cache' in self.conf[self.backend_section] and \
+            self.conf[self.backend_section]['fetch-cache']:
             fetch_cache = True
 
         for repo in self.repos:
-            p2o_args = self.compose_p2o_params(self.backend_name, repo)
+            p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
 
             if filter_raw:
@@ -70,14 +70,14 @@ class TaskRawDataCollection(Task):
                 continue
 
             url = p2o_args['url']
-            backend_args = self.compose_perceval_params(self.backend_name, repo)
+            backend_args = self._compose_perceval_params(self.backend_section, repo)
             logger.debug(backend_args)
-            logger.debug('[%s] collection starts for %s', self.backend_name, repo)
+            logger.debug('[%s] collection starts for %s', self.backend_section, repo)
             es_col_url = self._get_collection_url()
-            ds = self.backend_name
-
+            ds = self.backend_section
+            backend = self.get_backend(self.backend_section)
             try:
-                feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
+                feed_backend(es_col_url, clean, fetch_cache, backend, backend_args,
                          cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
             except:
                 logger.error("Something went wrong collecting data from this %s repo: %s . " \
@@ -88,4 +88,5 @@ class TaskRawDataCollection(Task):
         t3 = time.time()
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
-        logger.info('[%s] Data collection finished in %s', self.backend_name, spent_time)
+        logger.info('[%s] Data collection finished in %s',
+                    self.backend_section, spent_time)

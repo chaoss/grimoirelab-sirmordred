@@ -39,6 +39,7 @@ from grimoire_elk.utils import get_connectors
 from mordred.error import ElasticSearchError
 from mordred.error import DataCollectionError
 from mordred.error import DataEnrichmentError
+from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
@@ -62,11 +63,9 @@ class Mordred:
     def __init__(self, conf_file):
         self.conf_file = conf_file
         self.conf = None
+        self.conf = self.__read_conf_files()
 
-    def update_conf(self, conf):
-        self.conf = conf
-
-    def read_conf_files(self):
+    def __read_conf_files(self):
         conf = {}
 
         logger.debug("Reading conf files")
@@ -134,7 +133,7 @@ class Mordred:
             logger.info("No identities files")
 
 
-        for backend in self.__get_backends():
+        for backend in self.__get_backend_sections():
             try:
                 raw = config.get(backend, 'raw_index')
                 enriched = config.get(backend, 'enriched_index')
@@ -182,9 +181,11 @@ class Mordred:
                 raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
-    def __get_backends(self):
+    def __get_backend_sections(self):
+        # a backend name could include and extra ":<param>"
+        # to have several backend entries with different configs
         gelk_backends = list(get_connectors().keys())
-        extra_backends = ["google_hits"]
+        extra_backends = ["google_hits", "remo:activities"]
 
         return gelk_backends + extra_backends
 
@@ -195,13 +196,14 @@ class Mordred:
         output = {}
         projects = self.conf['projects']
 
-        for backend in self.__get_backends():
+        for backend_section in self.__get_backend_sections():
             for pro in projects:
+                backend = Task.get_backend(backend_section)
                 if backend in projects[pro]:
-                    if not backend in output:
-                        output[backend]  = projects[pro][backend]
+                    if not backend_section in output:
+                        output[backend_section]  = projects[pro][backend]
                     else:
-                        output[backend] = output[backend] + projects[pro][backend]
+                        output[backend_section] += projects[pro][backend]
 
         # backend could be in project/repo file but not enabled in
         # mordred conf file
@@ -319,8 +321,6 @@ class Mordred:
         logger.info("----------------------------")
         logger.info("Starting Mordred engine ...")
         logger.info("- - - - - - - - - - - - - - ")
-
-        self.update_conf(self.read_conf_files())
 
         # check we have access to the needed ES
         self.check_es_access()

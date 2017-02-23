@@ -39,51 +39,51 @@ logger = logging.getLogger(__name__)
 class TaskPanels(Task):
     """ Create the panels  """
 
-    panels_common = ["panels/dashboards/overview.json",
-                     "panels/dashboards/about.json",
-                     "panels/dashboards/data-status.json"]
+    panels_common = ["panels/dashboards5/overview.json",
+                     "panels/dashboards5/about.json",
+                     "panels/dashboards5/data-status.json"]
 
-    # aliases not following the ds-dev and ds rule
+    # aliases not following the ds-raw and ds rule
     aliases = {
         "bugzillarest": {
-            "raw":["bugzilla-dev"],
+            "raw":["bugzilla-raw"],
             "enrich":["bugzilla"]
         },
         "git": {
-            "raw":["git-dev"],
+            "raw":["git-raw"],
             "enrich":["git", "git_author", "git_enrich"]
         },
         "github": {
-            "raw":["github-dev"],
+            "raw":["github-raw"],
             "enrich":["github_issues", "github_issues_enrich", "issues_closed",
                       "issues_created", "issues_updated"]
         },
         "jenkins": {
-            "raw":["jenkins-dev"],
+            "raw":["jenkins-raw"],
             "enrich":["jenkins", "jenkins_enrich"]
         },
         "mbox": {
-            "raw":["mbox-dev"],
+            "raw":["mbox-raw"],
             "enrich":["mbox", "mbox_enrich"]
         },
         "pipermail": {
-            "raw":["pipermail-dev"],
+            "raw":["pipermail-raw"],
             "enrich":["mbox", "mbox_enrich"]
         },
         "phabricator": {
-            "raw":["phabricator-dev"],
+            "raw":["phabricator-raw"],
             "enrich":["phabricator", "maniphest"]
         },
         "remo": {
-            "raw":["remo-dev"],
+            "raw":["remo-raw"],
             "enrich":["remo", "remo2-events"]
         },
         "stackexchange": {
-            "raw":["stackexchange-dev"],
+            "raw":["stackexchange-raw"],
             "enrich":["stackoverflow"]
         },
         "supybot": {
-            "raw":["irc-dev"],
+            "raw":["irc-raw"],
             "enrich":["irc"]
         }
     }
@@ -116,7 +116,7 @@ class TaskPanels(Task):
             {
                 "actions" : [
                     {"remove" : { "index" : "%s",
-                               "alias" : "%s" }}
+                                  "alias" : "%s" }}
                ]
              }
             """ % (real_index, alias)
@@ -146,26 +146,28 @@ class TaskPanels(Task):
 
     def __create_aliases(self):
         """ Create aliases in ElasticSearch used by the panels """
-        ds = self.backend_name
+        real_alias = self.backend_section.replace(":","_")  # remo:activities -> remo_activities
         es_col_url = self._get_collection_url()
         es_enrich_url = self.conf['es_enrichment']
 
-        index_raw = self.conf[ds]['raw_index']
-        index_enrich = self.conf[ds]['enriched_index']
+        index_raw = self.conf[self.backend_section]['raw_index']
+        index_enrich = self.conf[self.backend_section]['enriched_index']
 
-        if ds in self.aliases and 'raw' in self.aliases[ds]:
-            for alias in self.aliases[ds]['raw']:
+        if self.backend_section in self.aliases and \
+            'raw' in self.aliases[self.backend_section]:
+            for alias in self.aliases[self.backend_section]['raw']:
                 self.__create_alias(es_col_url, index_raw, alias)
         else:
             # Standard alias for the raw index
-            self.__create_alias(es_col_url, index_raw, ds+"-dev")
+            self.__create_alias(es_col_url, index_raw, real_alias + "-raw")
 
-        if ds in self.aliases and 'enrich' in self.aliases[ds]:
-            for alias in self.aliases[ds]['enrich']:
+        if self.backend_section in self.aliases and \
+            'enrich' in self.aliases[self.backend_section]:
+            for alias in self.aliases[self.backend_section]['enrich']:
                 self.__create_alias(es_enrich_url, index_enrich, alias)
         else:
             # Standard alias for the enrich index
-            self.__create_alias(es_enrich_url, index_enrich, ds)
+            self.__create_alias(es_enrich_url, index_enrich, real_alias)
 
 
     def run(self):
@@ -176,9 +178,11 @@ class TaskPanels(Task):
         for panel_file in self.panels_common:
             import_dashboard(self.conf['es_enrichment'], panel_file)
         # Create the panels which uses the aliases as data source
-        for panel_file in self.panels[self.backend_name]:
-            import_dashboard(self.conf['es_enrichment'], panel_file)
-
+        if self.backend_section in self.panels:
+            for panel_file in self.panels[self.get_backend(self.backend_section)]:
+                import_dashboard(self.conf['es_enrichment'], panel_file)
+        else:
+            logger.warning("No panels found for %s", self.backend_section)
 
 
 class TaskPanelsMenu(Task):

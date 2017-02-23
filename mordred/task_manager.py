@@ -41,10 +41,10 @@ class TasksManager(threading.Thread):
 
     """
 
-    def __init__(self, tasks_cls, backend_name, repos, stopper, conf, communication_queue, timer = 0):
+    def __init__(self, tasks_cls, backend_section, repos, stopper, conf, communication_queue, timer = 0):
         """
         :tasks_cls : tasks classes to be executed using the backend
-        :backend_name: perceval backend name
+        :backend_section: perceval backend section name
         :repos: list of repositories to be managed
         :conf: conf for the manager
         """
@@ -52,7 +52,7 @@ class TasksManager(threading.Thread):
         self.conf = conf
         self.tasks_cls = tasks_cls  # tasks classes to be executed
         self.tasks = []  # tasks to be executed
-        self.backend_name = backend_name
+        self.backend_section = backend_section
         self.repos = repos
         self.stopper = stopper  # To stop the thread from parent
         self.timer = timer
@@ -62,7 +62,7 @@ class TasksManager(threading.Thread):
         self.tasks.append(task)
 
     def run(self):
-        logger.debug('Starting Task Manager thread %s', self.backend_name)
+        logger.debug('Starting Task Manager thread %s', self.backend_section)
 
         # Configure the tasks
         logger.debug(self.tasks_cls)
@@ -70,11 +70,11 @@ class TasksManager(threading.Thread):
             # create the real Task from the class
             task = tc(self.conf)
             task.set_repos(self.repos)
-            task.set_backend_name(self.backend_name)
+            task.set_backend_section(self.backend_section)
             self.tasks.append(task)
 
         if not self.tasks:
-            logger.debug('Task Manager thread %s without tasks', self.backend_name)
+            logger.debug('Task Manager thread %s without tasks', self.backend_section)
 
         logger.debug('run(tasks) - run(%s)' % (self.tasks))
         while not self.stopper.is_set():
@@ -91,4 +91,4 @@ class TasksManager(threading.Thread):
                 except:
                     self.queue.put(sys.exc_info())
 
-        logger.debug('Exiting Task Manager thread %s', self.backend_name)
+        logger.debug('Exiting Task Manager thread %s', self.backend_section)
