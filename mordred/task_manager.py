@@ -87,7 +87,7 @@ class TasksManager(threading.Thread):
 
             for task in self.tasks:
                 try:
-                    task.run()
+                    task.execute()
                 except:
                     self.queue.put(sys.exc_info())
 

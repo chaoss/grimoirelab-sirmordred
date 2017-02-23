@@ -170,7 +170,7 @@ class TaskPanels(Task):
             self.__create_alias(es_enrich_url, index_enrich, real_alias)
 
 
-    def run(self):
+    def execute(self):
         # Create the aliases
         self.__create_aliases()
         # Create the commons panels
@@ -282,7 +282,7 @@ class TaskPanelsMenu(Task):
 
         return omenu
 
-    def run(self):
+    def execute(self):
         # Create the panels menu
         menu = self.__get_dash_menu()
         # Remove the current menu and create the new one

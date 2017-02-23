@@ -127,7 +127,7 @@ class TaskEnrich(Task):
         enrich_backend = self._get_enrich_backend()
         do_studies(enrich_backend)
 
-    def run(self):
+    def execute(self):
         if 'enrich' in self.conf[self.backend_section] and \
             self.conf[self.backend_section]['enrich'] == False:
             logging.info('%s enrich disabled', self.backend_section)

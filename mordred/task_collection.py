@@ -42,7 +42,7 @@ class TaskRawDataCollection(Task):
         # This will be options in next iteration
         self.clean = False
 
-    def run(self):
+    def execute(self):
         cfg = self.conf
 
         if 'collect' in cfg[self.backend_section] and \
