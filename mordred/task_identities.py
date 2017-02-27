@@ -62,7 +62,13 @@ class TaskIdentitiesCollection(Task):
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if not self.backend_section:
-            logger.error ("Backend not configured in TaskIdentitiesCollection.")
+            logger.error ("Backend not configured in TaskIdentitiesCollection %s", self.backend_section)
+            return
+
+        backend_conf = self.conf[self.backend_section]
+
+        if 'collect' in backend_conf and not backend_conf['collect']:
+            logger.error ("Don't load ids from a backend without collection %s", self.backend_section)
             return
 
         if self.load_ids:
