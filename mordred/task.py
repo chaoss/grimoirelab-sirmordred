@@ -49,7 +49,7 @@ class Task():
         """
         return True
 
-    def run(self):
+    def execute(self):
         """ Execute the Task """
         logger.debug("A bored task. It does nothing!")
 
