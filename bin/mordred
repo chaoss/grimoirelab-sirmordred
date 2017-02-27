@@ -154,9 +154,3 @@ if __name__ == '__main__':
         logger.error("Unexpected error. See the traceback below")
         logger.error(var)
         sys.exit(1)
-    """except DataCollectionError as e:
-        logger.info("DataCollectionError") #FIXME
-        logger.error(str(e))
-        var = traceback.format_exc()
-        logger.error(var)
-        pass"""

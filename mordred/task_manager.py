@@ -23,6 +23,7 @@
 #
 
 import logging
+import queue
 import threading
 import sys
 import time
@@ -41,7 +42,10 @@ class TasksManager(threading.Thread):
 
     """
 
-    def __init__(self, tasks_cls, backend_section, repos, stopper, conf, communication_queue, timer = 0):
+    # this queue supports the communication from threads to mother process
+    COMM_QUEUE = queue.Queue()
+
+    def __init__(self, tasks_cls, backend_section, repos, stopper, conf, timer = 0):
         """
         :tasks_cls : tasks classes to be executed using the backend
         :backend_section: perceval backend section name
@@ -56,7 +60,6 @@ class TasksManager(threading.Thread):
         self.repos = repos
         self.stopper = stopper  # To stop the thread from parent
         self.timer = timer
-        self.queue = communication_queue
 
     def add_task(self, task):
         self.tasks.append(task)
@@ -89,6 +92,6 @@ class TasksManager(threading.Thread):
                 try:
                     task.execute()
                 except:
-                    self.queue.put(sys.exc_info())
+                    TasksManager.COMM_QUEUE.put(sys.exc_info())
 
         logger.debug('Exiting Task Manager thread %s', self.backend_section)

@@ -23,14 +23,14 @@
 #
 
 import configparser
-import logging
-import time
 import json
+import logging
+import queue
 import requests
 import sys
 import threading
+import time
 import traceback
-import queue
 
 from datetime import datetime, timedelta
 
@@ -215,19 +215,19 @@ class Mordred:
         # logger.debug('repos to be retrieved: %s ', enabled)
         return enabled
 
-    def execute_tasks (self, tasks_cls, communication_queue):
+    def execute_tasks (self, tasks_cls):
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, communication_queue)
+        self.execute_batch_tasks(tasks_cls)
 
-    def execute_nonstop_tasks(self, tasks_cls, communication_queue):
+    def execute_nonstop_tasks(self, tasks_cls):
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, communication_queue, self.conf['sh_sleep_for'], self.conf['min_update_delay'], False)
+        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], self.conf['min_update_delay'], False)
 
-    def execute_batch_tasks(self, tasks_cls, communication_queue, big_delay=0, small_delay=0, wait_for_threads = True):
+    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
         """
         Start a task manager per backend to complete the tasks.
 
@@ -251,7 +251,7 @@ class Mordred:
                     global_t.append(t)
             return backend_t, global_t
 
-        logger.debug(' Task Manager starting .. ')
+        logger.debug('Tasks Manager starting .. ')
 
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
         logger.debug ('backend_tasks = %s' % (backend_tasks))
@@ -268,14 +268,14 @@ class Mordred:
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
                 t = TasksManager(backend_tasks, backend, repos_backend[backend],
-                                 stopper, self.conf, communication_queue, small_delay)
+                                 stopper, self.conf, small_delay)
                 threads.append(t)
                 t.start()
 
         # launch thread for global tasks
         if len(global_tasks) > 0:
             #FIXME timer is applied to all global_tasks, does it make sense?
-            gt = TasksManager(global_tasks, None, None, stopper, self.conf, communication_queue, big_delay)
+            gt = TasksManager(global_tasks, None, None, stopper, self.conf, big_delay)
             threads.append(gt)
             gt.start()
             if big_delay > 0:
@@ -292,7 +292,21 @@ class Mordred:
         for t in threads:
             t.join()
 
+        # Checking for exceptions in threads to log them
+        self.__check_queue_for_errors()
+
         logger.debug(" Task manager and all its tasks (threads) finished!")
+
+    def __check_queue_for_errors(self):
+        try:
+            exc = TasksManager.COMM_QUEUE.get(block=False)
+        except queue.Empty:
+            logger.debug("No exceptions in threads. Let's continue ..")
+        else:
+            exc_type, exc_obj, exc_trace = exc
+            # deal with the exception
+            logger.error(exc_type)
+            raise exc_obj
 
     def run(self):
         """
@@ -303,18 +317,6 @@ class Mordred:
         - start the collection and enrichment in parallel by data source
         - start also the Sorting Hat merge
         """
-
-        def _check_queue_for_errors(communication_queue):
-            try:
-                exc = communication_queue.get(block=False)
-            except queue.Empty:
-                pass
-                logger.debug("No exceptions in threads. Let's continue ..")
-            else:
-                exc_type, exc_obj, exc_trace = exc
-                # deal with the exception
-                logger.error(exc_type)
-                raise exc_obj
 
         #logger.debug("Starting Mordred engine ...")
         logger.info("")
@@ -330,19 +332,13 @@ class Mordred:
         tasks_cls = []
         all_tasks_cls = []
 
-        # this queue supports the communication from threads to mother process
-        communication_queue = queue.Queue()
-
         # phase one
         # we get all the items with Perceval + identites browsing the
         # raw items
 
         if self.conf['identities_on']:
             tasks_cls = [TaskIdentitiesInit]
-            self.execute_tasks(tasks_cls, communication_queue)
-
-        _check_queue_for_errors(communication_queue)
-
+            self.execute_tasks(tasks_cls)
 
         # handling the exception below and continuing the execution is
         # a bit unstable, we could have several threads collecting data
@@ -355,23 +351,17 @@ class Mordred:
                 if self.conf['identities_on']:
                     tasks_cls.append(TaskIdentitiesCollection)
                 all_tasks_cls += tasks_cls
-                self.execute_tasks(tasks_cls, communication_queue)
-
-            _check_queue_for_errors(communication_queue)
+                self.execute_tasks(tasks_cls)
 
         except DataCollectionError as e:
             logger.error(str(e))
             var = traceback.format_exc()
             logger.error(var)
-            pass
 
         if self.conf['identities_on']:
             tasks_cls = [TaskIdentitiesMerge]
             all_tasks_cls += tasks_cls
-            self.execute_tasks(tasks_cls, communication_queue)
-
-        _check_queue_for_errors(communication_queue)
-
+            self.execute_tasks(tasks_cls)
 
         # handling this exception adds the same issue as above with the
         # exception for DataCollectionError. So this is another #FIXME
@@ -381,37 +371,29 @@ class Mordred:
                 # will used to produce a enriched index
                 tasks_cls = [TaskEnrich]
                 all_tasks_cls += tasks_cls
-                self.execute_tasks(tasks_cls, communication_queue)
+                self.execute_tasks(tasks_cls)
 
-            _check_queue_for_errors(communication_queue)
         except DataEnrichmentError as e:
             logger.error(str(e))
             var = traceback.format_exc()
             logger.error(var)
-            pass
-
 
         if self.conf['panels_on']:
             tasks_cls = [TaskPanels]
-            self.execute_tasks(tasks_cls, communication_queue)
-
-        _check_queue_for_errors(communication_queue)
-
+            self.execute_tasks(tasks_cls)
 
         logger.debug(' - - ')
         logger.debug('Meeting point 0 reached')
         time.sleep(1)
 
-
         # this is the main loop, where the execution should spend
         # most of its time
         while self.conf['update']:
             try:
-                self.execute_nonstop_tasks(all_tasks_cls, communication_queue)
+                self.execute_nonstop_tasks(all_tasks_cls)
 
                 #FIXME this point is never reached so despite the exception is
                 #handled and the error is shown, the traceback is not printed
-                _check_queue_for_errors(communication_queue)
 
             except DataCollectionError as e:
                 logger.error(str(e))
