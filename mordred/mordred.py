@@ -23,17 +23,22 @@
 #
 
 import configparser
-import logging
-import time
 import json
-import sys
+import logging
+import queue
 import requests
+import sys
 import threading
+import time
+import traceback
 
 from datetime import datetime, timedelta
 
 from grimoire_elk.utils import get_connectors
 
+from mordred.error import ElasticSearchError
+from mordred.error import DataCollectionError
+from mordred.error import DataEnrichmentError
 from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
@@ -41,18 +46,17 @@ from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsMenu
 
+
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
 """need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
+
 ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
 "at '%(uri)s' is available!!\n - Mordred said."
 
+
 logger = logging.getLogger(__name__)
 
-class ElasticSearchError(Exception):
-    """Exception raised for errors in the list of backends
-    """
-    def __init__(self, expression):
-        self.expression = expression
+
 
 class Mordred:
 
@@ -221,11 +225,9 @@ class Mordred:
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'],
-                                 self.conf['min_update_delay'], False)
+        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], self.conf['min_update_delay'], False)
 
-    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0,
-                            wait_for_threads = True):
+    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
         """
         Start a task manager per backend to complete the tasks.
 
@@ -249,7 +251,7 @@ class Mordred:
                     global_t.append(t)
             return backend_t, global_t
 
-        logger.debug(' Task Manager starting .. ')
+        logger.debug('Tasks Manager starting .. ')
 
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
         logger.debug ('backend_tasks = %s' % (backend_tasks))
@@ -290,9 +292,31 @@ class Mordred:
         for t in threads:
             t.join()
 
+        # Checking for exceptions in threads to log them
+        self.__check_queue_for_errors()
+
         logger.debug(" Task manager and all its tasks (threads) finished!")
 
+    def __check_queue_for_errors(self):
+        try:
+            exc = TasksManager.COMM_QUEUE.get(block=False)
+        except queue.Empty:
+            logger.debug("No exceptions in threads. Let's continue ..")
+        else:
+            exc_type, exc_obj, exc_trace = exc
+            # deal with the exception
+            logger.error(exc_type)
+            raise exc_obj
+
     def run(self):
+        """
+        This method defines the workflow of Mordred. So it calls to:
+        - initialize the databases
+        - execute the different phases for the first iteration
+          (collection, identities, enrichment)
+        - start the collection and enrichment in parallel by data source
+        - start also the Sorting Hat merge
+        """
 
         #logger.debug("Starting Mordred engine ...")
         logger.info("")
@@ -316,36 +340,70 @@ class Mordred:
             tasks_cls = [TaskIdentitiesInit]
             self.execute_tasks(tasks_cls)
 
-        if self.conf['collection_on']:
-            tasks_cls = [TaskRawDataCollection]
-            #self.execute_tasks(tasks_cls)
-            if self.conf['identities_on']:
-                tasks_cls.append(TaskIdentitiesCollection)
-            all_tasks_cls += tasks_cls
-            self.execute_tasks(tasks_cls)
+        # handling the exception below and continuing the execution is
+        # a bit unstable, we could have several threads collecting data
+        # and one of them crash, where this behaviour is ok. But we also
+        # could have all of them crashed and this piece of code should
+        # be smart enough to stop the execution. #FIXME
+        try:
+            if self.conf['collection_on']:
+                tasks_cls = [TaskRawDataCollection]
+                if self.conf['identities_on']:
+                    tasks_cls.append(TaskIdentitiesCollection)
+                all_tasks_cls += tasks_cls
+                self.execute_tasks(tasks_cls)
+
+        except DataCollectionError as e:
+            logger.error(str(e))
+            var = traceback.format_exc()
+            logger.error(var)
 
         if self.conf['identities_on']:
             tasks_cls = [TaskIdentitiesMerge]
             all_tasks_cls += tasks_cls
             self.execute_tasks(tasks_cls)
 
-        if self.conf['enrichment_on']:
-            # raw items + sh database with merged identities + affiliations
-            # will used to produce a enriched index
-            tasks_cls = [TaskEnrich]
-            all_tasks_cls += tasks_cls
-            self.execute_tasks(tasks_cls)
+        # handling this exception adds the same issue as above with the
+        # exception for DataCollectionError. So this is another #FIXME
+        try:
+            if self.conf['enrichment_on']:
+                # raw items + sh database with merged identities + affiliations
+                # will used to produce a enriched index
+                tasks_cls = [TaskEnrich]
+                all_tasks_cls += tasks_cls
+                self.execute_tasks(tasks_cls)
+
+        except DataEnrichmentError as e:
+            logger.error(str(e))
+            var = traceback.format_exc()
+            logger.error(var)
 
         if self.conf['panels_on']:
-            # Remove first the dashboard menu
-            tasks_cls = [TaskPanels, TaskPanelsMenu]
+            tasks_cls = [TaskPanels]
             self.execute_tasks(tasks_cls)
 
         logger.debug(' - - ')
         logger.debug('Meeting point 0 reached')
         time.sleep(1)
 
+        # this is the main loop, where the execution should spend
+        # most of its time
         while self.conf['update']:
-            self.execute_nonstop_tasks(all_tasks_cls)
+            try:
+                self.execute_nonstop_tasks(all_tasks_cls)
+
+                #FIXME this point is never reached so despite the exception is
+                #handled and the error is shown, the traceback is not printed
+
+            except DataCollectionError as e:
+                logger.error(str(e))
+                var = traceback.format_exc()
+                logger.error(var)
+                pass
+            except DataEnrichmentError as e:
+                logger.error(str(e))
+                var = traceback.format_exc()
+                logger.error(var)
+                pass
 
         logger.info("Finished Mordred engine ...")

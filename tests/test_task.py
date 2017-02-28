@@ -59,7 +59,7 @@ class TestTask(unittest.TestCase):
         """Test whether the Task could be run"""
         morderer = Mordred(CONF_FILE)
         task = Task(morderer.conf)
-        self.assertEqual(task.run(), None)
+        self.assertEqual(task.execute(), None)
 
     def test_compose_p2o_params(self):
         """Test whether p2o params are built correctly for a backend and a repository"""

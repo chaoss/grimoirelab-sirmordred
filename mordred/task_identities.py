@@ -55,14 +55,20 @@ class TaskIdentitiesCollection(Task):
                         'database': self.db_sh, 'host': self.db_host,
                         'port': None}
 
-    def run(self):
+    def execute(self):
 
         #FIXME this should be called just once
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if not self.backend_section:
-            logger.error ("Backend not configured in TaskIdentitiesCollection.")
+            logger.error ("Backend not configured in TaskIdentitiesCollection %s", self.backend_section)
+            return
+
+        backend_conf = self.conf[self.backend_section]
+
+        if 'collect' in backend_conf and not backend_conf['collect']:
+            logger.error ("Don't load ids from a backend without collection %s", self.backend_section)
             return
 
         if self.load_ids:
@@ -87,7 +93,7 @@ class TaskIdentitiesInit(Task):
     def is_backend_task(self):
         return False
 
-    def run(self):
+    def execute(self):
 
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
@@ -142,7 +148,7 @@ class TaskIdentitiesMerge(Task):
                     uuids.append(p.uuid)
         return uuids
 
-    def run(self):
+    def execute(self):
         if self.unify:
             for algo in self.conf['sh_matching']:
                 kwargs = {'matching':algo, 'fast_matching':True}

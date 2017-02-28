@@ -23,7 +23,9 @@
 #
 
 import logging
+import queue
 import threading
+import sys
 import time
 
 from grimoire_elk.arthur import get_ocean_backend
@@ -39,6 +41,9 @@ class TasksManager(threading.Thread):
     in a serial way.
 
     """
+
+    # this queue supports the communication from threads to mother process
+    COMM_QUEUE = queue.Queue()
 
     def __init__(self, tasks_cls, backend_section, repos, stopper, conf, timer = 0):
         """
@@ -84,7 +89,9 @@ class TasksManager(threading.Thread):
                 time.sleep(self.timer)
 
             for task in self.tasks:
-                task.run()
+                try:
+                    task.execute()
+                except:
+                    TasksManager.COMM_QUEUE.put(sys.exc_info())
 
         logger.debug('Exiting Task Manager thread %s', self.backend_section)
-
