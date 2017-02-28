@@ -37,3 +37,20 @@ class DataEnrichmentError(Exception):
     """
     def __init__(self, expression):
         self.expression = expression
+
+class ConfigError(Exception):
+    """Exception raised for errors in the configuration file.
+
+    Attributes:
+        expression -- input expression in which the error occurred
+        message -- explanation of the error
+    """
+    def __init__(self, expression, message):
+        self.expression = expression
+        self.message = message
+
+class GithubFileNotFound(Exception):
+    """Exception raised when getting a 404 from github
+    """
+    def __init__(self, message):
+        self.message = message
