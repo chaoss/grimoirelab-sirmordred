@@ -76,9 +76,10 @@ class TaskRawDataCollection(Task):
             es_col_url = self._get_collection_url()
             ds = self.backend_section
             backend = self.get_backend(self.backend_section)
+            project = url
             try:
                 feed_backend(es_col_url, clean, fetch_cache, backend, backend_args,
-                         cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
+                         cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project)
             except:
                 logger.error("Something went wrong collecting data from this %s repo: %s . " \
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))

@@ -64,6 +64,7 @@ class TaskEnrich(Task):
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
             filters_raw_prefix = p2o_args['filters-raw-prefix'] if 'filters-raw-prefix' in p2o_args else None
+            jenkins_rename_file = p2o_args['jenkins-rename-file'] if 'jenkins-rename-file' in p2o_args else None
             url = p2o_args['url']
             # Second process perceval params from repo
             backend_args = self._compose_perceval_params(self.backend_section, url)
@@ -92,7 +93,8 @@ class TaskEnrich(Task):
                                 author_id=None,
                                 author_uuid=None,
                                 filter_raw=filter_raw,
-                                filters_raw_prefix=filters_raw_prefix)
+                                filters_raw_prefix=filters_raw_prefix,
+                                jenkins_rename_file=jenkins_rename_file)
             except:
                 logger.error("Something went wrong producing enriched data for %s . " \
                              "Using the backend_args: %s " % (self.backend_name, str(backend_args)))
