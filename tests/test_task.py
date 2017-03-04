@@ -18,9 +18,7 @@
 # Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA.
 #
 # Authors:
-#     Santiago Dueñas <sduenas@bitergia.com>
 #     Alvaro del Castillo <acs@bitergia.com>
-#
 
 
 import sys
@@ -84,7 +82,7 @@ class TestTask(unittest.TestCase):
         """Test whether the collection url could be overried in a backend"""
         morderer = Mordred(CONF_FILE)
         task = Task(morderer.conf)
-        task.backend_name = BACKEND_NAME
+        task.backend_section = BACKEND_NAME
         self.assertEqual(task.conf['es_collection'], COLLECTION_URL)
         self.assertEqual(task._get_collection_url(), COLLECTION_URL_STACKEXCHANGE)
 
