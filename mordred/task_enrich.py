@@ -31,7 +31,6 @@ from mordred.task import Task
 from mordred.error import DataEnrichmentError
 
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -46,6 +45,10 @@ class TaskEnrich(Task):
         self.clean = False
 
     def __enrich_items(self):
+        if not self.repos:
+            logger.warning("No enrich repositories for %s", self.backend_section)
+            return
+
         time_start = time.time()
 
         #logger.info('%s starts for %s ', 'enrichment', self.backend_section)
@@ -58,7 +61,7 @@ class TaskEnrich(Task):
         if 'github' in self.conf and 'backend_token' in self.conf['github']:
             github_token = self.conf['github']['backend_token']
         only_studies = False
-        only_identities=False
+        only_identities = False
         for repo in self.repos:
             # First process p2o params from repo
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
@@ -106,33 +109,33 @@ class TaskEnrich(Task):
         logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
 
     def __autorefresh(self):
-        logging.info("[%s] Refreshing project and identities " + \
+        logger.info("[%s] Refreshing project and identities " + \
                      "fields for all items", self.backend_section)
         # Refresh projects
         if False:
             # TODO: Waiting that the project info is loaded from yaml files
-            logging.info("Refreshing project field in enriched index")
+            logger.info("Refreshing project field in enriched index")
             enrich_backend = self._get_enrich_backend()
             field_id = enrich_backend.get_field_unique_id()
             eitems = refresh_projects(enrich_backend)
             enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
 
         # Refresh identities
-        logging.info("Refreshing identities fields in enriched index")
+        logger.info("Refreshing identities fields in enriched index")
         enrich_backend = self._get_enrich_backend()
         field_id = enrich_backend.get_field_unique_id()
         eitems = refresh_identities(enrich_backend)
         enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
 
     def __studies(self):
-        logging.info("Executing %s studies ...", self.backend_section)
+        logger.info("Executing %s studies ...", self.backend_section)
         enrich_backend = self._get_enrich_backend()
         do_studies(enrich_backend)
 
     def execute(self):
         if 'enrich' in self.conf[self.backend_section] and \
             self.conf[self.backend_section]['enrich'] == False:
-            logging.info('%s enrich disabled', self.backend_section)
+            logger.info('%s enrich disabled', self.backend_section)
             return
 
         self.__enrich_items()
