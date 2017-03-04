@@ -23,10 +23,12 @@
 import json
 import logging
 import sys
+import tarfile
 import unittest
 
 import requests
 
+from os.path import expanduser, join
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
@@ -38,6 +40,9 @@ from mordred.mordred import Mordred
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
+PERCEVAL_CACHE_FILE = './cache-test.tgz'
+HOME_USER = expanduser("~")
+PERCEVAL_CACHE = join(HOME_USER, '.perceval')
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -46,24 +51,47 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 class TestTaskEnrichAll(unittest.TestCase):
-    """Task tests"""
+    """ This class will test the results of full enrichments """
 
-    def test_arun(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.enrich_already_done = False
+        self.cache_already_installed = False
+
+    def __install_perceval_cache(self):
+        if not self.cache_already_installed:
+            logging.info("Installing the perceval cache")
+            tfile = tarfile.open(PERCEVAL_CACHE_FILE, 'r:gz')
+            # The cache is extracted in the default place perceval uses
+            # We must use a different place but it is not easy to change that
+            # because it is not configurable now in TaskRawDataCollection
+            tfile.extractall(PERCEVAL_CACHE)
+            logging.info("Installed the perceval cache in %s", PERCEVAL_CACHE)
+            self.cache_already_installed = True
+
+    def __collect_and_enrich(self):
         """Execute the enrich process for all backends active"""
-        morderer = Mordred(CONF_FILE)
-        repos_backend = morderer._get_repos_by_backend()
-        for backend in repos_backend:
-            # First collect the data
-            logger.info("--- Collect %s ---\n", backend)
-            task = TaskRawDataCollection(morderer.conf, repos=repos_backend[backend], backend_section=backend)
-            self.assertEqual(task.execute(), None)
-            # Second enrich the data
-            logger.info("--- Enrich %s ---\n", backend)
-            task = TaskEnrich(morderer.conf, repos=repos_backend[backend], backend_section=backend)
-            self.assertEqual(task.execute(), None)
+        if not self.enrich_already_done:
+            self.__install_perceval_cache()
+            morderer = Mordred(CONF_FILE)
+            repos_backend = morderer._get_repos_by_backend()
+            for backend in repos_backend:
+                # First collect the data
+                logger.info("--- Collect %s ---\n", backend)
+                task = TaskRawDataCollection(morderer.conf, repos=repos_backend[backend], backend_section=backend)
+                self.assertEqual(task.execute(), None)
+                # Second enrich the data
+                logger.info("--- Enrich %s ---\n", backend)
+                task = TaskEnrich(morderer.conf, repos=repos_backend[backend], backend_section=backend)
+                self.assertEqual(task.execute(), None)
+        self.enrich_already_done = True
 
     def test_enrich_raw_items(self):
         """ Check the number of raw items and enriched items """
+
+        # First collect and enrich the items
+        self.__collect_and_enrich()
+
         morderer = Mordred(CONF_FILE)
         repos_backend = morderer._get_repos_by_backend()
         for backend in repos_backend:

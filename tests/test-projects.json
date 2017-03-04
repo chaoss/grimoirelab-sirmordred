@@ -19,7 +19,7 @@
             "review.openstack.org"
         ],
         "git": [
-            "https://github.com/VizGrimoire/GrimoireLib",
+            "https://github.com/VizGrimoire/GrimoireLib --filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
             "https://github.com/MetricsGrimoire/CMetrics"
         ],
         "github": [
@@ -29,8 +29,8 @@
         "google_hits": [
             ""
         ],
-        "irc": [
-            "openshift ~/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift"
+        "hyperkitty": [
+            "https://lists.mailman3.org/archives/list/mailman-users@mailman3.org"
         ],
         "*jenkins": [
             "http://jenkins.cyanogenmod.com/"
@@ -41,11 +41,8 @@
         "jira": [
             "https://tickets.puppetlabs.com"
         ],
-        "kitsune": [
-            "https://support.mozilla.org"
-        ],
         "mbox": [
-            "metrics-grimoire /home/acs/.perceval/mbox"
+            "metrics-grimoire /home/bitergia/.perceval/mbox"
         ],
         "mediawiki": [
             "https://wiki.mozilla.org"
@@ -53,11 +50,20 @@
         "meetup": [
             "Software-Development-Analytics"
         ],
+        "mozillaclub": [
+            "https://spreadsheets.google.com/feeds/cells/1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json"
+        ],
+        "nntp": [
+            "news.mozilla.org mozilla.dev.project-link"
+        ],
         "phabricator": [
             "https://phabricator.wikimedia.org"
         ],
         "pipermail": [
             "https://mail.gnome.org/archives/libart-hackers/"
+        ],
+        "puppetforge": [
+            ""
         ],
         "redmine": [
             "http://tracker.ceph.com/"
@@ -73,7 +79,7 @@
             "https://stackoverflow.com/questions/tagged/rdo"
         ],
         "supybot": [
-            "openshift ./irc/percevalbot/logs/ChannelLogger/freenode/#openshift/"
+            "openshift /home/bitergia/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift/"
         ],
         "telegram": [
             "Mozilla_analytics"
