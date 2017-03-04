@@ -189,7 +189,7 @@ class Mordred:
 
         return gelk_backends + extra_backends
 
-    def __get_repos_by_backend(self):
+    def _get_repos_by_backend(self):
         #
         # return dict with backend and list of repositories
         #
@@ -264,7 +264,7 @@ class Mordred:
 
         # launching threads for tasks by backend
         if len(backend_tasks) > 0:
-            repos_backend = self.__get_repos_by_backend()
+            repos_backend = self._get_repos_by_backend()
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
                 t = TasksManager(backend_tasks, backend, repos_backend[backend],
