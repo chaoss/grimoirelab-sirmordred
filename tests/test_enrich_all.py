@@ -25,6 +25,7 @@ import logging
 import sys
 import tarfile
 import unittest
+import shutil
 
 import requests
 
@@ -53,26 +54,39 @@ logger = logging.getLogger(__name__)
 class TestTaskEnrichAll(unittest.TestCase):
     """ This class will test the results of full enrichments """
 
+    @classmethod
+    def setUpClass(cls):
+        cls.__install_perceval_cache()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.__restore_perceval_cache()
+
+    @classmethod
+    def __install_perceval_cache(self):
+        logger.info("Installing the perceval cache")
+        tfile = tarfile.open(PERCEVAL_CACHE_FILE, 'r:gz')
+        # The cache is extracted in the default place perceval uses
+        # We must use a different place but it is not easy to change that
+        # because it is not configurable now in TaskRawDataCollection
+        tfile.extractall("/tmp")
+        shutil.move(join(PERCEVAL_CACHE, "cache"), join(PERCEVAL_CACHE, "cache.orig"))
+        shutil.move("/tmp/perceval-cache/cache", PERCEVAL_CACHE)
+        logger.info("Installed the perceval cache in %s", PERCEVAL_CACHE)
+
+    @classmethod
+    def __restore_perceval_cache(self):
+        logger.info("Restoring the perceval cache")
+        shutil.rmtree(join(PERCEVAL_CACHE, "cache"))
+        shutil.move(join(PERCEVAL_CACHE, "cache.orig"), join(PERCEVAL_CACHE, "cache"))
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.enrich_already_done = False
-        self.cache_already_installed = False
-
-    def __install_perceval_cache(self):
-        if not self.cache_already_installed:
-            logging.info("Installing the perceval cache")
-            tfile = tarfile.open(PERCEVAL_CACHE_FILE, 'r:gz')
-            # The cache is extracted in the default place perceval uses
-            # We must use a different place but it is not easy to change that
-            # because it is not configurable now in TaskRawDataCollection
-            tfile.extractall(PERCEVAL_CACHE)
-            logging.info("Installed the perceval cache in %s", PERCEVAL_CACHE)
-            self.cache_already_installed = True
 
     def __collect_and_enrich(self):
         """Execute the enrich process for all backends active"""
         if not self.enrich_already_done:
-            self.__install_perceval_cache()
             morderer = Mordred(CONF_FILE)
             repos_backend = morderer._get_repos_by_backend()
             for backend in repos_backend:
@@ -109,3 +123,4 @@ class TestTaskEnrichAll(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(warnings='ignore')
+    print("ENDDD")
