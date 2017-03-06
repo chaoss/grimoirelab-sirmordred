@@ -17,7 +17,7 @@ RUN apt-get update && \
     apt-get -y install --no-install-recommends \
         bash locales \
         git git-core \
-        tree ccze \
+        tree ccze g++\
         psmisc \
         python python3 pep8 \
         python3-gdbm \
