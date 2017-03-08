@@ -68,7 +68,7 @@ class TaskIdentitiesCollection(Task):
         backend_conf = self.conf[self.backend_section]
 
         if 'collect' in backend_conf and not backend_conf['collect']:
-            logger.error ("Don't load ids from a backend without collection %s", self.backend_section)
+            logger.info ("Don't load ids from a backend without collection %s", self.backend_section)
             return
 
         if self.load_ids:
