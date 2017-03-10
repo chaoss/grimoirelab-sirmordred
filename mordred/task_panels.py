@@ -261,12 +261,11 @@ class TaskPanelsMenu(Task):
         omenu = OrderedDict()
         if 'kibana' in self.conf and self.conf['kibana'] == '5':
             # Kibana5 menu version
-            # First Main with Overview, Data Status and About
-            omenu["Main"] = {"Overview": self.menu_panels_common['Overview']}
-            omenu["Main"].update({"Data Status": self.menu_panels_common['Data Status']})
-            omenu["Main"].update({"About": self.menu_panels_common['About']})
+            omenu["Overview"] = self.menu_panels_common['Overview']
             ds_menu = self.__get_menu_entries()
             omenu.update(ds_menu)
+            omenu["Data Status"] = self.menu_panels_common['Data Status']
+            omenu["About"] = self.menu_panels_common['About']
         else:
             # First the Overview
             omenu["Overview"] = self.menu_panels_common['Overview']
