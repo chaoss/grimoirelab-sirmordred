@@ -379,7 +379,7 @@ class Mordred:
             logger.error(var)
 
         if self.conf['panels_on']:
-            tasks_cls = [TaskPanels]
+            tasks_cls = [TaskPanels, TaskPanelsMenu]
             self.execute_tasks(tasks_cls)
 
         logger.debug(' - - ')
