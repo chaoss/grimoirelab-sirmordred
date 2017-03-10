@@ -100,7 +100,8 @@ class TaskPanels(Task):
         # Panels are extracted from the global menu file
         self.panels = {}
         for ds in self.panels_menu:
-            self.panels[ds['source']] = []
+            if ds['source'] not in self.panels:
+                self.panels[ds['source']] = []
             for entry in ds['menu']:
                 self.panels[ds['source']].append(entry['panel'])
 
