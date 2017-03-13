@@ -46,7 +46,7 @@ class TaskIdentitiesCollection(Task):
     def __init__(self, conf, load_ids=True):
         super().__init__(conf)
 
-        #self.load_orgs = self.conf['sh_load_orgs']  # Load orgs from file
+        #self.load_orgs = self.conf['sortinghat']['load_orgs']  # Load orgs from file
         self.load_ids = load_ids  # Load identities from raw index
         #self.unify = unify  # Unify identities
         #self.autoprofile = autoprofile  # Execute autoprofile
@@ -85,7 +85,7 @@ class TaskIdentitiesInit(Task):
     def __init__(self, conf):
         super().__init__(conf)
 
-        self.load_orgs = self.conf['sh_load_orgs']  # Load orgs from file
+        self.load_orgs = self.conf['sortinghat']['load_orgs']  # Load orgs from file
         self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
                         'database': self.db_sh, 'host': self.db_host,
                         'port': None}
@@ -99,14 +99,14 @@ class TaskIdentitiesInit(Task):
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if self.load_orgs:
-            logger.info("[sortinghat] Loading orgs from file %s", self.conf['sh_orgs_file'])
-            code = Load(**self.sh_kwargs).run("--orgs", self.conf['sh_orgs_file'])
+            logger.info("[sortinghat] Loading orgs from file %s", self.conf['sortinghat']['orgs_file'])
+            code = Load(**self.sh_kwargs).run("--orgs", self.conf['sortinghat']['orgs_file'])
             if code != CMD_SUCCESS:
-                logger.error("[sortinghat] Error loading %s", self.conf['sh_orgs_file'])
+                logger.error("[sortinghat] Error loading %s", self.conf['sortinghat']['orgs_file'])
             #FIXME get the number of loaded orgs
 
         if 'sh_ids_file' in self.conf.keys():
-            filenames = self.conf['sh_ids_file'].split(',')
+            filenames = self.conf['sortinghat']['ids_file'].split(',')
             for f in filenames:
                 logger.info("[sortinghat] Loading identities from file %s", f)
                 f = f.replace(' ','')
@@ -150,12 +150,12 @@ class TaskIdentitiesMerge(Task):
 
     def execute(self):
         if self.unify:
-            for algo in self.conf['sh_matching']:
-                kwargs = {'matching':algo, 'fast_matching':True}
-                logger.info("[sortinghat] Unifying identities using algorithm %s", kwargs['matching'])
-                code = Unify(**self.sh_kwargs).unify(**kwargs)
-                if code != CMD_SUCCESS:
-                    logger.error("[sortinghat] Error in unify %s", kwargs)
+            algo = self.conf['sortinghat']['matching']
+            kwargs = {'matching':algo, 'fast_matching':True}
+            logger.info("[sortinghat] Unifying identities using algorithm %s", kwargs['matching'])
+            code = Unify(**self.sh_kwargs).unify(**kwargs)
+            if code != CMD_SUCCESS:
+                logger.error("[sortinghat] Error in unify %s", kwargs)
 
         if self.affiliate:
             # Global enrollments using domains
@@ -169,8 +169,8 @@ class TaskIdentitiesMerge(Task):
             if not 'sh_autoprofile' in self.conf:
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
-                logger.info("[sortinghat] Executing autoprofile: %s", self.conf['sh_autoprofile'])
-                sources = self.conf['sh_autoprofile']
+                logger.info("[sortinghat] Executing autoprofile: %s", self.conf['sortinghat']['autoprofile'])
+                sources = self.conf['sortinghat']['autoprofile']
                 code = AutoProfile(**self.sh_kwargs).autocomplete(sources)
                 if code != CMD_SUCCESS:
                     logger.error("Error in autoprofile %s", kwargs)
@@ -180,8 +180,8 @@ class TaskIdentitiesMerge(Task):
                 logger.info("[sortinghat] Bots name list not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Marking bots: %s",
-                            self.conf['sh_bots_names'])
-                for name in self.conf['sh_bots_names']:
+                            self.conf['sortinghat']['bots_names'])
+                for name in self.conf['sortinghat']['bots_names']:
                     # First we need the uuids for the profile name
                     uuids = self.__get_uuids_from_profile_name(name)
                     # Then we can modify the profile setting bot flag
@@ -191,8 +191,8 @@ class TaskIdentitiesMerge(Task):
                 # For quitting the bot flag - debug feature
                 if 'sh_no_bots_names' in self.conf:
                     logger.info("[sortinghat] Removing Marking bots: %s",
-                                self.conf['sh_no_bots_names'])
-                    for name in self.conf['sh_no_bots_names']:
+                                self.conf['sortinghat']['no_bots_names'])
+                    for name in self.conf['sortinghat']['no_bots_names']:
                         uuids = self.__get_uuids_from_profile_name(name)
                         profile = {"is_bot": False}
                         for uuid in uuids:

@@ -149,7 +149,7 @@ class TaskPanels(Task):
         """ Create aliases in ElasticSearch used by the panels """
         real_alias = self.backend_section.replace(":","_")  # remo:activities -> remo_activities
         es_col_url = self._get_collection_url()
-        es_enrich_url = self.conf['es_enrichment']
+        es_enrich_url = self.conf['es_enrichment']['url']
 
         index_raw = self.conf[self.backend_section]['raw_index']
         index_enrich = self.conf[self.backend_section]['enriched_index']
@@ -177,11 +177,11 @@ class TaskPanels(Task):
         # Create the commons panels
         # TODO: do it only one time, not for every backend
         for panel_file in self.panels_common:
-            import_dashboard(self.conf['es_enrichment'], panel_file)
+            import_dashboard(self.conf['es_enrichment']['url'], panel_file)
         # Create the panels which uses the aliases as data source
         if self.backend_section in self.panels:
             for panel_file in self.panels[self.get_backend(self.backend_section)]:
-                import_dashboard(self.conf['es_enrichment'], panel_file)
+                import_dashboard(self.conf['es_enrichment']['url'], panel_file)
         else:
             logger.warning("No panels found for %s", self.backend_section)
 
@@ -224,7 +224,7 @@ class TaskPanelsMenu(Task):
     def __create_dashboard_menu(self, dash_menu):
         """ Create the menu definition to access the panels in a dashboard """
         logger.info("Adding dashboard menu definition")
-        menu_url = urljoin(self.conf['es_enrichment'] + "/", ".kibana/metadashboard/main")
+        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
         r = requests.post(menu_url, data=json.dumps(dash_menu))
         r.raise_for_status()
@@ -232,7 +232,7 @@ class TaskPanelsMenu(Task):
     def __remove_dashboard_menu(self):
         """ The dashboard must be removed before creating a new one """
         logger.info("Remove dashboard menu definition")
-        menu_url = urljoin(self.conf['es_enrichment'] + "/" , ".kibana/metadashboard/main")
+        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/" , ".kibana/metadashboard/main")
         requests.delete(menu_url)
 
     def __get_menu_entries(self):
@@ -241,12 +241,12 @@ class TaskPanelsMenu(Task):
         for entry in self.panels_menu:
             if entry['source'] not in self.data_sources:
                 continue
-            if 'kibana' in self.conf and self.conf['kibana'] == '5':
+            if 'kibana' in self.conf and self.conf['general']['kibana'] == '5':
                 menu_entries[entry['name']] = {}
             for subentry in entry['menu']:
                 dash_name = get_dashboard_name(subentry['panel'])
                 # The name for the entry is in self.panels_menu
-                if 'kibana' in self.conf and self.conf['kibana'] == '5':
+                if 'kibana' in self.conf and self.conf['general']['kibana'] == '5':
                     menu_entries[entry['name']][subentry['name']] = dash_name
                 else:
                     menu_entries[dash_name] = dash_name
@@ -259,7 +259,7 @@ class TaskPanelsMenu(Task):
         current_menu = {}
 
         omenu = OrderedDict()
-        if 'kibana' in self.conf and self.conf['kibana'] == '5':
+        if 'kibana' in self.conf and self.conf['general']['kibana'] == '5':
             # Kibana5 menu version
             omenu["Overview"] = self.menu_panels_common['Overview']
             ds_menu = self.__get_menu_entries()

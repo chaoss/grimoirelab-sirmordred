@@ -80,17 +80,17 @@ class TaskEnrich(Task):
                                 cfg[self.backend_section]['raw_index'],
                                 cfg[self.backend_section]['enriched_index'],
                                 None, #projects_db is deprecated
-                                cfg['projects_file'],
-                                cfg['sh_database'],
+                                cfg['projects']['projects_file'],
+                                cfg['sortinghat']['database'],
                                 no_incremental, only_identities,
                                 github_token,
                                 False, # studies are executed in its own Task
                                 only_studies,
-                                cfg['es_enrichment'],
+                                cfg['es_enrichment']['url'],
                                 None, #args.events_enrich
-                                cfg['sh_user'],
-                                cfg['sh_password'],
-                                cfg['sh_host'],
+                                cfg['sortinghat']['user'],
+                                cfg['sortinghat']['password'],
+                                cfg['sortinghat']['host'],
                                 None, #args.refresh_projects,
                                 None, #args.refresh_identities,
                                 author_id=None,
@@ -139,7 +139,7 @@ class TaskEnrich(Task):
             return
 
         self.__enrich_items()
-        if self.conf['autorefresh_on']:
+        if self.conf['es_enrichment']['autorefresh']:
             self.__autorefresh()
-        if self.conf['studies_on']:
+        if self.conf['es_enrichment']['studies']:
             self.__studies()

@@ -37,10 +37,10 @@ class Task():
     def __init__(self, conf):
         self.backend_section = None
         self.conf = conf
-        self.db_sh = self.conf['sh_database']
-        self.db_user = self.conf['sh_user']
-        self.db_password = self.conf['sh_password']
-        self.db_host = self.conf['sh_host']
+        self.db_sh = self.conf['sortinghat']['database']
+        self.db_user = self.conf['sortinghat']['user']
+        self.db_password = self.conf['sortinghat']['password']
+        self.db_host = self.conf['sortinghat']['host']
 
     def is_backend_task(self):
         """
@@ -109,7 +109,7 @@ class Task():
         return params
 
     def _get_collection_url(self):
-        es_col_url = self.conf['es_collection']
+        es_col_url = self.conf['es_collection']['url']
         if self.backend_section and self.backend_section in self.conf:
             if 'es_collection_url' in self.conf[self.backend_section]:
                 es_col_url = self.conf[self.backend_section]['es_collection_url']
@@ -125,7 +125,7 @@ class Task():
 
         enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
                                       self.db_user, self.db_password, self.db_host)
-        elastic_enrich = get_elastic(self.conf['es_enrichment'],
+        elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
                                      self.conf[self.backend_section]['enriched_index'],
                                      clean, enrich_backend)
         enrich_backend.set_elastic(elastic_enrich)

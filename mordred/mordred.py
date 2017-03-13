@@ -70,7 +70,7 @@ class Mordred:
             else:
                 return uri
 
-        es = self.conf['es_collection']
+        es = self.conf['es_collection']['url']
         try:
             r = requests.get(es, verify=False)
             if r.status_code != 200:
@@ -79,8 +79,9 @@ class Mordred:
             raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
-        if self.conf['enrichment_on'] or self.conf['studies_on']:
-            es = self.conf['es_enrichment']
+        if self.conf['phases']['enrichment'] or \
+           self.conf['es_enrichment']['studies']:
+            es = self.conf['es_enrichment']['url']
             try:
                 r = requests.get(es, verify=False)
                 if r.status_code != 200:
@@ -94,7 +95,7 @@ class Mordred:
         # return dict with backend and list of repositories
         #
         output = {}
-        projects = self.conf['projects']
+        projects = self.conf['projects_data']
 
         for backend_section in Config.get_backend_sections():
             for pro in projects:
@@ -125,7 +126,9 @@ class Mordred:
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], self.conf['min_update_delay'], False)
+        self.execute_batch_tasks(tasks_cls,
+                                 self.conf['sortinghat']['sleep_for'],
+                                 self.conf['general']['min_update_delay'], False)
 
     def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
         """
@@ -236,7 +239,7 @@ class Mordred:
         # we get all the items with Perceval + identites browsing the
         # raw items
 
-        if self.conf['identities_on']:
+        if self.conf['phases']['identities']:
             tasks_cls = [TaskIdentitiesInit]
             self.execute_tasks(tasks_cls)
 
@@ -246,9 +249,9 @@ class Mordred:
         # could have all of them crashed and this piece of code should
         # be smart enough to stop the execution. #FIXME
         try:
-            if self.conf['collection_on']:
+            if self.conf['phases']['collection']:
                 tasks_cls = [TaskRawDataCollection]
-                if self.conf['identities_on']:
+                if self.conf['phases']['identities']:
                     tasks_cls.append(TaskIdentitiesCollection)
                 all_tasks_cls += tasks_cls
                 self.execute_tasks(tasks_cls)
@@ -258,7 +261,7 @@ class Mordred:
             var = traceback.format_exc()
             logger.error(var)
 
-        if self.conf['identities_on']:
+        if self.conf['phases']['identities']:
             tasks_cls = [TaskIdentitiesMerge]
             all_tasks_cls += tasks_cls
             self.execute_tasks(tasks_cls)
@@ -266,7 +269,7 @@ class Mordred:
         # handling this exception adds the same issue as above with the
         # exception for DataCollectionError. So this is another #FIXME
         try:
-            if self.conf['enrichment_on']:
+            if self.conf['phases']['enrichment']:
                 # raw items + sh database with merged identities + affiliations
                 # will used to produce a enriched index
                 tasks_cls = [TaskEnrich]
@@ -278,7 +281,7 @@ class Mordred:
             var = traceback.format_exc()
             logger.error(var)
 
-        if self.conf['panels_on']:
+        if self.conf['phases']['panels']:
             tasks_cls = [TaskPanels, TaskPanelsMenu]
             self.execute_tasks(tasks_cls)
 
@@ -288,7 +291,7 @@ class Mordred:
 
         # this is the main loop, where the execution should spend
         # most of its time
-        while self.conf['update']:
+        while self.conf['general']['update']:
             try:
                 self.execute_nonstop_tasks(all_tasks_cls)
 

@@ -24,7 +24,6 @@
 import configparser
 import json
 import logging
-import sys
 
 from grimoire_elk.utils import get_connectors
 
@@ -39,8 +38,186 @@ class Config():
 
     def __init__(self, conf_file):
         self.conf_file = conf_file
-        self.conf = None
+        self.raw_conf = None
         self.conf = self.__read_conf_files()
+
+    @classmethod
+    def backend_section_params(self):
+        # Params that must exists in all backends
+        params = {
+            "enriched_index": {
+                "optional": False,
+                "default": None
+            },
+            "raw_index": {
+                "optional": False,
+                "default": None
+            },
+            "fetch-cache": {
+                "optional": True,
+                "default": True
+            }
+        }
+
+        return params
+
+    @classmethod
+    def general_params(cls):
+        """ Define all the possible config params """
+
+        optional_none = {
+            "optional": True,
+            "default": None
+        }
+        no_optional_true = {
+            "optional": False,
+            "default": True
+        }
+
+        params = {
+            "es_collection": {
+                "password": optional_none,
+                "user": optional_none,
+                "url": {
+                    "optional": False,
+                    "default": "http://172.17.0.1:9200"
+                }
+            },
+            "es_enrichment": {
+                "url": {
+                    "optional": False,
+                    "default": "http://172.17.0.1:9200"
+                },
+                "studies": optional_none,
+                "autorefresh": optional_none,
+                "user": optional_none,
+                "password": optional_none
+            },
+            "general": {
+                "sleep": optional_none,  # we are not using it
+                "min_update_delay": {
+                    "optional": True,
+                    "default": 60
+                },
+                "kibana":  {
+                    "optional": True,
+                    "default": 5
+                },
+                "update":  {
+                    "optional": False,
+                    "default": False
+                },
+                "short_name": {
+                    "optional": False,
+                    "default": "Short name"
+                },
+                "debug": {
+                    "optional": False,
+                    "default": True
+                },
+                "from_date": optional_none,  # per data source param now
+                "logs_dir": {
+                    "optional": False,
+                    "default": "logs"
+                },
+            },
+            "phases": {
+                "identities": no_optional_true,
+                "panels": no_optional_true,
+                "collection": no_optional_true,
+                "enrichment": no_optional_true
+            },
+            "projects": {
+                "projects_file": {
+                    "optional": False,
+                    "default": "projects.json"
+                },
+            },
+            "sortinghat": {
+                "unaffiliated_group": {
+                    "optional": False,
+                    "default": "Unknown"
+                },
+                "unify_method": {
+                    "optional": False,
+                    "default": "fast-matching"
+                },
+                "matching": {
+                    "optional": False,
+                    "default": "email"
+                },
+                "sleep_for": {
+                    "optional": False,
+                    "default": 3600
+                },
+                "database": {
+                    "optional": False,
+                    "default": "sortinghat_db"
+                },
+                "host": {
+                    "optional": False,
+                    "default": "mariadb"
+                },
+                "user": {
+                    "optional": False,
+                    "default": "root"
+                },
+                "password": {
+                    "optional": False,
+                    "default": ""
+                },
+                "autoprofile": {
+                    "optional": False,
+                    "default": "customer, git, github"
+                },
+                "load_orgs": {
+                    "optional": True,
+                    "default": False
+                },
+                "orgs_file": optional_none,
+                "bots_names": optional_none
+            }
+        }
+
+        return params
+
+
+    @classmethod
+    def create_config_file(cls, file_path):
+        logger.info("Creating config file in %s", file_path)
+        general_sections = cls.general_params()
+        backend_sections = cls.get_backend_sections()
+
+        parser = configparser.ConfigParser()
+
+        sections = list(general_sections.keys())
+        sections.sort()
+        for section_name in sections:
+            parser.add_section(section_name)
+            section = general_sections[section_name]
+            params = list(section.keys())
+            params.sort()
+            for param in params:
+                parser.set(section_name, param, str(section[param]["default"]))
+
+        sections = backend_sections
+        sections.sort()
+        backend_params = cls.backend_section_params()
+        params = list(cls.backend_section_params().keys())
+        params.sort()
+        for section_name in sections:
+            parser.add_section(section_name)
+            for param in params:
+                if param == "enriched_index":
+                    val = section_name
+                elif param == "raw_index":
+                    val = section_name+"-raw"
+                else:
+                    val = backend_params[param]['default']
+                parser.set(section_name, param, str(val))
+
+        with open(file_path, "w") as f:
+            parser.write(f)
 
     def get_conf(self):
         return self.conf
@@ -54,85 +231,81 @@ class Config():
 
         return gelk_backends + extra_backends
 
+    @classmethod
+    def check_config(cls, config):
+        # First let's check all common sections entries
+        check_params = cls.general_params()
+        backend_sections = cls.get_backend_sections()
+
+        for section in config.keys():
+            if section in backend_sections or section[1:] in backend_sections:
+                # backend_section or *backend_section, to be checked later
+                continue
+            if section not in check_params.keys():
+                raise RuntimeError("Wrong section:", section)
+            # Check the params for the section
+            for param in config[section].keys():
+                if param not in check_params[section]:
+                    raise RuntimeError("Wrong section param:", section, param)
+            for param in check_params[section]:
+                if param not in config[section].keys():
+                    if not check_params[section][param]['optional']:
+                        raise RuntimeError("Missing section param:", section, param)
+
+        # And now the backend_section entries
+        # A backend section entry could have specific perceval params which are
+        # not checked
+        check_params = cls.backend_section_params()
+        for section in config.keys():
+            if section in backend_sections or section[1:] in backend_sections:
+                # backend_section or *backend_section
+                for param in check_params:
+                    if param not in config[section].keys():
+                        if not check_params[param]['optional']:
+                            raise RuntimeError("Missing section param:", section, param)
+
+
+    def __add_types(self, raw_conf):
+        """ Convert to int, boolean, list types config items """
+
+        typed_conf = {}
+
+        for s in raw_conf.keys():
+            typed_conf[s] = {}
+            for option in raw_conf[s]:
+                val = raw_conf[s][option]
+                # Check list
+                if ',' in val:
+                    typed_conf[s][option] = val.replace(' ', '').split(',')
+                # Check boolean
+                elif val in ['true', 'false']:
+                    typed_conf[s][option] = True if val == 'true' else False
+                # Check int
+                else:
+                    try:
+                        typed_conf[s][option] = int(val)
+                    except ValueError:
+                        typed_conf[s][option] = val
+
+        return typed_conf
+
     def __read_conf_files(self):
-        conf = {}
-
         logger.debug("Reading conf files")
-        config = configparser.ConfigParser()
-        config.read(self.conf_file)
-        logger.debug(config.sections())
+        parser = configparser.ConfigParser()
+        parser.read(self.conf_file)
+        raw_conf = {s:dict(parser.items(s)) for s in parser.sections()}
+        config = self.__add_types(raw_conf)
 
-        if 'min_update_delay' in config['general'].keys():
-            conf['min_update_delay'] = config.getint('general','min_update_delay')
-        else:
+        self.check_config(config)
+
+        if 'min_update_delay' not in config['general'].keys():
             # if no parameter is included, the update won't be performed more
             # than once every minute
-            conf['min_update_delay'] = 60
+            config['general']['min_update_delay'] = 60
 
-        # FIXME: Read all options in a generic way
-        conf['es_collection'] = config.get('es_collection', 'url')
-        conf['es_enrichment'] = config.get('es_enrichment', 'url')
-        conf['autorefresh_on'] = config.getboolean('es_enrichment', 'autorefresh')
-        conf['studies_on'] = config.getboolean('es_enrichment', 'studies')
-
-        projects_file = config.get('projects','projects_file')
-        conf['projects_file'] = projects_file
-        with open(projects_file,'r') as fd:
+        projects_file = config['projects']['projects_file']
+        with open(projects_file, 'r') as fd:
             projects = json.load(fd)
-        conf['projects'] = projects
+        config['projects_data'] = projects
 
-        conf['collection_on'] = config.getboolean('phases','collection')
-        conf['identities_on'] = config.getboolean('phases','identities')
-        conf['enrichment_on'] = config.getboolean('phases','enrichment')
-        conf['panels_on'] = config.getboolean('phases','panels')
-
-        conf['update'] = config.getboolean('general','update')
-        try:
-            conf['kibana'] = config.get('general','kibana')
-        except configparser.NoOptionError:
-            pass
-
-        conf['sh_bots_names'] = config.get('sortinghat', 'bots_names').split(',')
-        # Optional config params
-        try:
-            conf['sh_no_bots_names'] = config.get('sortinghat', 'no_bots_names').split(',')
-        except configparser.NoOptionError:
-            pass
-        conf['sh_database'] = config.get('sortinghat', 'database')
-        conf['sh_host'] = config.get('sortinghat', 'host')
-        conf['sh_user'] = config.get('sortinghat', 'user')
-        conf['sh_password'] = config.get('sortinghat', 'password')
-        aux_matching = config.get('sortinghat', 'matching')
-        conf['sh_matching'] = aux_matching.replace(' ', '').split(',')
-        aux_autoprofile = config.get('sortinghat', 'autoprofile')
-        conf['sh_autoprofile'] = aux_autoprofile.replace(' ', '').split(',')
-        conf['sh_orgs_file'] = config.get('sortinghat', 'orgs_file')
-        conf['sh_load_orgs'] = config.getboolean('sortinghat', 'load_orgs')
-
-        try:
-            conf['sh_sleep_for'] = config.getint('sortinghat','sleep_for')
-        except configparser.NoOptionError:
-            if conf['identities_on'] and conf['update']:
-                logger.error(SLEEPFOR_ERROR)
-            sys.exit(1)
-
-        try:
-            conf['sh_ids_file'] = config.get('sortinghat', 'identities_file')
-        except configparser.NoOptionError:
-            logger.info("No identities files")
-
-
-        for backend in Config.get_backend_sections():
-            try:
-                raw = config.get(backend, 'raw_index')
-                enriched = config.get(backend, 'enriched_index')
-                conf[backend] = {'raw_index':raw, 'enriched_index':enriched}
-                for p in config[backend]:
-                    try:
-                        conf[backend][p] = config.getboolean(backend, p)
-                    except ValueError:
-                        conf[backend][p] = config.get(backend, p)
-            except configparser.NoSectionError:
-                pass
-
-        return conf
+        return config
