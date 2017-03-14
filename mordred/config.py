@@ -135,8 +135,8 @@ class Config():
                     "optional": False,
                     "default": "Unknown"
                 },
-                "unify_method": {
-                    "optional": False,
+                "unify_method": {  # not used
+                    "optional": True,
                     "default": "fast-matching"
                 },
                 "matching": {
@@ -275,9 +275,9 @@ class Config():
                     # It is a string
                     typed_conf[s][option] = val[1:-1]
                 # Check list
-                elif ',' in val:
-                    # "a,b" is a string, not a list
-                    typed_conf[s][option] = val.replace(' ', '').split(',')
+                elif len(val) > 1 and (val[0] == '[' and val[-1] == ']'):
+                    # List value
+                    typed_conf[s][option] = val[1:-1].replace(' ', '').split(',')
                 # Check boolean
                 elif val.lower() in ['true', 'false']:
                     typed_conf[s][option] = True if val.lower() == 'true' else False
@@ -291,7 +291,6 @@ class Config():
                     except ValueError:
                         # Is a string
                         typed_conf[s][option] = val
-
         return typed_conf
 
     def __read_conf_files(self):

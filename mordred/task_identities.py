@@ -150,12 +150,12 @@ class TaskIdentitiesMerge(Task):
 
     def execute(self):
         if self.unify:
-            algo = self.conf['sortinghat']['matching']
-            kwargs = {'matching':algo, 'fast_matching':True}
-            logger.info("[sortinghat] Unifying identities using algorithm %s", kwargs['matching'])
-            code = Unify(**self.sh_kwargs).unify(**kwargs)
-            if code != CMD_SUCCESS:
-                logger.error("[sortinghat] Error in unify %s", kwargs)
+            for algo in self.conf['sortinghat']['matching']:
+                kwargs = {'matching':algo, 'fast_matching':True}
+                logger.info("[sortinghat] Unifying identities using algorithm %s", kwargs['matching'])
+                code = Unify(**self.sh_kwargs).unify(**kwargs)
+                if code != CMD_SUCCESS:
+                    logger.error("[sortinghat] Error in unify %s", kwargs)
 
         if self.affiliate:
             # Global enrollments using domains
@@ -166,7 +166,7 @@ class TaskIdentitiesMerge(Task):
 
 
         if self.autoprofile:
-            if not 'sh_autoprofile' in self.conf:
+            if not 'autoprofile' in self.conf['sortinghat']:
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Executing autoprofile: %s", self.conf['sortinghat']['autoprofile'])
@@ -176,7 +176,7 @@ class TaskIdentitiesMerge(Task):
                     logger.error("Error in autoprofile %s", kwargs)
 
         if self.bots:
-            if not 'sh_bots_names' in self.conf:
+            if not 'bots_names' in self.conf['sortinghat']:
                 logger.info("[sortinghat] Bots name list not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Marking bots: %s",
