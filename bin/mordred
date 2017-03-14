@@ -113,37 +113,6 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-
-def log_conf_from(config_file):
-
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    try:
-        logs_dir = config.get('general','logs_dir')
-    except:
-        print("Error reading the configuration file %s: 'logs_dir' variable in 'general' section is missing"% (str(config_file)))
-        sys.exit(1)
-
-    try:
-        debug_mode = config.getboolean('general', 'debug')
-    except:
-        debug_mode = False
-    return logs_dir, debug_mode
-
-def debug__dir_from(config_file):
-
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    try:
-        logs_dir = config.get('general','logs_dir')
-    except:
-        print("Error reading the configuration file %s: 'logs_dir' variable in 'general' section is missing"% (str(config_file)))
-        sys.exit(1)
-    return logs_dir
-
-
 if __name__ == '__main__':
     args = parse_args()
     if args.config_template_file is not None:
@@ -154,7 +123,10 @@ if __name__ == '__main__':
         logger.error("Option -t or -c is required")
         sys.exit(1)
 
-    logs_dir, debug_mode = log_conf_from(args.config_file)
+    config = Config(args.config_file).get_conf()
+    logs_dir = config['general']['logs_dir']
+    debug_mode = config['general']['debug']
+
     logger = setup_logs(logs_dir, debug_mode)
     obj = Mordred(args.config_file)
     try:

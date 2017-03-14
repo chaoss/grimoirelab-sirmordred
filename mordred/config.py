@@ -18,8 +18,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # Authors:
-#     Alvaro del Castillo <acs@bitergia.com>
-#     Luis Cañas-Díaz <lcanas@bitergia.com>
+#       Alvaro del Castillo <acs@bitergia.com>
+#       Luis Cañas-Díaz <lcanas@bitergia.com>
 
 import configparser
 import json
@@ -28,9 +28,6 @@ import logging
 from grimoire_elk.utils import get_connectors
 
 logger = logging.getLogger(__name__)
-
-SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
-"""need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
 
 
 class Config():
@@ -266,7 +263,7 @@ class Config():
 
 
     def __add_types(self, raw_conf):
-        """ Convert to int, boolean, list types config items """
+        """ Convert to int, boolean, list, None types config items """
 
         typed_conf = {}
 
@@ -275,16 +272,21 @@ class Config():
             for option in raw_conf[s]:
                 val = raw_conf[s][option]
                 # Check list
-                if ',' in val:
+                if ',' in val and val[0] != '"':
+                    # "a,b" is a string, not a list
                     typed_conf[s][option] = val.replace(' ', '').split(',')
                 # Check boolean
-                elif val in ['true', 'false']:
-                    typed_conf[s][option] = True if val == 'true' else False
-                # Check int
+                elif val.lower() in ['true', 'false']:
+                    typed_conf[s][option] = True if val.lower() == 'true' else False
+                # Check None
+                elif val.lower() is 'none':
+                    typed_conf[s][option] = None
                 else:
                     try:
+                        # Check int
                         typed_conf[s][option] = int(val)
                     except ValueError:
+                        # Is a string
                         typed_conf[s][option] = val
 
         return typed_conf
