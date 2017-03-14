@@ -81,9 +81,6 @@ class Task():
         return params
 
     def _compose_perceval_params(self, backend_section, repo):
-        # Params that are lists separated by white space
-        list_params_spaces = ['blacklist-jobs']
-
         backend = self.get_backend(backend_section)
         connector = get_connector_from_name(backend)
         ocean = connector[1]
@@ -98,11 +95,12 @@ class Task():
                 continue
             params.append("--"+p)
             if self.conf[backend_section][p]:
+                # If param is boolean, no values must be added
                 if type(self.conf[backend_section][p]) != bool:
-                    if p in list_params_spaces:
+                    if type(self.conf[backend_section][p]) == list:
                         # '--blacklist-jobs', 'a', 'b', 'c'
                         # 'a', 'b', 'c' must be added as items in the list
-                        list_params = self.conf[backend_section][p].split()
+                        list_params = self.conf[backend_section][p]
                         params += list_params
                     else:
                         params.append(self.conf[backend_section][p])
