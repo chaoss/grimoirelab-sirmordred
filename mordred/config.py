@@ -271,8 +271,11 @@ class Config():
             typed_conf[s] = {}
             for option in raw_conf[s]:
                 val = raw_conf[s][option]
+                if len(val) > 1  and (val[0] == '"' and val[-1] == '"'):
+                    # It is a string
+                    typed_conf[s][option] = val[1:-1]
                 # Check list
-                if ',' in val and val[0] != '"':
+                elif ',' in val:
                     # "a,b" is a string, not a list
                     typed_conf[s][option] = val.replace(' ', '').split(',')
                 # Check boolean
