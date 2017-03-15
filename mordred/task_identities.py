@@ -105,8 +105,8 @@ class TaskIdentitiesInit(Task):
                 logger.error("[sortinghat] Error loading %s", self.conf['sortinghat']['orgs_file'])
             #FIXME get the number of loaded orgs
 
-        if 'sh_ids_file' in self.conf.keys():
-            filenames = self.conf['sortinghat']['ids_file'].split(',')
+        if 'identities_file' in self.conf['sortinghat']:
+            filenames = self.conf['sortinghat']['identities_file']
             for f in filenames:
                 logger.info("[sortinghat] Loading identities from file %s", f)
                 f = f.replace(' ','')
@@ -189,7 +189,7 @@ class TaskIdentitiesMerge(Task):
                     for uuid in uuids:
                         api.edit_profile(self.db, uuid, **profile)
                 # For quitting the bot flag - debug feature
-                if 'sh_no_bots_names' in self.conf:
+                if 'no_bots_names' in self.conf['sortinghat']:
                     logger.info("[sortinghat] Removing Marking bots: %s",
                                 self.conf['sortinghat']['no_bots_names'])
                     for name in self.conf['sortinghat']['no_bots_names']:

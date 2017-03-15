@@ -172,7 +172,9 @@ class Config():
                     "default": False
                 },
                 "orgs_file": optional_none,
-                "bots_names": optional_none
+                "identities_file": optional_none,
+                "bots_names": optional_none,
+                "no_bots_names": optional_none  # to clean bots in SH
             }
         }
 
