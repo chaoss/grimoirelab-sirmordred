@@ -76,7 +76,11 @@ class TaskPanels(Task):
         },
         "remo": {
             "raw":["remo-raw"],
-            "enrich":["remo", "remo2-events"]
+            "enrich":["remo", "remo2-events", "remo-events_metadata__timestamp"]
+        },
+        "remo:activities": {
+            "raw":["remo_activities-raw"],
+            "enrich":["remo-activities", "remo2-activities", "remo-activities_metadata__timestamp"]
         },
         "stackexchange": {
             "raw":["stackexchange-raw"],
