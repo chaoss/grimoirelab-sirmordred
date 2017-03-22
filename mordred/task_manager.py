@@ -89,6 +89,7 @@ class TasksManager(threading.Thread):
                 time.sleep(self.timer)
 
             for task in self.tasks:
+                logger.debug("Executing task %s", task)
                 try:
                     task.execute()
                 except Exception as ex:
