@@ -91,7 +91,8 @@ class TasksManager(threading.Thread):
             for task in self.tasks:
                 try:
                     task.execute()
-                except:
+                except Exception as ex:
+                    logger.error("Exception in Task Manager %s", ex)
                     TasksManager.COMM_QUEUE.put(sys.exc_info())
 
         logger.debug('Exiting Task Manager thread %s', self.backend_section)
