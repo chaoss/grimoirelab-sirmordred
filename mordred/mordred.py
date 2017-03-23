@@ -211,6 +211,69 @@ class Mordred:
             logger.error(exc_type)
             raise exc_obj
 
+    def __execute_initial_load(self):
+        """
+        The first time mordred execute the tasks it does it in a special way:
+        - It starts the threads to collect the data sources raw items
+        - It waits until all collect threads have finished
+        - It execute the identities tasks
+        - It waits until all identities tasks have finished
+        - It starts the threads to enrich the data sources raw items
+        - It waits until all identities tasks have finished
+        """
+
+        tasks_cls = []
+
+        # phase one
+        # we get all the items with Perceval + identites browsing the
+        # raw items
+
+        if self.conf['phases']['identities']:
+            tasks_cls = [TaskIdentitiesInit]
+            self.execute_tasks(tasks_cls)
+
+        # handling the exception below and continuing the execution is
+        # a bit unstable, we could have several threads collecting data
+        # and one of them crash, where this behaviour is ok. But we also
+        # could have all of them crashed and this piece of code should
+        # be smart enough to stop the execution. #FIXME
+        try:
+            if self.conf['phases']['collection']:
+                tasks_cls = [TaskRawDataCollection]
+                if self.conf['phases']['identities']:
+                    tasks_cls.append(TaskIdentitiesCollection)
+                self.execute_tasks(tasks_cls)
+
+        except DataCollectionError as e:
+            logger.error(str(e))
+            var = traceback.format_exc()
+            logger.error(var)
+
+        if self.conf['phases']['identities']:
+            tasks_cls = [TaskIdentitiesMerge]
+            self.execute_tasks(tasks_cls)
+
+        # handling this exception adds the same issue as above with the
+        # exception for DataCollectionError. So this is another #FIXME
+        try:
+            if self.conf['phases']['enrichment']:
+                # raw items + sh database with merged identities + affiliations
+                # will used to produce a enriched index
+                tasks_cls = [TaskEnrich]
+                self.execute_tasks(tasks_cls)
+
+        except DataEnrichmentError as e:
+            logger.error(str(e))
+            var = traceback.format_exc()
+            logger.error(var)
+
+        if self.conf['phases']['panels']:
+            tasks_cls = [TaskPanels, TaskPanelsMenu]
+            self.execute_tasks(tasks_cls)
+
+        return
+
+
     def run(self):
         """
         This method defines the workflow of Mordred. So it calls to:
@@ -232,58 +295,23 @@ class Mordred:
 
         # do we need ad-hoc scripts?
 
-        tasks_cls = []
+        # Initial round: collect -> identities -> enrich
+        if not self.conf['general']['skip_initial_load']:
+            self.__execute_initial_load()
+        else:
+            logging.warning("Skipping the initial load")
+
+
+        # Tasks to be executed during updating process
         all_tasks_cls = []
-
-        # phase one
-        # we get all the items with Perceval + identites browsing the
-        # raw items
-
+        if self.conf['phases']['collection']:
+            all_tasks_cls.append(TaskRawDataCollection)
         if self.conf['phases']['identities']:
-            tasks_cls = [TaskIdentitiesInit]
-            self.execute_tasks(tasks_cls)
-
-        # handling the exception below and continuing the execution is
-        # a bit unstable, we could have several threads collecting data
-        # and one of them crash, where this behaviour is ok. But we also
-        # could have all of them crashed and this piece of code should
-        # be smart enough to stop the execution. #FIXME
-        try:
+            all_tasks_cls.append(TaskIdentitiesMerge)
             if self.conf['phases']['collection']:
-                tasks_cls = [TaskRawDataCollection]
-                if self.conf['phases']['identities']:
-                    tasks_cls.append(TaskIdentitiesCollection)
-                all_tasks_cls += tasks_cls
-                self.execute_tasks(tasks_cls)
-
-        except DataCollectionError as e:
-            logger.error(str(e))
-            var = traceback.format_exc()
-            logger.error(var)
-
-        if self.conf['phases']['identities']:
-            tasks_cls = [TaskIdentitiesMerge]
-            all_tasks_cls += tasks_cls
-            self.execute_tasks(tasks_cls)
-
-        # handling this exception adds the same issue as above with the
-        # exception for DataCollectionError. So this is another #FIXME
-        try:
-            if self.conf['phases']['enrichment']:
-                # raw items + sh database with merged identities + affiliations
-                # will used to produce a enriched index
-                tasks_cls = [TaskEnrich]
-                all_tasks_cls += tasks_cls
-                self.execute_tasks(tasks_cls)
-
-        except DataEnrichmentError as e:
-            logger.error(str(e))
-            var = traceback.format_exc()
-            logger.error(var)
-
-        if self.conf['phases']['panels']:
-            tasks_cls = [TaskPanels, TaskPanelsMenu]
-            self.execute_tasks(tasks_cls)
+                all_tasks_cls.append(TaskIdentitiesCollection)
+        if self.conf['phases']['enrichment']:
+            all_tasks_cls.append(TaskEnrich)
 
         logger.debug(' - - ')
         logger.debug('Meeting point 0 reached')
