@@ -98,9 +98,10 @@ class TaskEnrich(Task):
                                 filter_raw=filter_raw,
                                 filters_raw_prefix=filters_raw_prefix,
                                 jenkins_rename_file=jenkins_rename_file)
-            except:
+            except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . " \
-                             "Using the backend_args: %s " % (self.backend_name, str(backend_args)))
+                             "Using the backend_args: %s " % (self.backend_section, str(backend_args)))
+                logger.error("Exception: %s", ex)
                 raise DataEnrichmentError('Failed to produce enriched data for %s' % self.backend_name)
 
         time.sleep(5)  # Safety sleep tp avoid too quick execution
