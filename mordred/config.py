@@ -66,6 +66,10 @@ class Config():
             "optional": True,
             "default": None
         }
+        optional_empty_list = {
+            "optional": True,
+            "default": []
+        }
         no_optional_true = {
             "optional": False,
             "default": True
@@ -117,6 +121,10 @@ class Config():
                     "optional": False,
                     "default": "logs"
                 },
+                "skip_initial_load": {
+                    "optional": True,
+                    "default": False
+                }
             },
             "phases": {
                 "identities": no_optional_true,
@@ -141,7 +149,7 @@ class Config():
                 },
                 "matching": {
                     "optional": False,
-                    "default": "email"
+                    "default": ["email"]
                 },
                 "sleep_for": {
                     "optional": False,
@@ -165,16 +173,16 @@ class Config():
                 },
                 "autoprofile": {
                     "optional": False,
-                    "default": "customer, git, github"
+                    "default": ["customer", "git", "github"]
                 },
                 "load_orgs": {
                     "optional": True,
                     "default": False
                 },
                 "orgs_file": optional_none,
-                "identities_file": optional_none,
-                "bots_names": optional_none,
-                "no_bots_names": optional_none  # to clean bots in SH
+                "identities_file": optional_empty_list,
+                "bots_names": optional_empty_list,
+                "no_bots_names": optional_empty_list  # to clean bots in SH
             }
         }
 
@@ -250,6 +258,9 @@ class Config():
                 if param not in config[section].keys():
                     if not check_params[section][param]['optional']:
                         raise RuntimeError("Missing section param:", section, param)
+                    else:
+                        # Add the default value for this param
+                        config[section][param] = check_params[section][param]['default']
 
         # And now the backend_section entries
         # A backend section entry could have specific perceval params which are
@@ -303,11 +314,6 @@ class Config():
         config = self.__add_types(raw_conf)
 
         self.check_config(config)
-
-        if 'min_update_delay' not in config['general'].keys():
-            # if no parameter is included, the update won't be performed more
-            # than once every minute
-            config['general']['min_update_delay'] = 60
 
         projects_file = config['projects']['projects_file']
         with open(projects_file, 'r') as fd:
