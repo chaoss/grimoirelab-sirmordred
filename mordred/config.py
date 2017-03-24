@@ -102,7 +102,7 @@ class Config():
                 },
                 "kibana":  {
                     "optional": True,
-                    "default": 5
+                    "default": "5"
                 },
                 "update":  {
                     "optional": False,
