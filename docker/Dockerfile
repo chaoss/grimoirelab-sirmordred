@@ -22,9 +22,7 @@ RUN apt-get update && \
         python python3 pep8 \
         python3-gdbm \
         python3-bs4 \
-        python3-pip python3-dev python3-redis \
-        python3-flask \
-        python3-pandas \
+        python3-pip python3-dev \
         python-mysqldb \
         python3-cherrypy3 \
         python3-yaml \
