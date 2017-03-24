@@ -136,7 +136,7 @@ class Mordred:
 
         :param task_cls: list of tasks classes to be executed
         :param big_delay: seconds before global tasks are executed, should be days usually
-        :param small_delay: seconds before blackend tasks are executed, should be minutes
+        :param small_delay: seconds before backend tasks are executed, should be minutes
         :param wait_for_threads: boolean to set when threads are infinite or
                                 should be synchronized in a meeting point
         """
@@ -321,6 +321,9 @@ class Mordred:
         # most of its time
         while self.conf['general']['update']:
             try:
+                if len(all_tasks_cls) == 0:
+                    logger.warning("No tasks to execuet in update mode.")
+                    break
                 self.execute_nonstop_tasks(all_tasks_cls)
 
                 #FIXME this point is never reached so despite the exception is
