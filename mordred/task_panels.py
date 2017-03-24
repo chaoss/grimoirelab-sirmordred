@@ -245,12 +245,12 @@ class TaskPanelsMenu(Task):
         for entry in self.panels_menu:
             if entry['source'] not in self.data_sources:
                 continue
-            if 'kibana' in self.conf and self.conf['general']['kibana'] == '5':
+            if self.conf['general']['kibana'] == '5':
                 menu_entries[entry['name']] = {}
             for subentry in entry['menu']:
                 dash_name = get_dashboard_name(subentry['panel'])
                 # The name for the entry is in self.panels_menu
-                if 'kibana' in self.conf and self.conf['general']['kibana'] == '5':
+                if self.conf['general']['kibana'] == '5':
                     menu_entries[entry['name']][subentry['name']] = dash_name
                 else:
                     menu_entries[dash_name] = dash_name
@@ -263,7 +263,7 @@ class TaskPanelsMenu(Task):
         current_menu = {}
 
         omenu = OrderedDict()
-        if 'kibana' in self.conf and self.conf['general']['kibana'] == '5':
+        if self.conf['general']['kibana'] == '5':
             # Kibana5 menu version
             omenu["Overview"] = self.menu_panels_common['Overview']
             ds_menu = self.__get_menu_entries()
