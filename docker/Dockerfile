@@ -44,7 +44,7 @@ RUN pip3 install requests
 RUN pip3 install sqlalchemy
 
 # sortinghat needs pandas
-# RUN pip3 install pandas # it crashes so we use the .deb
+RUN pip3 install pandas
 
 RUN echo "${DEPLOY_USER}    ALL=NOPASSWD: ALL" >> /etc/sudoers
 
