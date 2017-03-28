@@ -41,6 +41,7 @@ from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsMenu
+from mordred.task_report import TaskReport
 from mordred.task_track import TaskTrackItems
 
 ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
@@ -270,9 +271,12 @@ class Mordred:
             tasks_cls = [TaskPanels, TaskPanelsMenu]
             self.execute_tasks(tasks_cls)
 
-        print(self.conf['phases'])
         if self.conf['phases']['track_items']:
             tasks_cls = [TaskTrackItems]
+            self.execute_tasks(tasks_cls)
+
+        if self.conf['phases']['report']:
+            tasks_cls = [TaskReport]
             self.execute_tasks(tasks_cls)
 
         return

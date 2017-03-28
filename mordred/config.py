@@ -135,13 +135,38 @@ class Config():
                 "enrichment": no_optional_true,
                 "identities": no_optional_true,
                 "panels": no_optional_true,
-                "track_items": optional_false
+                "track_items": optional_false,
+                "report": optional_false
             },
             "projects": {
                 "projects_file": {
                     "optional": False,
                     "default": "projects.json"
                 },
+            },
+            "report": {
+                "start_date": {
+                    "optional": False,
+                    "default": "1970-01-01"
+                },
+                "end_date": {
+                    "optional": False,
+                    "default": "2100-01-01"
+                },
+                "interval": {
+                    "optional": False,
+                    "default": "quarter"
+                },
+                "config_file": {
+                    "optional": False,
+                    "default": "report.cfg"
+                },
+                "data_dir": {
+                    "optional": False,
+                    "default": "report_data"
+                },
+                "filters": optional_empty_list,
+                "offset": optional_none
             },
             "sortinghat": {
                 "unaffiliated_group": {
