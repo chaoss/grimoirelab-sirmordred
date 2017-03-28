@@ -23,8 +23,12 @@
 
 import logging
 import os
+import shutil
+import subprocess
+import tempfile
 
 from datetime import date, timedelta, timezone
+from distutils.dir_util import copy_tree
 
 from dateutil import parser
 
@@ -47,6 +51,7 @@ class TaskReport(Task):
     def execute(self):
         cfg = self.conf
 
+        global_project = cfg['general']['short_name']
         elastic = cfg['es_enrichment']['url']
         data_dir = cfg['report']['data_dir']
         end_date = cfg['report']['end_date']
@@ -77,3 +82,21 @@ class TaskReport(Task):
                         offset=offset,
                         config_file=config_file)
         report.create()
+
+        # First copy the reports template to create a new report from it
+        tmp_path = tempfile.mkdtemp(prefix='report_')
+        copy_tree("reports/report_template", tmp_path)
+        # Copy the data generated to be used in LaTeX template
+        copy_tree("report_data", os.path.join(tmp_path, "data"))
+        copy_tree("report_data", os.path.join(tmp_path, "figs"))
+        # Change the project global name
+        cmd = ['sed -i s/TemplateProject/' + global_project + '/g *.tex']
+        subprocess.call(cmd, shell=True, cwd=tmp_path)
+        # Fix LaTeX special chars
+        cmd = ['sed -i "s/\&/\\\&/g" data/git_top_organizations_*']
+        subprocess.call(cmd, shell=True, cwd=tmp_path)
+        # Build the report
+        subprocess.call("make", shell=True, cwd=tmp_path)
+        # Copy the report
+        copy_tree(os.path.join(tmp_path, "pdf"), "report_data/pdf")
+        shutil.rmtree(tmp_path)
