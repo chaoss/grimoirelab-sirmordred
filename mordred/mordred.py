@@ -41,14 +41,13 @@ from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsMenu
-
+from mordred.task_track import TaskTrackItems
 
 ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
 "at '%(uri)s' is available!!\n - Mordred said."
 
 
 logger = logging.getLogger(__name__)
-
 
 
 class Mordred:
@@ -271,6 +270,11 @@ class Mordred:
             tasks_cls = [TaskPanels, TaskPanelsMenu]
             self.execute_tasks(tasks_cls)
 
+        print(self.conf['phases'])
+        if self.conf['phases']['track_items']:
+            tasks_cls = [TaskTrackItems]
+            self.execute_tasks(tasks_cls)
+
         return
 
 
@@ -301,6 +305,10 @@ class Mordred:
         else:
             logging.warning("Skipping the initial load")
 
+        logger.debug(' - - ')
+        logger.debug('Meeting point 0 reached')
+        time.sleep(1)
+
 
         # Tasks to be executed during updating process
         all_tasks_cls = []
@@ -312,17 +320,15 @@ class Mordred:
                 all_tasks_cls.append(TaskIdentitiesCollection)
         if self.conf['phases']['enrichment']:
             all_tasks_cls.append(TaskEnrich)
-
-        logger.debug(' - - ')
-        logger.debug('Meeting point 0 reached')
-        time.sleep(1)
+        if self.conf['phases']['track_items']:
+            all_tasks_cls.append(TaskTrackItems)
 
         # this is the main loop, where the execution should spend
         # most of its time
         while self.conf['general']['update']:
             try:
                 if len(all_tasks_cls) == 0:
-                    logger.warning("No tasks to execuet in update mode.")
+                    logger.warning("No tasks to execute in update mode.")
                     break
                 self.execute_nonstop_tasks(all_tasks_cls)
 

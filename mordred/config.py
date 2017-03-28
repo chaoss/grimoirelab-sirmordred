@@ -74,6 +74,10 @@ class Config():
             "optional": False,
             "default": True
         }
+        optional_false = {
+            "optional": False,
+            "default": False
+        }
 
         params = {
             "es_collection": {
@@ -127,10 +131,11 @@ class Config():
                 }
             },
             "phases": {
+                "collection": no_optional_true,
+                "enrichment": no_optional_true,
                 "identities": no_optional_true,
                 "panels": no_optional_true,
-                "collection": no_optional_true,
-                "enrichment": no_optional_true
+                "track_items": optional_false
             },
             "projects": {
                 "projects_file": {
@@ -183,6 +188,16 @@ class Config():
                 "identities_file": optional_empty_list,
                 "bots_names": optional_empty_list,
                 "no_bots_names": optional_empty_list  # to clean bots in SH
+            },
+            "track_items": {
+                "project": {
+                    "optional": False,
+                    "default": "TrackProject"
+                },
+                "upstream_items_url": {
+                    "optional": False,
+                    "default": ""
+                }
             }
         }
 
