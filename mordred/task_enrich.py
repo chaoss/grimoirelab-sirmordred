@@ -97,7 +97,8 @@ class TaskEnrich(Task):
                                 author_uuid=None,
                                 filter_raw=filter_raw,
                                 filters_raw_prefix=filters_raw_prefix,
-                                jenkins_rename_file=jenkins_rename_file)
+                                jenkins_rename_file=jenkins_rename_file,
+                                unaffiliated_group=cfg['sortinghat']['unaffiliated_group'])
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . " \
                              "Using the backend_args: %s " % (self.backend_section, str(backend_args)))
