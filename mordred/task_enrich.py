@@ -77,28 +77,28 @@ class TaskEnrich(Task):
                 logger.debug('[%s] enrichment starts for %s', self.backend_section, repo)
                 backend = self.get_backend(self.backend_section)
                 enrich_backend(es_col_url, self.clean, backend, backend_args,
-                                cfg[self.backend_section]['raw_index'],
-                                cfg[self.backend_section]['enriched_index'],
-                                None, #projects_db is deprecated
-                                cfg['projects']['projects_file'],
-                                cfg['sortinghat']['database'],
-                                no_incremental, only_identities,
-                                github_token,
-                                False, # studies are executed in its own Task
-                                only_studies,
-                                cfg['es_enrichment']['url'],
-                                None, #args.events_enrich
-                                cfg['sortinghat']['user'],
-                                cfg['sortinghat']['password'],
-                                cfg['sortinghat']['host'],
-                                None, #args.refresh_projects,
-                                None, #args.refresh_identities,
-                                author_id=None,
-                                author_uuid=None,
-                                filter_raw=filter_raw,
-                                filters_raw_prefix=filters_raw_prefix,
-                                jenkins_rename_file=jenkins_rename_file,
-                                unaffiliated_group=cfg['sortinghat']['unaffiliated_group'])
+                               cfg[self.backend_section]['raw_index'],
+                               cfg[self.backend_section]['enriched_index'],
+                               None, #projects_db is deprecated
+                               cfg['projects']['projects_file'],
+                               cfg['sortinghat']['database'],
+                               no_incremental, only_identities,
+                               github_token,
+                               False, # studies are executed in its own Task
+                               only_studies,
+                               cfg['es_enrichment']['url'],
+                               None, #args.events_enrich
+                               cfg['sortinghat']['user'],
+                               cfg['sortinghat']['password'],
+                               cfg['sortinghat']['host'],
+                               None, #args.refresh_projects,
+                               None, #args.refresh_identities,
+                               author_id=None,
+                               author_uuid=None,
+                               filter_raw=filter_raw,
+                               filters_raw_prefix=filters_raw_prefix,
+                               jenkins_rename_file=jenkins_rename_file,
+                               unaffiliated_group=cfg['sortinghat']['unaffiliated_group'])
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . " \
                              "Using the backend_args: %s " % (self.backend_section, str(backend_args)))
