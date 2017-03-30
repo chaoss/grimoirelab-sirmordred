@@ -35,14 +35,21 @@ RUN apt-get update && \
 # Not available as package in Debian 8 python3-myssqldb
 RUN pip3 install mysqlclient
 
-# perceval needs a newer version than Debian 8 - this breaks pip3
-RUN pip3 install requests
+# perceval needs a newer version than Debian 8 - this breaks pip3 so install a newer version before
+RUN pip3 install pip --upgrade
+RUN pip3 install requests --upgrade
+RUN apt-get -y remove python3-requests
 
 # solves issues with UNICODE and SH
 RUN pip3 install sqlalchemy
 
 # sortinghat needs pandas
 RUN pip3 install pandas
+
+# reports needs prettylotlib and elasticsearch_dsl
+RUN pip3 install prettyplotlib
+RUN pip3 install elasticsearch_dsl
+
 
 RUN echo "${DEPLOY_USER}    ALL=NOPASSWD: ALL" >> /etc/sudoers
 
