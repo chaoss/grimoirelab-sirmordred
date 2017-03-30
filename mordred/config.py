@@ -222,6 +222,10 @@ class Config():
                 "upstream_items_url": {
                     "optional": False,
                     "default": ""
+                },
+                "upstream_raw_es_url": {
+                    "optional": False,
+                    "default": ""
                 }
             }
         }

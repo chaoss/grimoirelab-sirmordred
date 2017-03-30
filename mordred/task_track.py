@@ -51,7 +51,7 @@ class TaskTrackItems(Task):
 
         items_url = cfg['track_items']['upstream_items_url']
         project = cfg['track_items']['project']
-        elastic_url_raw = cfg['es_collection']['url']
+        elastic_url_raw = cfg['track_items']['upstream_raw_es_url']
         elastic_url_enrich = cfg['es_enrichment']['url']
 
         index_gerrit_raw = cfg['gerrit']['raw_index']
