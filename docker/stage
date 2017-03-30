@@ -12,6 +12,7 @@ if [ $RELEASE ];
     unset PANELS
     unset PERCEVAL
     unset PERCEVAL_MOZILLA
+    unset REPORTS
     TMPFILE=`mktemp`
     wget https://raw.githubusercontent.com/Bitergia/mordred/master/docker/unified_releases/$RELEASE -O $TMPFILE
     source $TMPFILE
@@ -46,6 +47,12 @@ git clone https://github.com/grimoirelab/panels.git panels && \
     cd panels && \
     git checkout $PANELS
 
+# reports repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/reports.git reports && \
+    cd reports && \
+    git checkout $REPORTS
+
 # get Perceval repository
 cd /home/bitergia && \
 git clone https://github.com/grimoirelab/perceval.git && \
@@ -55,7 +62,7 @@ git clone https://github.com/grimoirelab/perceval.git && \
 
 # perceval extras
 
-# MOzilla ad-hoc backends
+# Mozilla ad-hoc backends
 
 if [ $PERCEVAL_MOZILLA ]
     then
@@ -66,10 +73,11 @@ if [ $PERCEVAL_MOZILLA ]
         sudo python3 setup.py install
 fi
 
-# some links we need until GrimoireELK and panels can be installed
+# some links we need until GrimoireELK and panels and reports can be installed
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
 ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
 ln -s /home/bitergia/panels /home/bitergia/mordred/panels
+ln -s /home/bitergia/reports /home/bitergia/mordred/reports
 
 cd /home/bitergia/mordred && \
 bin/mordred -c /home/bitergia/conf/setup.cfg
