@@ -75,7 +75,7 @@ class Config():
             "default": True
         }
         optional_false = {
-            "optional": False,
+            "optional": True,
             "default": False
         }
 
