@@ -59,6 +59,13 @@ class TaskTrackItems(Task):
         index_git_raw = cfg['git']['raw_index']
         index_git_enrich = cfg['git']['enriched_index']
 
+        db_config = {
+            "database": cfg['sortinghat']['database'],
+            "user": cfg['sortinghat']['user'],
+            "password": cfg['sortinghat']['password'],
+            "host": cfg['sortinghat']['host']
+        }
+
         logger.info("Importing track items from %s ", items_url)
 
         #
@@ -69,7 +76,7 @@ class TaskTrackItems(Task):
         logger.info("Total gerrit track items to be imported: %i", len(gerrit_numbers))
         enriched_items = enrich_gerrit_items(elastic_url_raw,
                                              index_gerrit_raw, gerrit_numbers,
-                                             project)
+                                             project, db_config)
         logger.info("Total gerrit track items enriched: %i", len(enriched_items))
         elastic = ElasticSearch(elastic_url_enrich, index_gerrit_enrich)
         total = elastic.bulk_upload(enriched_items, "uuid")
@@ -82,7 +89,7 @@ class TaskTrackItems(Task):
         logger.info("Total git track items to be checked: %i", len(commits_sha))
         enriched_items = enrich_git_items(elastic_url_raw,
                                           index_git_raw, commits_sha,
-                                          project)
+                                          project, db_config)
         logger.info("Total git track items enriched: %i", len(enriched_items))
         elastic = ElasticSearch(elastic_url_enrich, index_git_enrich)
         total = elastic.bulk_upload(enriched_items, "uuid")
