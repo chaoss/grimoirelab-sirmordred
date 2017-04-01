@@ -46,7 +46,7 @@ class TestGithub(unittest.TestCase):
 
         uri = 'https://github.com/grimoirelab/GrimoireELK/blob/master/README.md'
 
-        token = config.get('general', 'github_token')
+        token = config.get('github', 'api-token')
 
         gh = Github(token)
 

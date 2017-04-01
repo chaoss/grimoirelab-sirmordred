@@ -32,8 +32,9 @@ import requests
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.task_enrich import TaskEnrich
+from mordred.config import Config
 from mordred.mordred import Mordred
+from mordred.task_enrich import TaskEnrich
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
@@ -48,7 +49,8 @@ class TestTaskEnrich(unittest.TestCase):
     def test_initialization(self):
         """Test whether attributes are initializated"""
 
-        morderer = Mordred(CONF_FILE)
+        config = Config(CONF_FILE)
+        morderer = Mordred(config)
         repos = [GIT_REPO_NAME]
         backend_section = GIT_BACKEND_SECTION
         task = TaskEnrich(morderer.conf, repos=repos, backend_section=backend_section)
@@ -59,15 +61,16 @@ class TestTaskEnrich(unittest.TestCase):
 
     def test_run(self):
         """Test whether the Task could be run"""
-        morderer = Mordred(CONF_FILE)
+        config = Config(CONF_FILE)
+        morderer = Mordred(config)
         repos = [GIT_REPO_NAME]
         backend_section = GIT_BACKEND_SECTION
         task = TaskEnrich(morderer.conf, repos=repos, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
         # Check that the enrichment went well
-        es_collection = morderer.conf['es_collection']
-        es_enrichment = morderer.conf['es_enrichment']
+        es_collection = morderer.conf['es_collection']['url']
+        es_enrichment = morderer.conf['es_enrichment']['url']
         raw_index = es_collection + "/" + morderer.conf[GIT_BACKEND_SECTION]['raw_index']
         enrich_index = es_enrichment + "/" + morderer.conf[GIT_BACKEND_SECTION]['enriched_index']
         r = requests.get(raw_index+"/_search?size=0")

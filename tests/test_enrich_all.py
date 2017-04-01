@@ -29,15 +29,16 @@ import shutil
 
 import requests
 
-from os.path import expanduser, join
+from os.path import expanduser, isdir, join
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
+from mordred.config import Config
+from mordred.mordred import Mordred
 from mordred.task_enrich import TaskEnrich
 from mordred.task_collection import TaskRawDataCollection
-from mordred.mordred import Mordred
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
@@ -63,14 +64,20 @@ class TestTaskEnrichAll(unittest.TestCase):
         cls.__restore_perceval_cache()
 
     @classmethod
-    def __install_perceval_cache(self):
+    def __install_perceval_cache(cls):
         logger.info("Installing the perceval cache")
+        # First backup the current cache
+        if isdir(join(PERCEVAL_CACHE, "cache.orig")):
+            logger.error("Test cache backup exists in %s", join(PERCEVAL_CACHE, "cache.orig"))
+            raise RuntimeError("Environment not clean. Can't continue")
+
+        shutil.move(join(PERCEVAL_CACHE, "cache"), join(PERCEVAL_CACHE, "cache.orig"))
+
         tfile = tarfile.open(PERCEVAL_CACHE_FILE, 'r:gz')
         # The cache is extracted in the default place perceval uses
         # We must use a different place but it is not easy to change that
         # because it is not configurable now in TaskRawDataCollection
         tfile.extractall("/tmp")
-        shutil.move(join(PERCEVAL_CACHE, "cache"), join(PERCEVAL_CACHE, "cache.orig"))
         shutil.move("/tmp/perceval-cache/cache", PERCEVAL_CACHE)
         logger.info("Installed the perceval cache in %s", PERCEVAL_CACHE)
 
@@ -87,7 +94,8 @@ class TestTaskEnrichAll(unittest.TestCase):
     def __collect_and_enrich(self):
         """Execute the enrich process for all backends active"""
         if not self.enrich_already_done:
-            morderer = Mordred(CONF_FILE)
+            config = Config(CONF_FILE)
+            morderer = Mordred(config)
             repos_backend = morderer._get_repos_by_backend()
             for backend in repos_backend:
                 # First collect the data
@@ -106,14 +114,16 @@ class TestTaskEnrichAll(unittest.TestCase):
         # First collect and enrich the items
         self.__collect_and_enrich()
 
-        morderer = Mordred(CONF_FILE)
+        config = Config(CONF_FILE)
+        config_dict = config.get_conf()
+        morderer = Mordred(config)
         repos_backend = morderer._get_repos_by_backend()
         for backend in repos_backend:
             # Check that the enrichment went well
-            es_collection = morderer.conf['es_collection']
-            es_enrichment = morderer.conf['es_enrichment']
-            raw_index = es_collection + "/" + morderer.conf[backend]['raw_index']
-            enrich_index = es_enrichment + "/" + morderer.conf[backend]['enriched_index']
+            es_collection = config_dict['es_collection']['url']
+            es_enrichment = config_dict['es_enrichment']['url']
+            raw_index = es_collection + "/" + config_dict[backend]['raw_index']
+            enrich_index = es_enrichment + "/" + config_dict[backend]['enriched_index']
             r = requests.get(raw_index+"/_search?size=0")
             raw_items = r.json()['hits']['total']
             r = requests.get(enrich_index+"/_search?size=0")
@@ -123,4 +133,3 @@ class TestTaskEnrichAll(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(warnings='ignore')
-    print("ENDDD")

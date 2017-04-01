@@ -29,8 +29,9 @@ import unittest
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.task_collection import TaskRawDataCollection
+from mordred.config import Config
 from mordred.mordred import Mordred
+from mordred.task_collection import TaskRawDataCollection
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
@@ -44,8 +45,8 @@ class TestTaskRawDataCollection(unittest.TestCase):
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
-
-        morderer = Mordred(CONF_FILE)
+        config = Config(CONF_FILE)
+        morderer = Mordred(config)
         repos = [GIT_REPO_NAME]
         backend_section = GIT_BACKEND_SECTION
         task = TaskRawDataCollection(morderer.conf, repos=repos, backend_section=backend_section)
@@ -56,7 +57,8 @@ class TestTaskRawDataCollection(unittest.TestCase):
 
     def test_run(self):
         """Test whether the Task could be run"""
-        morderer = Mordred(CONF_FILE)
+        config = Config(CONF_FILE)
+        morderer = Mordred(config)
         repos = [GIT_REPO_NAME]
         backend_section = GIT_BACKEND_SECTION
         task = TaskRawDataCollection(morderer.conf, repos=repos, backend_section=backend_section)
