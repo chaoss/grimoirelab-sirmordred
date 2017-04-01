@@ -53,8 +53,9 @@ logger = logging.getLogger(__name__)
 
 class Mordred:
 
-    def __init__(self, conf_file):
-        self.conf = Config(conf_file).get_conf()
+    def __init__(self, config):
+        """ config is a Config object """
+        self.conf = config.get_conf()
 
     def check_es_access(self):
         ##

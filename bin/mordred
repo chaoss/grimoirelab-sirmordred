@@ -108,7 +108,8 @@ def parse_args():
                         dest='config_file')
     parser.add_argument('-t','--template', help='Create template configuration file',
                         dest='config_template_file')
-
+    parser.add_argument('-p','--phases', nargs='*',
+                        help='List of phases to execute (update is set to false)')
 
     args = parser.parse_args()
     return args
@@ -123,12 +124,22 @@ if __name__ == '__main__':
         logger.error("Option -t or -c is required")
         sys.exit(1)
 
-    config = Config(args.config_file).get_conf()
-    logs_dir = config['general']['logs_dir']
-    debug_mode = config['general']['debug']
-
+    config = Config(args.config_file)
+    config_dict = config.get_conf()
+    logs_dir = config_dict['general']['logs_dir']
+    debug_mode = config_dict['general']['debug']
     logger = setup_logs(logs_dir, debug_mode)
-    obj = Mordred(args.config_file)
+
+    if args.phases:
+        logger.info("Executing mordred for phases: %s", args.phases)
+        # HACK: the internal dict of Config is modified directly
+        # In manual phases execute mordred as an script
+        config_dict['general']['update'] = False
+        for phase in config_dict['phases']:
+            config_dict['phases'][phase] = True if phase in args.phases else False
+
+    obj = Mordred(config)
+
     try:
         obj.run()
     except ElasticSearchError as e:
