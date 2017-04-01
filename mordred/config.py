@@ -70,6 +70,10 @@ class Config():
             "optional": True,
             "default": []
         }
+        no_optional_empty_string = {
+            "optional": False,
+            "default": ""
+        }
         no_optional_true = {
             "optional": False,
             "default": True
@@ -197,10 +201,7 @@ class Config():
                     "optional": False,
                     "default": "root"
                 },
-                "password": {
-                    "optional": False,
-                    "default": ""
-                },
+                "password": no_optional_empty_string,
                 "autoprofile": {
                     "optional": False,
                     "default": ["customer", "git", "github"]
@@ -219,14 +220,10 @@ class Config():
                     "optional": False,
                     "default": "TrackProject"
                 },
-                "upstream_items_url": {
-                    "optional": False,
-                    "default": ""
-                },
-                "upstream_raw_es_url": {
-                    "optional": False,
-                    "default": ""
-                }
+                "upstream_items_url": no_optional_empty_string,
+                "upstream_raw_es_url": no_optional_empty_string,
+                "raw_index_gerrit": no_optional_empty_string,
+                "raw_index_git": no_optional_empty_string
             }
         }
 

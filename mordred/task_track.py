@@ -51,12 +51,14 @@ class TaskTrackItems(Task):
 
         items_url = cfg['track_items']['upstream_items_url']
         project = cfg['track_items']['project']
-        elastic_url_raw = cfg['track_items']['upstream_raw_es_url']
         elastic_url_enrich = cfg['es_enrichment']['url']
 
-        index_gerrit_raw = cfg['gerrit']['raw_index']
+        # The raw data comes from upstream project
+        elastic_url_raw = cfg['track_items']['upstream_raw_es_url']
+        index_gerrit_raw = cfg['track_items']['raw_index_gerrit']
+        index_git_raw = cfg['track_items']['raw_index_git']
+
         index_gerrit_enrich = cfg['gerrit']['enriched_index']
-        index_git_raw = cfg['git']['raw_index']
         index_git_enrich = cfg['git']['enriched_index']
 
         db_config = {
