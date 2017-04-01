@@ -93,7 +93,7 @@ class TaskReport(Task):
         cmd = ['sed -i s/TemplateProject/' + global_project + '/g *.tex']
         subprocess.call(cmd, shell=True, cwd=tmp_path)
         # Fix LaTeX special chars
-        cmd = ['sed -i "s/\&/\\\&/g" data/git_top_organizations_*']
+        cmd = [r'sed -i "s/\&/\\\&/g" data/git_top_organizations_*']
         subprocess.call(cmd, shell=True, cwd=tmp_path)
         # Build the report
         subprocess.call("make", shell=True, cwd=tmp_path)
