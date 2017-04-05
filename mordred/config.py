@@ -44,15 +44,19 @@ class Config():
         params = {
             "enriched_index": {
                 "optional": False,
-                "default": None
+                "default": None,
+                "type": str
+
             },
             "raw_index": {
                 "optional": False,
-                "default": None
+                "default": None,
+                "type": str
             },
             "fetch-cache": {
                 "optional": True,
-                "default": True
+                "default": True,
+                "type": bool
             }
         }
 
@@ -62,76 +66,100 @@ class Config():
     def general_params(cls):
         """ Define all the possible config params """
 
-        optional_none = {
+        optional_bool_none = {
             "optional": True,
-            "default": None
+            "default": None,
+            "type": bool
+        }
+        optional_string_none = {
+            "optional": True,
+            "default": None,
+            "type": str
+        }
+        optional_int_none = {
+            "optional": True,
+            "default": None,
+            "type": int
         }
         optional_empty_list = {
             "optional": True,
-            "default": []
+            "default": [],
+            "type": list
         }
         no_optional_empty_string = {
             "optional": False,
-            "default": ""
+            "default": "",
+            "type": str
         }
         no_optional_true = {
             "optional": False,
-            "default": True
+            "default": True,
+            "type": bool
         }
         optional_false = {
             "optional": True,
-            "default": False
+            "default": False,
+            "type": bool
         }
 
         params = {
             "es_collection": {
-                "password": optional_none,
-                "user": optional_none,
+                "password": optional_string_none,
+                "user": optional_string_none,
                 "url": {
                     "optional": False,
-                    "default": "http://172.17.0.1:9200"
+                    "default": "http://172.17.0.1:9200",
+                    "type": str
                 }
             },
             "es_enrichment": {
                 "url": {
                     "optional": False,
-                    "default": "http://172.17.0.1:9200"
+                    "default": "http://172.17.0.1:9200",
+                    "type": str
                 },
-                "studies": optional_none,
-                "autorefresh": optional_none,
-                "user": optional_none,
-                "password": optional_none
+                "studies": optional_bool_none,
+                "autorefresh": optional_bool_none,
+                "user": optional_string_none,
+                "password": optional_string_none
             },
             "general": {
-                "sleep": optional_none,  # we are not using it
+                "sleep": optional_int_none,  # we are not using it
                 "min_update_delay": {
                     "optional": True,
-                    "default": 60
+                    "default": 60,
+                    "type": int
                 },
                 "kibana":  {
                     "optional": True,
-                    "default": "5"
+                    "default": "5",
+                    "type": str
                 },
                 "update":  {
                     "optional": False,
-                    "default": False
+                    "default": False,
+                    "type": bool
                 },
                 "short_name": {
                     "optional": False,
-                    "default": "Short name"
+                    "default": "Short name",
+                    "type": str
                 },
                 "debug": {
                     "optional": False,
-                    "default": True
+                    "default": True,
+                    "type": bool
                 },
-                "from_date": optional_none,  # per data source param now
+                "from_date": optional_string_none,  # per data source param now
                 "logs_dir": {
                     "optional": False,
-                    "default": "logs"
+                    "default": "logs",
+                    "type": str
                 },
                 "skip_initial_load": {
                     "optional": True,
-                    "default": False
+                    "default": False,
+                    "type": bool
                 }
             },
             "phases": {
@@ -145,72 +173,87 @@ class Config():
             "projects": {
                 "projects_file": {
                     "optional": False,
-                    "default": "projects.json"
+                    "default": "projects.json",
+                    "type": str
                 },
             },
             "report": {
                 "start_date": {
                     "optional": False,
-                    "default": "1970-01-01"
+                    "default": "1970-01-01",
+                    "type": str
                 },
                 "end_date": {
                     "optional": False,
-                    "default": "2100-01-01"
+                    "default": "2100-01-01",
+                    "type": str
                 },
                 "interval": {
                     "optional": False,
-                    "default": "quarter"
+                    "default": "quarter",
+                    "type": str
                 },
                 "config_file": {
                     "optional": False,
-                    "default": "report.cfg"
+                    "default": "report.cfg",
+                    "type": str
                 },
                 "data_dir": {
                     "optional": False,
-                    "default": "report_data"
+                    "default": "report_data",
+                    "type": str
                 },
                 "filters": optional_empty_list,
-                "offset": optional_none
+                "offset": optional_string_none
             },
             "sortinghat": {
                 "unaffiliated_group": {
                     "optional": False,
-                    "default": "Unknown"
+                    "default": "Unknown",
+                    "type": str
                 },
                 "unify_method": {  # not used
                     "optional": True,
-                    "default": "fast-matching"
+                    "default": "fast-matching",
+                    "type": str
                 },
                 "matching": {
                     "optional": False,
-                    "default": ["email"]
+                    "default": ["email"],
+                    "type": list
                 },
                 "sleep_for": {
                     "optional": False,
-                    "default": 3600
+                    "default": 3600,
+                    "type": int
                 },
                 "database": {
                     "optional": False,
-                    "default": "sortinghat_db"
+                    "default": "sortinghat_db",
+                    "type": str
                 },
                 "host": {
                     "optional": False,
-                    "default": "mariadb"
+                    "default": "mariadb",
+                    "type": str
                 },
                 "user": {
                     "optional": False,
-                    "default": "root"
+                    "default": "root",
+                    "type": str
                 },
                 "password": no_optional_empty_string,
                 "autoprofile": {
                     "optional": False,
-                    "default": ["customer", "git", "github"]
+                    "default": ["customer", "git", "github"],
+                    "type": list
                 },
                 "load_orgs": {
                     "optional": True,
-                    "default": False
+                    "default": False,
+                    "type": bool
                 },
-                "orgs_file": optional_none,
+                "orgs_file": optional_string_none,
                 "identities_file": optional_empty_list,
                 "bots_names": optional_empty_list,
                 "no_bots_names": optional_empty_list  # to clean bots in SH
@@ -218,7 +261,8 @@ class Config():
             "track_items": {
                 "project": {
                     "optional": False,
-                    "default": "TrackProject"
+                    "default": "TrackProject",
+                    "type": str
                 },
                 "upstream_items_url": no_optional_empty_string,
                 "upstream_raw_es_url": no_optional_empty_string,
@@ -302,19 +346,33 @@ class Config():
                     else:
                         # Add the default value for this param
                         config[section][param] = check_params[section][param]['default']
+                else:
+                    ptype = type(config[section][param])
+                    ptype_ok = check_params[section][param]["type"]
+                    if ptype != ptype_ok:
+                        msg = "Wrong type for section param: %s %s %s should be %s" % \
+                              (section, param, ptype, ptype_ok)
+                        raise RuntimeError(msg)
 
         # And now the backend_section entries
         # A backend section entry could have specific perceval params which are
         # not checked
         check_params = cls.backend_section_params()
         for section in config.keys():
+            # [data_source] or [*data_source]
             if section in backend_sections or section[1:] in backend_sections:
                 # backend_section or *backend_section
                 for param in check_params:
                     if param not in config[section].keys():
                         if not check_params[param]['optional']:
                             raise RuntimeError("Missing section param:", section, param)
-
+                    else:
+                        ptype = type(config[section][param])
+                        ptype_ok = check_params[param]["type"]
+                        if ptype != ptype_ok:
+                            msg = "Wrong type for section param: %s %s %s should be %s" % \
+                                  (section, param, ptype, ptype_ok)
+                            raise RuntimeError(msg)
 
     def __add_types(self, raw_conf):
         """ Convert to int, boolean, list, None types config items """
