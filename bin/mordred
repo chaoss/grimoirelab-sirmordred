@@ -42,9 +42,6 @@ SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still
 """need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
 
 
-logger = logging.getLogger(__name__)
-
-
 def setup_logs(logs_dir, debug_mode):
 
     if debug_mode:
@@ -53,7 +50,7 @@ def setup_logs(logs_dir, debug_mode):
         logging_mode = logging.INFO
 
     # create logger with 'spam_application'
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     logger.setLevel(logging_mode)
     # create file handler which logs even debug messages
 
@@ -133,7 +130,7 @@ if __name__ == '__main__':
     if args.phases:
         logger.info("Executing mordred for phases: %s", args.phases)
         # HACK: the internal dict of Config is modified directly
-        # In manual phases execute mordred as an script
+        # In manual phases mode execute mordred as an script
         config_dict['general']['update'] = False
         for phase in config_dict['phases']:
             config_dict['phases'][phase] = True if phase in args.phases else False
