@@ -1,5 +1,7 @@
 # Mordred
 
+**THIS DOCUMENT IS NOT UPDATED**
+
 ## Intro
 
 Mordred Docker container will help you to deploy the Bitergia Analytics dashboard
