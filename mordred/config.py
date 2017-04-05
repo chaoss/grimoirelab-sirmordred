@@ -102,27 +102,10 @@ class Config():
             "type": bool
         }
 
-        params = {
-            "es_collection": {
-                "password": optional_string_none,
-                "user": optional_string_none,
-                "url": {
-                    "optional": False,
-                    "default": "http://172.17.0.1:9200",
-                    "type": str
-                }
-            },
-            "es_enrichment": {
-                "url": {
-                    "optional": False,
-                    "default": "http://172.17.0.1:9200",
-                    "type": str
-                },
-                "studies": optional_bool_none,
-                "autorefresh": optional_bool_none,
-                "user": optional_string_none,
-                "password": optional_string_none
-            },
+        params = {}
+
+        # GENERAL CONFIG
+        params_general = {
             "general": {
                 "sleep": optional_int_none,  # we are not using it
                 "min_update_delay": {
@@ -161,7 +144,20 @@ class Config():
                     "default": False,
                     "type": bool
                 }
-            },
+            }
+        }
+        # TODO: Move to general config
+        params_projects = {
+            "projects": {
+                "projects_file": {
+                    "optional": False,
+                    "default": "projects.json",
+                    "type": str
+                }
+            }
+        }
+
+        params_phases = {
             "phases": {
                 "collection": no_optional_true,
                 "enrichment": no_optional_true,
@@ -169,14 +165,42 @@ class Config():
                 "panels": no_optional_true,
                 "track_items": optional_false,
                 "report": optional_false
-            },
-            "projects": {
-                "projects_file": {
+            }
+        }
+
+        general_config_params = [params_general, params_projects, params_phases]
+
+        for section_params in general_config_params:
+            params.update(section_params)
+
+        # Config provided by tasks
+        params_collection = {
+            "es_collection": {
+                "password": optional_string_none,
+                "user": optional_string_none,
+                "url": {
                     "optional": False,
-                    "default": "projects.json",
+                    "default": "http://172.17.0.1:9200",
+                    "type": str
+                }
+            }
+        }
+
+        params_enrichment = {
+            "es_enrichment": {
+                "url": {
+                    "optional": False,
+                    "default": "http://172.17.0.1:9200",
                     "type": str
                 },
-            },
+                "studies": optional_bool_none,
+                "autorefresh": optional_bool_none,
+                "user": optional_string_none,
+                "password": optional_string_none
+            }
+        }
+
+        params_report = {
             "report": {
                 "start_date": {
                     "optional": False,
@@ -205,7 +229,10 @@ class Config():
                 },
                 "filters": optional_empty_list,
                 "offset": optional_string_none
-            },
+            }
+        }
+
+        params_sortinghat = {
             "sortinghat": {
                 "unaffiliated_group": {
                     "optional": False,
@@ -257,7 +284,10 @@ class Config():
                 "identities_file": optional_empty_list,
                 "bots_names": optional_empty_list,
                 "no_bots_names": optional_empty_list  # to clean bots in SH
-            },
+            }
+        }
+
+        params_track_items = {
             "track_items": {
                 "project": {
                     "optional": False,
@@ -270,6 +300,13 @@ class Config():
                 "raw_index_git": no_optional_empty_string
             }
         }
+
+        tasks_config_params = [params_collection, params_enrichment, params_report,
+                               params_sortinghat, params_track_items]
+
+        for section_params in tasks_config_params:
+            params.update(section_params)
+
 
         return params
 
