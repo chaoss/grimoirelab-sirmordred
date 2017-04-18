@@ -22,12 +22,15 @@
 
 
 import json
+import sys
 import unittest
 
 import httpretty
 import requests
 
-from githubsync import GitHubSync
+sys.path.insert(0, '..')
+
+from mordred.githubsync import GitHubSync
 
 
 GITHUB_URL = "https://github.com/"
@@ -120,6 +123,14 @@ class TestGitHubSync(unittest.TestCase):
                 "html_url": "https://github.com/zhquan_example/project_4",
                 "clone_url": "https://github.com/zhquan_example/project_4.git",
                 "fork": False
+            },
+            {
+                "id": 5,
+                "name": "project_5",
+                "full_name": "zhquan_example/project_5",
+                "html_url": "https://github.com/zhquan_example/project_5",
+                "clone_url": "https://github.com/zhquan_example/project_5.git",
+                "fork": False
             }
         ]
         httpretty.register_uri(httpretty.GET,
@@ -174,9 +185,10 @@ class TestGitHubSync(unittest.TestCase):
             }
         }
 
+        blacklist = ["project_5"]
         github = GitHubSync(TOKEN)
         projects = github.load_projects(URI)
-        projects = github.sync_with_org(projects, "zhquan_example")
+        projects = github.sync_with_org(projects, "zhquan_example", blacklist=blacklist)
 
         self.assertDictEqual(json_expected, projects)
 
@@ -205,6 +217,14 @@ class TestGitHubSync(unittest.TestCase):
                 "html_url": "https://github.com/zhquan_example/project_2",
                 "clone_url": "https://github.com/zhquan_example/project_2.git",
                 "fork": False
+            },
+            {
+                "id": 3,
+                "name": "Project_3",
+                "full_name": "zhquan_example/project_3",
+                "html_url": "https://github.com/zhquan_example/project_3",
+                "clone_url": "https://github.com/zhquan_example/project_3.git",
+                "fork": False
             }
         ]
 
@@ -217,9 +237,10 @@ class TestGitHubSync(unittest.TestCase):
                                        GITHUB_API_URL + '/?&page=1>; rel="last"'
                                })
 
+        blacklist = ["project_3"]
         github = GitHubSync(TOKEN)
         projects = {}
-        projects = github.sync(projects, "zhquan_example")
+        projects = github.sync(projects, "zhquan_example", blacklist=blacklist)
 
         json_expected = {
             "zhquan_example": {
@@ -346,7 +367,7 @@ class TestGitHubSync(unittest.TestCase):
                                })
 
         github = GitHubSync(TOKEN)
-        git, github = github.get_repo("zhquan_example", False)
+        git, github = github.get_repo("zhquan_example", False, [])
 
         git_expected = ['https://github.com/zhquan_example/project_1.git', 'https://github.com/zhquan_example/project_2.git']
         github_expected = ['https://github.com/zhquan_example/project_1', 'https://github.com/zhquan_example/project_2']
@@ -354,7 +375,7 @@ class TestGitHubSync(unittest.TestCase):
         self.assertListEqual(github_expected, github)
 
         github_fork = GitHubSync(TOKEN)
-        git_fork, github_fork = github_fork.get_repo("zhquan_example", True)
+        git_fork, github_fork = github_fork.get_repo("zhquan_example", True, [])
 
         git_fork_expected = ['https://github.com/zhquan_example/project_1.git', 'https://github.com/zhquan_example/project_2.git', 'https://github.com/zhquan_example/project_3.git']
         github_fork_expected = ['https://github.com/zhquan_example/project_1', 'https://github.com/zhquan_example/project_2', 'https://github.com/zhquan_example/project_3']

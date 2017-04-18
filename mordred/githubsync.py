@@ -56,19 +56,20 @@ class GitHubSync:
 
         return url
 
-    def add_repo(self, git, github, r, fork):
+    def add_repo(self, git, github, r, fork, blacklist):
         """ Add html_url and clone_url from a github project only if is new.
 
         :param git: list clone_url
         :param github: list html_url
         :param r: requests
         :param fork: If fork is true, include the fork repositories
+        :param blacklist: blacklist
 
         :returns: Two list git and github repositories
         """
 
         for repo in r.json():
-            if repo['html_url'] not in github:
+            if repo['html_url'] not in github and repo['name'].lower() not in blacklist:
                 if not fork:
                     if not repo['fork']:
                         github.append(repo['html_url'])
@@ -79,10 +80,11 @@ class GitHubSync:
 
         return git, github
 
-    def get_repo(self, project, fork):
+    def get_repo(self, project, fork, blacklist):
         """ Get all html_url and clone_url from a github project.
 
         :param fork: If fork is true, include the fork repositories
+        :param blacklist: blacklist
 
         :returns: Two list git and github repositories
         """
@@ -98,7 +100,7 @@ class GitHubSync:
                          headers=self.__get_headers())
         r.raise_for_status()
 
-        git, github = self.add_repo(git, github, r, fork)
+        git, github = self.add_repo(git, github, r, fork, blacklist)
 
         if 'last' in r.links:
             last_url = r.links['last']['url']
@@ -111,7 +113,7 @@ class GitHubSync:
                              headers=self.__get_headers())
             r.raise_for_status()
 
-            git, github = self.add_repo(git, github, r, fork)
+            git, github = self.add_repo(git, github, r, fork, blacklist)
 
         return git, github
 
@@ -169,7 +171,7 @@ class GitHubSync:
 
         return r.json()
 
-    def sync_with_org(self, projects_file, project, fork=False):
+    def sync_with_org(self, projects_file, project, fork=False, blacklist=[]):
         """ Update the list of project with organizations.
 
         :param projects_file: projects.json to update
@@ -179,7 +181,7 @@ class GitHubSync:
         :returns: the list of projects updated
         """
 
-        git_list, github_list = self.get_repo(project, fork)
+        git_list, github_list = self.get_repo(project, fork, blacklist)
 
         if project in projects_file:
             projects_file = self.update_json(project, projects_file, "git", git_list)
@@ -197,7 +199,7 @@ class GitHubSync:
 
         return projects_file
 
-    def sync(self, projects_file, project, fork=False):
+    def sync(self, projects_file, project, fork=False, blacklist=[]):
         """ Update the list of project.
 
         :param projects_file: projects.json to update
@@ -207,7 +209,7 @@ class GitHubSync:
         :returns: the list of projects updated
         """
 
-        git_list, github_list = self.get_repo(project, fork)
+        git_list, github_list = self.get_repo(project, fork, blacklist)
 
         new_project = {
                         "meta": {
