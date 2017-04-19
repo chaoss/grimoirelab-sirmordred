@@ -360,6 +360,17 @@ class Config():
 
         return gelk_backends + extra_backends
 
+    def get_data_sources(self):
+        data_sources = []
+        backend_sections = self.get_backend_sections()
+
+        for section in self.conf.keys():
+            if section in backend_sections:
+                data_sources.append(section)
+
+        return data_sources
+
+
     @classmethod
     def check_config(cls, config):
         # First let's check all common sections entries
