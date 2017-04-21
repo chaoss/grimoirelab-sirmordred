@@ -41,6 +41,7 @@ from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsMenu
+from mordred.task_projects import TaskProjects
 from mordred.task_report import TaskReport
 from mordred.task_track import TaskTrackItems
 
@@ -229,6 +230,9 @@ class Mordred:
         # we get all the items with Perceval + identites browsing the
         # raw items
 
+        tasks_cls = [TaskProjects]  # projects is always needed
+        self.execute_tasks(tasks_cls)
+
         if self.conf['phases']['identities']:
             tasks_cls = [TaskIdentitiesInit]
             self.execute_tasks(tasks_cls)
@@ -304,7 +308,7 @@ class Mordred:
 
         # do we need ad-hoc scripts?
 
-        # Initial round: collect -> identities -> enrich
+        # Initial round: projects -> collect -> identities -> enrich
         if not self.conf['general']['skip_initial_load']:
             self.__execute_initial_load()
         else:
@@ -317,6 +321,7 @@ class Mordred:
 
         # Tasks to be executed during updating process
         all_tasks_cls = []
+        all_tasks_cls.append(TaskProjects)  # projects is always needed
         if self.conf['phases']['collection']:
             all_tasks_cls.append(TaskRawDataCollection)
         if self.conf['phases']['identities']:

@@ -146,13 +146,17 @@ class Config():
                 }
             }
         }
-        # TODO: Move to general config
         params_projects = {
             "projects": {
                 "projects_file": {
                     "optional": False,
                     "default": "projects.json",
                     "type": str
+                },
+                "load_eclipse": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool
                 }
             }
         }
@@ -461,10 +465,5 @@ class Config():
         config = self.__add_types(raw_conf)
 
         self.check_config(config)
-
-        projects_file = config['projects']['projects_file']
-        with open(projects_file, 'r') as fd:
-            projects = json.load(fd)
-        config['projects_data'] = projects
 
         return config
