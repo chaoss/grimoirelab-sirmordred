@@ -43,7 +43,7 @@ class TaskTrackItems(Task):
         return False
 
     def execute(self):
-        cfg = self.conf
+        cfg = self.config.get_conf()
 
         if 'gerrit' not in cfg or 'git' not in cfg:
             logger.error("gerrit and git are needed for track items.")

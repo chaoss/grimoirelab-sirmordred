@@ -95,16 +95,15 @@ class TestTaskEnrichAll(unittest.TestCase):
         """Execute the enrich process for all backends active"""
         if not self.enrich_already_done:
             config = Config(CONF_FILE)
-            morderer = Mordred(config)
-            repos_backend = morderer._get_repos_by_backend()
+            repos_backend = config.get_data_sources()
             for backend in repos_backend:
                 # First collect the data
                 logger.info("--- Collect %s ---\n", backend)
-                task = TaskRawDataCollection(morderer.conf, repos=repos_backend[backend], backend_section=backend)
+                task = TaskRawDataCollection(config, backend_section=backend)
                 self.assertEqual(task.execute(), None)
                 # Second enrich the data
                 logger.info("--- Enrich %s ---\n", backend)
-                task = TaskEnrich(morderer.conf, repos=repos_backend[backend], backend_section=backend)
+                task = TaskEnrich(config, backend_section=backend)
                 self.assertEqual(task.execute(), None)
         self.enrich_already_done = True
 
@@ -116,8 +115,7 @@ class TestTaskEnrichAll(unittest.TestCase):
 
         config = Config(CONF_FILE)
         config_dict = config.get_conf()
-        morderer = Mordred(config)
-        repos_backend = morderer._get_repos_by_backend()
+        repos_backend = config.get_data_sources()
         for backend in repos_backend:
             # Check that the enrichment went well
             es_collection = config_dict['es_collection']['url']

@@ -34,9 +34,10 @@ class Task():
 
     ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url']
 
-    def __init__(self, conf):
+    def __init__(self, config):
         self.backend_section = None
-        self.conf = conf
+        self.config = config
+        self.conf = config.get_conf()
         self.db_sh = self.conf['sortinghat']['database']
         self.db_user = self.conf['sortinghat']['user']
         self.db_password = self.conf['sortinghat']['password']
@@ -52,9 +53,6 @@ class Task():
     def execute(self):
         """ Execute the Task """
         logger.debug("A bored task. It does nothing!")
-
-    def set_repos(self, repos):
-        self.repos = repos
 
     @classmethod
     def get_backend(self, backend_section):

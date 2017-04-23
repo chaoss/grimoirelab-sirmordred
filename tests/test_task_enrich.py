@@ -39,7 +39,6 @@ from mordred.task_enrich import TaskEnrich
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
 GIT_BACKEND_SECTION = 'git'
-GIT_REPO_NAME = 'https://github.com/Bitergia/mordred.git'
 
 logging.basicConfig(level=logging.INFO)
 
@@ -50,29 +49,25 @@ class TestTaskEnrich(unittest.TestCase):
         """Test whether attributes are initializated"""
 
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        repos = [GIT_REPO_NAME]
         backend_section = GIT_BACKEND_SECTION
-        task = TaskEnrich(morderer.conf, repos=repos, backend_section=backend_section)
+        task = TaskEnrich(config, backend_section=backend_section)
 
-        self.assertEqual(task.conf, morderer.conf)
-        self.assertEqual(task.repos, repos)
+        self.assertEqual(task.config, config)
         self.assertEqual(task.backend_section, backend_section)
 
     def test_run(self):
         """Test whether the Task could be run"""
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        repos = [GIT_REPO_NAME]
+        cfg = config.get_conf()
         backend_section = GIT_BACKEND_SECTION
-        task = TaskEnrich(morderer.conf, repos=repos, backend_section=backend_section)
+        task = TaskEnrich(config, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
         # Check that the enrichment went well
-        es_collection = morderer.conf['es_collection']['url']
-        es_enrichment = morderer.conf['es_enrichment']['url']
-        raw_index = es_collection + "/" + morderer.conf[GIT_BACKEND_SECTION]['raw_index']
-        enrich_index = es_enrichment + "/" + morderer.conf[GIT_BACKEND_SECTION]['enriched_index']
+        es_collection = cfg['es_collection']['url']
+        es_enrichment = cfg['es_enrichment']['url']
+        raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
+        enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
         r = requests.get(raw_index+"/_search?size=0")
         raw_items = r.json()['hits']['total']
         r = requests.get(enrich_index+"/_search?size=0")

@@ -30,7 +30,6 @@ import unittest
 sys.path.insert(0, '..')
 
 from mordred.config import Config
-from mordred.mordred import Mordred
 from mordred.task import Task
 
 
@@ -47,10 +46,10 @@ class TestTask(unittest.TestCase):
         """Test whether attributes are initializated"""
 
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        task = Task(morderer.conf)
+        cfg = config.get_conf()
+        task = Task(config)
 
-        self.assertEqual(task.conf, morderer.conf)
+        self.assertEqual(task.config, config)
         self.assertEqual(task.db_sh, task.conf['sortinghat']['database'])
         self.assertEqual(task.db_user, task.conf['sortinghat']['user'])
         self.assertEqual(task.db_password, task.conf['sortinghat']['password'])
@@ -59,16 +58,14 @@ class TestTask(unittest.TestCase):
     def test_run(self):
         """Test whether the Task could be run"""
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        task = Task(morderer.conf)
+        task = Task(config)
         self.assertEqual(task.execute(), None)
 
     def test_compose_p2o_params(self):
         """Test whether p2o params are built correctly for a backend and a repository"""
 
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        task = Task(morderer.conf)
+        task = Task(config)
         params = task._compose_p2o_params(BACKEND_NAME, REPO_NAME)
         self.assertEqual(params, {'url': REPO_NAME})
 
@@ -76,8 +73,7 @@ class TestTask(unittest.TestCase):
         """Test whether perceval params are built correctly for a backend and a repository"""
 
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        task = Task(morderer.conf)
+        task = Task(config)
         params = ['--site', 'stackoverflow.com', '--tagged', 'ovirt',
                   '--tag', 'https://stackoverflow.com/questions/tagged/ovirt',
                   '--api-token', 'token', '--fetch-cache']
@@ -87,8 +83,7 @@ class TestTask(unittest.TestCase):
     def test_get_collection_url(self):
         """Test whether the collection url could be overried in a backend"""
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        task = Task(morderer.conf)
+        task = Task(config)
         task.backend_section = BACKEND_NAME
         self.assertEqual(task.conf['es_collection']['url'], COLLECTION_URL)
         self.assertEqual(task._get_collection_url(), COLLECTION_URL_STACKEXCHANGE)

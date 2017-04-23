@@ -56,6 +56,7 @@ class Mordred:
 
     def __init__(self, config):
         """ config is a Config object """
+        self.config = config
         self.conf = config.get_conf()
 
     def check_es_access(self):
@@ -91,13 +92,12 @@ class Mordred:
             except:
                 raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
-
     def _get_repos_by_backend(self):
         #
         # return dict with backend and list of repositories
         #
         output = {}
-        projects = self.conf['projects_data']
+        projects = TaskProjects.projects
 
         for backend_section in Config.get_backend_sections():
             for pro in projects:
@@ -172,15 +172,14 @@ class Mordred:
             repos_backend = self._get_repos_by_backend()
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
-                t = TasksManager(backend_tasks, backend, repos_backend[backend],
-                                 stopper, self.conf, small_delay)
+                t = TasksManager(backend_tasks, backend, stopper, self.config, small_delay)
                 threads.append(t)
                 t.start()
 
         # launch thread for global tasks
         if len(global_tasks) > 0:
             #FIXME timer is applied to all global_tasks, does it make sense?
-            gt = TasksManager(global_tasks, None, None, stopper, self.conf, big_delay)
+            gt = TasksManager(global_tasks, None, stopper, self.config, big_delay)
             threads.append(gt)
             gt.start()
             if big_delay > 0:
@@ -247,6 +246,7 @@ class Mordred:
                 tasks_cls = [TaskRawDataCollection]
                 if self.conf['phases']['identities']:
                     tasks_cls.append(TaskIdentitiesCollection)
+                logger.warning(tasks_cls)
                 self.execute_tasks(tasks_cls)
 
         except DataCollectionError as e:

@@ -36,7 +36,6 @@ from mordred.task_collection import TaskRawDataCollection
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
 GIT_BACKEND_SECTION = 'git'
-GIT_REPO_NAME = 'https://github.com/Bitergia/mordred.git'
 
 logging.basicConfig(level=logging.INFO)
 
@@ -46,22 +45,17 @@ class TestTaskRawDataCollection(unittest.TestCase):
     def test_initialization(self):
         """Test whether attributes are initializated"""
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        repos = [GIT_REPO_NAME]
         backend_section = GIT_BACKEND_SECTION
-        task = TaskRawDataCollection(morderer.conf, repos=repos, backend_section=backend_section)
+        task = TaskRawDataCollection(config, backend_section=backend_section)
 
-        self.assertEqual(task.conf, morderer.conf)
-        self.assertEqual(task.repos, repos)
+        self.assertEqual(task.config, config)
         self.assertEqual(task.backend_section, backend_section)
 
     def test_run(self):
         """Test whether the Task could be run"""
         config = Config(CONF_FILE)
-        morderer = Mordred(config)
-        repos = [GIT_REPO_NAME]
         backend_section = GIT_BACKEND_SECTION
-        task = TaskRawDataCollection(morderer.conf, repos=repos, backend_section=backend_section)
+        task = TaskRawDataCollection(config, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
 

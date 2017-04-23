@@ -35,9 +35,31 @@ class TaskProjects(Task):
     """ Task to manage the projects config """
 
     ECLIPSE_PROJECTS_URL = 'http://projects.eclipse.org/json/projects/all'
+    projects = {}  # static projects data dict
 
     def is_backend_task(self):
         return False
+
+    @classmethod
+    def get_projects(cls):
+        return cls.projects
+
+    @classmethod
+    def get_repos_by_backend_section(cls, backend_section):
+        """ return list with the repositories for a backend_section """
+
+        repos = []
+        backend = Task.get_backend(backend_section)
+
+        projects = TaskProjects.get_projects()
+
+        for pro in projects:
+            if backend in projects[pro]:
+                repos += projects[pro][backend]
+
+        logger.debug("List of repos for %s: %s", backend_section, repos)
+
+        return repos
 
     def execute(self):
         config = self.conf
@@ -57,8 +79,7 @@ class TaskProjects(Task):
         logger.info("Reading projects data from  %s ", projects_file)
         with open(projects_file, 'r') as fprojects:
             projects = json.load(fprojects)
-        config['projects_data'] = projects
-
+        TaskProjects.projects = projects
 
     def __convert_from_eclipse(self, eclipse_projects):
         """ Convert from eclipse projects format to grimoire projects json format """

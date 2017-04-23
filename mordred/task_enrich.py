@@ -27,8 +27,10 @@ import time
 
 from grimoire_elk.arthur import (do_studies, enrich_backend, refresh_projects,
                                  refresh_identities)
-from mordred.task import Task
+
 from mordred.error import DataEnrichmentError
+from mordred.task import Task
+from mordred.task_projects import TaskProjects
 
 
 logger = logging.getLogger(__name__)
@@ -37,32 +39,35 @@ logger = logging.getLogger(__name__)
 class TaskEnrich(Task):
     """ Basic class shared by all enriching tasks """
 
-    def __init__(self, conf, repos=None, backend_section=None):
-        super().__init__(conf)
-        self.repos = repos
+    def __init__(self, config, backend_section=None):
+        super().__init__(config)
         self.backend_section = backend_section
         # This will be options in next iteration
         self.clean = False
 
     def __enrich_items(self):
-        if not self.repos:
-            logger.warning("No enrich repositories for %s", self.backend_section)
-            return
 
         time_start = time.time()
 
         #logger.info('%s starts for %s ', 'enrichment', self.backend_section)
         logger.info('[%s] enrichment starts', self.backend_section)
 
-        cfg = self.conf
+        cfg = self.config.get_conf()
 
         no_incremental = False
         github_token = None
-        if 'github' in self.conf and 'backend_token' in self.conf['github']:
-            github_token = self.conf['github']['backend_token']
+        if 'github' in cfg and 'backend_token' in cfg['github']:
+            github_token = cfg['github']['backend_token']
         only_studies = False
         only_identities = False
-        for repo in self.repos:
+
+        # repos could change between executions because changes in projects
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
+
+        if not repos:
+            logger.warning("No enrich repositories for %s", self.backend_section)
+
+        for repo in repos:
             # First process p2o params from repo
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
@@ -101,9 +106,9 @@ class TaskEnrich(Task):
                                unaffiliated_group=cfg['sortinghat']['unaffiliated_group'])
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . " \
-                             "Using the backend_args: %s " % (self.backend_section, str(backend_args)))
+                             "Using the backend_args: %s ", self.backend_section, str(backend_args))
                 logger.error("Exception: %s", ex)
-                raise DataEnrichmentError('Failed to produce enriched data for %s' % self.backend_name)
+                raise DataEnrichmentError('Failed to produce enriched data for %s', self.backend_name)
 
         time.sleep(5)  # Safety sleep tp avoid too quick execution
 
@@ -135,13 +140,15 @@ class TaskEnrich(Task):
         do_studies(enrich_backend)
 
     def execute(self):
-        if 'enrich' in self.conf[self.backend_section] and \
-            self.conf[self.backend_section]['enrich'] == False:
+        cfg = self.config.get_conf()
+
+        if 'enrich' in cfg[self.backend_section] and \
+            cfg[self.backend_section]['enrich'] is False:
             logger.info('%s enrich disabled', self.backend_section)
             return
 
         self.__enrich_items()
-        if self.conf['es_enrichment']['autorefresh']:
+        if cfg['es_enrichment']['autorefresh']:
             self.__autorefresh()
-        if self.conf['es_enrichment']['studies']:
+        if cfg['es_enrichment']['studies']:
             self.__studies()

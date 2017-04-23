@@ -43,14 +43,10 @@ logger = logging.getLogger(__name__)
 class TaskIdentitiesCollection(Task):
     """ Class aimed to get identites from raw data """
 
-    def __init__(self, conf, load_ids=True):
-        super().__init__(conf)
+    def __init__(self, config, load_ids=True):
+        super().__init__(config)
 
-        #self.load_orgs = self.conf['sortinghat']['load_orgs']  # Load orgs from file
         self.load_ids = load_ids  # Load identities from raw index
-        #self.unify = unify  # Unify identities
-        #self.autoprofile = autoprofile  # Execute autoprofile
-        #self.affiliate = affiliate # Affiliate identities
         self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
                         'database': self.db_sh, 'host': self.db_host,
                         'port': None}
@@ -62,17 +58,17 @@ class TaskIdentitiesCollection(Task):
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if not self.backend_section:
-            logger.error ("Backend not configured in TaskIdentitiesCollection %s", self.backend_section)
+            logger.error("Backend not configured in TaskIdentitiesCollection %s", self.backend_section)
             return
 
-        backend_conf = self.conf[self.backend_section]
+        backend_conf = self.config.get_conf()[self.backend_section]
 
         if 'collect' in backend_conf and not backend_conf['collect']:
-            logger.info ("Don't load ids from a backend without collection %s", self.backend_section)
+            logger.info("Don't load ids from a backend without collection %s", self.backend_section)
             return
 
         if self.load_ids:
-            logger.info("[%s] Gathering identities from raw data" % self.backend_section)
+            logger.info("[%s] Gathering identities from raw data", self.backend_section)
             enrich_backend = self._get_enrich_backend()
             ocean_backend = self._get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)
@@ -82,31 +78,33 @@ class TaskIdentitiesCollection(Task):
 class TaskIdentitiesInit(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
-    def __init__(self, conf):
-        super().__init__(conf)
+    def __init__(self, config):
+        super().__init__(config)
 
         self.load_orgs = self.conf['sortinghat']['load_orgs']  # Load orgs from file
-        self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
-                        'database': self.db_sh, 'host': self.db_host,
-                        'port': None}
+        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
+                          'database': self.db_sh, 'host': self.db_host,
+                          'port': None}
 
     def is_backend_task(self):
         return False
 
     def execute(self):
 
+        cfg = self.config.get_conf()
+
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
         if self.load_orgs:
-            logger.info("[sortinghat] Loading orgs from file %s", self.conf['sortinghat']['orgs_file'])
-            code = Load(**self.sh_kwargs).run("--orgs", self.conf['sortinghat']['orgs_file'])
+            logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
+            code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
             if code != CMD_SUCCESS:
-                logger.error("[sortinghat] Error loading %s", self.conf['sortinghat']['orgs_file'])
+                logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
             #FIXME get the number of loaded orgs
 
-        if 'identities_file' in self.conf['sortinghat']:
-            filenames = self.conf['sortinghat']['identities_file']
+        if 'identities_file' in cfg['sortinghat']:
+            filenames = cfg['sortinghat']['identities_file']
             for f in filenames:
                 logger.info("[sortinghat] Loading identities from file %s", f)
                 f = f.replace(' ','')
@@ -149,8 +147,10 @@ class TaskIdentitiesMerge(Task):
         return uuids
 
     def execute(self):
+        cfg = self.config.get_conf()
+
         if self.unify:
-            for algo in self.conf['sortinghat']['matching']:
+            for algo in cfg['sortinghat']['matching']:
                 kwargs = {'matching':algo, 'fast_matching':True}
                 logger.info("[sortinghat] Unifying identities using algorithm %s", kwargs['matching'])
                 code = Unify(**self.sh_kwargs).unify(**kwargs)
@@ -166,22 +166,22 @@ class TaskIdentitiesMerge(Task):
 
 
         if self.autoprofile:
-            if not 'autoprofile' in self.conf['sortinghat']:
+            if not 'autoprofile' in cfg['sortinghat']:
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
-                logger.info("[sortinghat] Executing autoprofile: %s", self.conf['sortinghat']['autoprofile'])
-                sources = self.conf['sortinghat']['autoprofile']
+                logger.info("[sortinghat] Executing autoprofile: %s", cfg['sortinghat']['autoprofile'])
+                sources = cfg['sortinghat']['autoprofile']
                 code = AutoProfile(**self.sh_kwargs).autocomplete(sources)
                 if code != CMD_SUCCESS:
                     logger.error("Error in autoprofile %s", kwargs)
 
         if self.bots:
-            if not 'bots_names' in self.conf['sortinghat']:
+            if not 'bots_names' in cfg['sortinghat']:
                 logger.info("[sortinghat] Bots name list not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Marking bots: %s",
-                            self.conf['sortinghat']['bots_names'])
-                for name in self.conf['sortinghat']['bots_names']:
+                            cfg['sortinghat']['bots_names'])
+                for name in cfg['sortinghat']['bots_names']:
                     # First we need the uuids for the profile name
                     uuids = self.__get_uuids_from_profile_name(name)
                     # Then we can modify the profile setting bot flag
@@ -189,10 +189,10 @@ class TaskIdentitiesMerge(Task):
                     for uuid in uuids:
                         api.edit_profile(self.db, uuid, **profile)
                 # For quitting the bot flag - debug feature
-                if 'no_bots_names' in self.conf['sortinghat']:
+                if 'no_bots_names' in cfg['sortinghat']:
                     logger.info("[sortinghat] Removing Marking bots: %s",
-                                self.conf['sortinghat']['no_bots_names'])
-                    for name in self.conf['sortinghat']['no_bots_names']:
+                                cfg['sortinghat']['no_bots_names'])
+                    for name in cfg['sortinghat']['no_bots_names']:
                         uuids = self.__get_uuids_from_profile_name(name)
                         profile = {"is_bot": False}
                         for uuid in uuids:
