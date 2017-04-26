@@ -23,13 +23,18 @@
 
 import json
 import logging
+from threading import Lock
 import shutil
 
 import requests
 
+from copy import deepcopy
+
 from mordred.config import Config
 from mordred.task import Task
 from VizGrimoireUtils.eclipse.eclipse_projects_lib import get_repos_list_project, get_mls_repos
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -38,19 +43,26 @@ class TaskProjects(Task):
 
     GLOBAL_PROJECT = 'unknown'  # project to download and enrich full sites
     DEBUG = False
-    projects = {}  # static projects data dict
+    __projects = {}  # static projects data dict
+    projects_lock = Lock()
 
     def is_backend_task(self):
         return False
 
     @classmethod
     def get_projects(cls):
-        return cls.projects
+        with cls.projects_lock:
+            # Return a deepcopy so it is not changed
+            return deepcopy(cls.__projects)
+
+    @classmethod
+    def set_projects(cls, projects):
+        with cls.projects_lock:
+            cls.__projects = projects
 
     @classmethod
     def get_repos_by_backend_section(cls, backend_section):
         """ return list with the repositories for a backend_section """
-
         repos = []
         backend = Task.get_backend(backend_section)
 
@@ -78,8 +90,7 @@ class TaskProjects(Task):
         logger.info("Reading projects data from  %s ", projects_file)
         with open(projects_file, 'r') as fprojects:
             projects = json.load(fprojects)
-        TaskProjects.projects = projects
-
+        TaskProjects.set_projects(projects)
 
     def __get_eclipse_projects(self):
         config = self.conf

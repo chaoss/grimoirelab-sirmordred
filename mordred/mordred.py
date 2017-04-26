@@ -97,7 +97,7 @@ class Mordred:
         # return dict with backend and list of repositories
         #
         output = {}
-        projects = TaskProjects.projects
+        projects = TaskProjects.get_projects()
 
         for backend_section in Config.get_backend_sections():
             for pro in projects:
