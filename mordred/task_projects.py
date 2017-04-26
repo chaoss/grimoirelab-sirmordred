@@ -126,6 +126,6 @@ class TaskProjects(Task):
             pdata["bugzilla"] = get_repos_list_project(project, eclipse_projects, "its")
             pdata["mailing_lists"] = get_mls_repos(eclipse_projects[project], True)
             pdata["gerrit"] = get_repos_list_project(project, eclipse_projects, "scr", 'git.eclipse.org')
-            pdata["irc"] = get_repos_list_project(project, eclipse_projects, "irc")
+            # pdata["irc"] = get_repos_list_project(project, eclipse_projects, "irc")
 
         return projects
