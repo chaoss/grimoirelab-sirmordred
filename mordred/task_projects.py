@@ -28,13 +28,14 @@ import shutil
 import requests
 
 from mordred.task import Task
+from VizGrimoireUtils.eclipse.eclipse_projects_lib import get_repos_list_project, get_mls_repos
 
 logger = logging.getLogger(__name__)
 
 class TaskProjects(Task):
     """ Task to manage the projects config """
 
-    ECLIPSE_PROJECTS_URL = 'http://projects.eclipse.org/json/projects/all'
+    DEBUG = False
     projects = {}  # static projects data dict
 
     def is_backend_task(self):
@@ -66,50 +67,59 @@ class TaskProjects(Task):
         projects_file = config['projects']['projects_file']
 
         if config['projects']['load_eclipse']:
-            logger.info("Getting Eclipse projects (1 min) from  %s ", self.ECLIPSE_PROJECTS_URL)
-            eclipse_projects_resp = requests.get(self.ECLIPSE_PROJECTS_URL)
-            eclipse_projects = eclipse_projects_resp.json()
-            projects = self.__convert_from_eclipse(eclipse_projects)
-            # Create a backup file for current projects_file
-            shutil.copyfile(projects_file, projects_file + ".bak")
-            logger.info("Writing Eclipse projects to %s ", projects_file)
-            with open(projects_file, "w") as fprojects:
-                json.dump(projects, fprojects, indent=True)
+            self.__get_eclipse_projects()
 
         logger.info("Reading projects data from  %s ", projects_file)
         with open(projects_file, 'r') as fprojects:
             projects = json.load(fprojects)
         TaskProjects.projects = projects
 
+
+    def __get_eclipse_projects(self):
+        config = self.conf
+        projects_file = config['projects']['projects_file']
+
+        eclipse_projects_url = 'http://projects.eclipse.org/json/projects/all'
+        # For debugging with a Eclipse local file
+        eclipse_projects_file = 'VizGrimoireUtils/eclipse/http:__projects.eclipse.org_json_projects_all.json'
+
+        if self.DEBUG:
+            with open(eclipse_projects_file) as fprojects:
+                logger.info("Reading Eclipse projects from file %s", eclipse_projects_file)
+                eclipse_projects = json.load(fprojects)['projects']
+        else:
+            logger.info("Getting Eclipse projects (1 min) from  %s ", eclipse_projects_url)
+            eclipse_projects_resp = requests.get(eclipse_projects_url)
+            eclipse_projects = eclipse_projects_resp.json()['projects']
+        projects = self.__convert_from_eclipse(eclipse_projects)
+        # Create a backup file for current projects_file
+        shutil.copyfile(projects_file, projects_file + ".bak")
+        logger.info("Writing Eclipse projects to %s ", projects_file)
+        with open(projects_file, "w") as fprojects:
+            json.dump(projects, fprojects, indent=True)
+
+
     def __convert_from_eclipse(self, eclipse_projects):
         """ Convert from eclipse projects format to grimoire projects json format """
-        # Extracted from https://github.com/grimoirelab/GrimoireELK/blob/master/mordred/utils/filter_eclipse_projects.py
-        output = {"projects":{}}
-        tree = eclipse_projects
-        count_repos = 0
-        for p in tree["projects"]:
-            output["projects"][p] = {}
 
-            res_repos = []
-            for rep in tree["projects"][p]["source_repo"]:
-                url = rep["url"]
-                url = url.replace("git.eclipse.org/c/", "git.eclipse.org/gitroot/")
-                res_repos.append({"url":url})
-            count_repos += len(tree["projects"][p]["source_repo"])
-            output["projects"][p]["source_repo"] = []
-            output["projects"][p]["git"] = res_repos
-            output["projects"][p]["title"] = tree["projects"][p]["title"]
-            output["projects"][p]["parent_project"] = tree["projects"][p]["parent_project"]
-            output["projects"][p]["bugzilla"] = tree["projects"][p]["bugzilla"]
-            output["projects"][p]["mailing_lists"] = tree["projects"][p]["mailing_lists"]
-            output["projects"][p]["description"] = tree["projects"][p]["description"]
-            output["projects"][p]["dev_list"] = tree["projects"][p]["dev_list"]
-            output["projects"][p]["downloads"] = tree["projects"][p]["downloads"]
-            output["projects"][p]["wiki_url"] = tree["projects"][p]["wiki_url"]
-            output["projects"][p]["forums"] = tree["projects"][p]["forums"]
+        projects = {}
 
-        logger.debug("Converting project/repos JSON to Grimoire format from Eclipse")
-        logger.debug("- %s projects", str(len(tree["projects"])))
-        logger.debug("- %s repositories", str(count_repos))
+        # We need the global project for downloading the full Bugzilla and Gerrit
+        projects['unknown'] = {
+            "gerrit": ["git.eclipse.org"],
+            "bugzilla": ["https://bugs.eclipse.org/bugs/"]
+        }
 
-        return output
+        for project in eclipse_projects:
+            projects[project] = {}
+            pdata = projects[project]
+            pdata["meta"] = {
+                "title": eclipse_projects[project]["title"]
+            }
+            pdata["git"] = get_repos_list_project(project, eclipse_projects, "scm")
+            pdata["bugzilla"] = get_repos_list_project(project, eclipse_projects, "its")
+            pdata["mailing_lists"] = get_mls_repos(eclipse_projects[project], True)
+            pdata["gerrit"] = get_repos_list_project(project, eclipse_projects, "scr", 'git.eclipse.org')
+            pdata["irc"] = get_repos_list_project(project, eclipse_projects, "irc")
+
+        return projects
