@@ -364,6 +364,12 @@ class Config():
 
         return gelk_backends + extra_backends
 
+    @classmethod
+    def get_global_data_sources(cls):
+        """ Data sources than are collected and enriched globally """
+
+        return ['bugzilla', 'bugzillarest', 'gerrit']
+
     def get_data_sources(self):
         data_sources = []
         backend_sections = self.get_backend_sections()

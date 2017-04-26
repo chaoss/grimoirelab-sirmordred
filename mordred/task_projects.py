@@ -27,6 +27,7 @@ import shutil
 
 import requests
 
+from mordred.config import Config
 from mordred.task import Task
 from VizGrimoireUtils.eclipse.eclipse_projects_lib import get_repos_list_project, get_mls_repos
 
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 class TaskProjects(Task):
     """ Task to manage the projects config """
 
+    GLOBAL_PROJECT = 'unknown'  # project to download and enrich full sites
     DEBUG = False
     projects = {}  # static projects data dict
 
@@ -56,7 +58,11 @@ class TaskProjects(Task):
 
         for pro in projects:
             if backend in projects[pro]:
-                repos += projects[pro][backend]
+                if backend in Config.get_global_data_sources() and pro != cls.GLOBAL_PROJECT:
+                    logger.debug("Skip global data source %s for project %s",
+                                 backend, pro)
+                else:
+                    repos += projects[pro][backend]
 
         logger.debug("List of repos for %s: %s", backend_section, repos)
 
