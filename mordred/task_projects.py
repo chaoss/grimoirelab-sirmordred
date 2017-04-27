@@ -23,8 +23,10 @@
 
 import json
 import logging
-from threading import Lock
 import shutil
+
+from threading import Lock
+from os import path
 
 import requests
 
@@ -44,6 +46,7 @@ class TaskProjects(Task):
     GLOBAL_PROJECT = 'unknown'  # project to download and enrich full sites
     DEBUG = False
     __projects = {}  # static projects data dict
+    projects_last_diff = []  # Projects changed in last update
     projects_lock = Lock()
 
     def is_backend_task(self):
@@ -58,7 +61,15 @@ class TaskProjects(Task):
     @classmethod
     def set_projects(cls, projects):
         with cls.projects_lock:
+            old_projects_set = set(cls.__projects.keys())
+            new_projects_set = set(projects.keys())
+            cls.projects_last_diff = list(old_projects_set ^ new_projects_set)
+            logger.debug("Update project diff %s", cls.projects_last_diff)
             cls.__projects = projects
+
+    @classmethod
+    def get_projects_last_diff(cls):
+        return cls.projects_last_diff
 
     @classmethod
     def get_repos_by_backend_section(cls, backend_section):
@@ -108,15 +119,16 @@ class TaskProjects(Task):
             logger.info("Getting Eclipse projects (1 min) from  %s ", eclipse_projects_url)
             eclipse_projects_resp = requests.get(eclipse_projects_url)
             eclipse_projects = eclipse_projects_resp.json()['projects']
-        projects = self.__convert_from_eclipse(eclipse_projects)
+        projects = self.convert_from_eclipse(eclipse_projects)
         # Create a backup file for current projects_file
-        shutil.copyfile(projects_file, projects_file + ".bak")
+        if path.isfile(projects_file):
+            shutil.copyfile(projects_file, projects_file + ".bak")
         logger.info("Writing Eclipse projects to %s ", projects_file)
         with open(projects_file, "w") as fprojects:
             json.dump(projects, fprojects, indent=True)
 
 
-    def __convert_from_eclipse(self, eclipse_projects):
+    def convert_from_eclipse(self, eclipse_projects):
         """ Convert from eclipse projects format to grimoire projects json format """
 
         projects = {}
