@@ -38,6 +38,11 @@ class Config():
         self.raw_conf = None
         self.conf = self.__read_conf_files()
 
+        # If projects are not already loaded do it
+        from .task_projects import TaskProjects
+        if not TaskProjects.get_projects():
+            TaskProjects(self).execute()
+
     @classmethod
     def backend_section_params(self):
         # Params that must exists in all backends
