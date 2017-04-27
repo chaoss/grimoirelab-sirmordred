@@ -41,7 +41,10 @@ class Config():
         # If projects are not already loaded do it
         from .task_projects import TaskProjects
         if not TaskProjects.get_projects():
+            # logging is not yet ready
+            print("Loading projects")
             TaskProjects(self).execute()
+            print("Done")
 
     @classmethod
     def backend_section_params(self):
