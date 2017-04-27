@@ -44,7 +44,6 @@ class TaskProjects(Task):
     """ Task to manage the projects config """
 
     GLOBAL_PROJECT = 'unknown'  # project to download and enrich full sites
-    DEBUG = False
     __projects = {}  # static projects data dict
     projects_last_diff = []  # Projects changed in last update
     projects_lock = Lock()
@@ -111,15 +110,11 @@ class TaskProjects(Task):
         # For debugging with a Eclipse local file
         eclipse_projects_file = 'VizGrimoireUtils/eclipse/http:__projects.eclipse.org_json_projects_all.json'
 
-        if self.DEBUG:
-            with open(eclipse_projects_file) as fprojects:
-                logger.info("Reading Eclipse projects from file %s", eclipse_projects_file)
-                eclipse_projects = json.load(fprojects)['projects']
-        else:
-            logger.info("Getting Eclipse projects (1 min) from  %s ", eclipse_projects_url)
-            eclipse_projects_resp = requests.get(eclipse_projects_url)
-            eclipse_projects = eclipse_projects_resp.json()['projects']
+        logger.info("Getting Eclipse projects (1 min) from  %s ", eclipse_projects_url)
+        eclipse_projects_resp = requests.get(eclipse_projects_url)
+        eclipse_projects = eclipse_projects_resp.json()['projects']
         projects = self.convert_from_eclipse(eclipse_projects)
+
         # Create a backup file for current projects_file
         if path.isfile(projects_file):
             shutil.copyfile(projects_file, projects_file + ".bak")
