@@ -13,6 +13,7 @@ if [ $RELEASE ];
     unset PERCEVAL
     unset PERCEVAL_MOZILLA
     unset REPORTS
+    unset VIZGRIMOIREUTILS
     TMPFILE=`mktemp`
     wget https://raw.githubusercontent.com/Bitergia/mordred/master/docker/unified_releases/$RELEASE -O $TMPFILE
     source $TMPFILE
@@ -34,6 +35,12 @@ cd /home/bitergia && \
 git clone https://github.com/grimoirelab/GrimoireELK && \
     cd GrimoireELK && \
     git checkout $GRIMOIREELK
+
+# get VizGrimoireUtils repository needed by mordred (eclipse projects)
+cd /home/bitergia && \
+git clone https://github.com/VizGrimoire/VizGrimoireUtils && \
+    cd VizGrimoireUtils && \
+    git checkout $VIZGRIMOIREUTILS
 
 # get Mordred repository
 cd /home/bitergia && \
