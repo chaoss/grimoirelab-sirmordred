@@ -23,6 +23,7 @@
 #
 
 import logging
+import subprocess
 
 from mordred.task import Task
 from sortinghat import api
@@ -146,34 +147,81 @@ class TaskIdentitiesMerge(Task):
                     uuids.append(p.uuid)
         return uuids
 
+    def __get_sh_command(self):
+        cfg = self.config.get_conf()
+
+        db_user = cfg['sortinghat']['user']
+        db_password = cfg['sortinghat']['password']
+        db_host = cfg['sortinghat']['host']
+        db_name = cfg['sortinghat']['database']
+        cmd = ['sortinghat', '-u', db_user, '-p', db_password, '--host', db_host,
+               '-d', db_name]
+
+        return cmd
+
+    def do_affiliate(self):
+        cmd = self.__get_sh_command()
+        cmd += ['affiliate']
+        logger.debug("Executing %s", cmd)
+        return subprocess.call(cmd)
+        # return Affiliate(**self.sh_kwargs).affiliate()
+
+    def do_autoprofile(self, sources):
+        cmd = self.__get_sh_command()
+        cmd += ['autoprofile'] + sources
+        logger.debug("Executing %s", cmd)
+        return subprocess.call(cmd)
+        # return  AutoProfile(**self.sh_kwargs).autocomplete(sources)
+
+
+    def do_unify(self, kwargs):
+        cmd = self.__get_sh_command()
+        cmd += ['unify', '--fast-matching', '-m', kwargs['matching']]
+        logger.debug("Executing %s", cmd)
+        return subprocess.call(cmd)
+        # return Unify(**self.sh_kwargs).unify(**kwargs)
+
     def execute(self):
         cfg = self.config.get_conf()
 
         if self.unify:
             for algo in cfg['sortinghat']['matching']:
                 kwargs = {'matching':algo, 'fast_matching':True}
-                logger.info("[sortinghat] Unifying identities using algorithm %s", kwargs['matching'])
-                code = Unify(**self.sh_kwargs).unify(**kwargs)
-                if code != CMD_SUCCESS:
+                logger.info("[sortinghat] Unifying identities using algorithm %s",
+                            kwargs['matching'])
+                # code = self.do_unify(kwargs)
+                # if code != CMD_SUCCESS:
+                #     logger.error("[sortinghat] Error in unify %s", kwargs)
+                # Using subprocess approach to be sure memory is freed
+                code = self.do_unify(kwargs)
+                if code != 0:
                     logger.error("[sortinghat] Error in unify %s", kwargs)
 
         if self.affiliate:
             # Global enrollments using domains
             logger.info("[sortinghat] Executing affiliate")
-            code = Affiliate(**self.sh_kwargs).affiliate()
-            if code != CMD_SUCCESS:
-                logger.error("[sortinghat] Error in affiliate %s", kwargs)
-
+            # code = self.do_affiliate()
+            # if code != CMD_SUCCESS:
+            #     logger.error("[sortinghat] Error in affiliate %s", kwargs)
+            # Using subprocess approach to be sure memory is freed
+            code = self.do_affiliate()
+            if code != 0:
+                logger.error("[sortinghat] Error in affiliate")
 
         if self.autoprofile:
             if not 'autoprofile' in cfg['sortinghat']:
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
-                logger.info("[sortinghat] Executing autoprofile: %s", cfg['sortinghat']['autoprofile'])
+                logger.info("[sortinghat] Executing autoprofile for sources: %s",
+                            cfg['sortinghat']['autoprofile'])
                 sources = cfg['sortinghat']['autoprofile']
-                code = AutoProfile(**self.sh_kwargs).autocomplete(sources)
-                if code != CMD_SUCCESS:
-                    logger.error("Error in autoprofile %s", kwargs)
+                # code = self.do_autoprofile()
+                # if code != CMD_SUCCESS:
+                #     logger.error("Error in autoprofile %s", kwargs)
+                # Using subprocess approach to be sure memory is freed
+                code = self.do_autoprofile(sources)
+                if code != 0:
+                    logger.error("[sortinghat] Error in autoprofile %s", sources)
 
         if self.bots:
             if not 'bots_names' in cfg['sortinghat']:
