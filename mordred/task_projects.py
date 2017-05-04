@@ -123,6 +123,36 @@ class TaskProjects(Task):
         with open(projects_file, "w") as fprojects:
             json.dump(projects, fprojects, indent=True)
 
+    def __convert_eclipse_mls(self, mls_data):
+        """ We need to convert:
+
+        [
+         "https://dev.eclipse.org/mailman/listinfo/sisu-dev",
+         "https://dev.eclipse.org/mailman/listinfo/sisu-users"
+        ]
+
+        to
+
+        [
+            "sisu-users /home/bitergia/mboxes/sisu-users.mbox/sisu-users.mbox",
+            "sisu-dev /home/bitergia/mboxes/sisu-dev.mbox/sisu-dev.mbox"
+        ]
+
+        """
+
+        mbox_archives = '/home/bitergia/mboxes'
+        mls = []
+
+        for mlist in mls_data:
+            if len(mlist.rsplit("/", 1)) != 2:
+                logger.warning("Wrong list format %s", mlist)
+                continue
+            name = mlist.rsplit("/", 1)[1]
+            list_new = "%s %s/%s.mbox/%s.mbox" % (name, mbox_archives, name, name)
+            mls.append(list_new)
+
+        return mls
+
 
     def convert_from_eclipse(self, eclipse_projects):
         """ Convert from eclipse projects format to grimoire projects json format """
@@ -144,6 +174,7 @@ class TaskProjects(Task):
             pdata["git"] = get_repos_list_project(project, eclipse_projects, "scm")
             pdata["bugzilla"] = get_repos_list_project(project, eclipse_projects, "its")
             pdata["mailing_lists"] = get_mls_repos(eclipse_projects[project], True)
+            pdata["mbox"] = self.__convert_eclipse_mls(pdata["mailing_lists"])
             pdata["gerrit"] = get_repos_list_project(project, eclipse_projects, "scr", 'git.eclipse.org')
             # pdata["irc"] = get_repos_list_project(project, eclipse_projects, "irc")
 
