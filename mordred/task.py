@@ -133,6 +133,9 @@ class Task():
             gh_token = self.conf['github']['backend_token']
             enrich_backend.set_github_token(gh_token)
 
+        if 'unaffiliated_group' in self.conf['sortinghat']:
+            enrich_backend.unaffiliated_group = self.conf['sortinghat']['unaffiliated_group']
+
         return enrich_backend
 
     def _get_ocean_backend(self, enrich_backend):
