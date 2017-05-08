@@ -38,7 +38,7 @@ from mordred.error import DataEnrichmentError
 from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
-from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
+from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesLoad, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsMenu
 from mordred.task_projects import TaskProjects
@@ -179,6 +179,7 @@ class Mordred:
         # launch thread for global tasks
         if len(global_tasks) > 0:
             #FIXME timer is applied to all global_tasks, does it make sense?
+            # All tasks are executed in the same thread sequentially
             gt = TasksManager(global_tasks, None, stopper, self.config, big_delay)
             threads.append(gt)
             gt.start()
@@ -233,7 +234,7 @@ class Mordred:
         self.execute_tasks(tasks_cls)
 
         if self.conf['phases']['identities']:
-            tasks_cls = [TaskIdentitiesInit]
+            tasks_cls = [TaskIdentitiesLoad]
             self.execute_tasks(tasks_cls)
 
         # handling the exception below and continuing the execution is
@@ -325,6 +326,8 @@ class Mordred:
         if self.conf['phases']['collection']:
             all_tasks_cls.append(TaskRawDataCollection)
         if self.conf['phases']['identities']:
+            # load identities and orgs periodically for updates
+            all_tasks_cls.append(TaskIdentitiesLoad)
             all_tasks_cls.append(TaskIdentitiesMerge)
             if self.conf['phases']['collection']:
                 all_tasks_cls.append(TaskIdentitiesCollection)

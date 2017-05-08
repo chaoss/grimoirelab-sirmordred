@@ -24,6 +24,9 @@
 
 import logging
 import subprocess
+import tempfile
+
+import requests
 
 from mordred.task import Task
 from sortinghat import api
@@ -76,7 +79,7 @@ class TaskIdentitiesCollection(Task):
             #FIXME get the number of ids gathered
 
 
-class TaskIdentitiesInit(Task):
+class TaskIdentitiesLoad(Task):
     """ Basic class shared by all Sorting Hat tasks """
 
     def __init__(self, config):
@@ -91,6 +94,20 @@ class TaskIdentitiesInit(Task):
         return False
 
     def execute(self):
+
+        def is_remote(filename):
+            """ Naive implementation. To be evolved """
+            remote = False
+            if 'http' in filename:
+                return True
+            return remote
+
+        def load_identities_file(filename):
+            logger.info("[sortinghat] Loading identities from file %s", filename)
+            code = Load(**self.sh_kwargs).run("--identities", filename)
+            if code != CMD_SUCCESS:
+                logger.error("[sortinghat] Error loading %s", filename)
+
 
         cfg = self.config.get_conf()
 
@@ -107,11 +124,16 @@ class TaskIdentitiesInit(Task):
         if 'identities_file' in cfg['sortinghat']:
             filenames = cfg['sortinghat']['identities_file']
             for f in filenames:
-                logger.info("[sortinghat] Loading identities from file %s", f)
-                f = f.replace(' ','')
-                code = Load(**self.sh_kwargs).run("--identities", f )
-                if code != CMD_SUCCESS:
-                    logger.error("[sortinghat] Error loading %s", f)
+                f = f.replace(' ', '')  # spaces used in config file list
+                if is_remote(f):
+                    r = requests.get(f)
+                    with tempfile.NamedTemporaryFile() as temp:
+                        temp.write(r.content)
+                        temp.flush()
+                        load_identities_file(temp.name)
+                    raise
+                else:
+                    load_identities_file(f)
 
 
 class TaskIdentitiesMerge(Task):
