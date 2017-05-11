@@ -85,7 +85,6 @@ class TaskIdentitiesLoad(Task):
     def __init__(self, config):
         super().__init__(config)
 
-        self.load_orgs = self.conf['sortinghat']['load_orgs']  # Load orgs from file
         self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
                           'database': self.db_sh, 'host': self.db_host,
                           'port': None}
@@ -114,7 +113,9 @@ class TaskIdentitiesLoad(Task):
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
-        if self.load_orgs:
+        if 'load_orgs' in cfg['sortinghat']:
+            if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
+                raise RuntimeError("Load orgs active but no orgs_file configured")
             logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
             code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
             if code != CMD_SUCCESS:
@@ -131,7 +132,6 @@ class TaskIdentitiesLoad(Task):
                         temp.write(r.content)
                         temp.flush()
                         load_identities_file(temp.name)
-                    raise
                 else:
                     load_identities_file(f)
 
