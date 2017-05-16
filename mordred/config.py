@@ -151,7 +151,18 @@ class Config():
                     "optional": True,
                     "default": False,
                     "type": bool
+                },
+                "bulk_size": {
+                    "optional": True,
+                    "default": 1000,
+                    "type": int
+                },
+                "scroll_size": {
+                    "optional": True,
+                    "default": 100,
+                    "type": int
                 }
+
             }
         }
         params_projects = {

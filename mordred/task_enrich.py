@@ -27,6 +27,8 @@ import time
 
 from grimoire_elk.arthur import (do_studies, enrich_backend, refresh_projects,
                                  refresh_identities)
+from grimoire_elk.elastic_items import ElasticItems
+from grimoire_elk.elk.elastic import ElasticSearch
 
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
@@ -53,6 +55,12 @@ class TaskEnrich(Task):
         logger.info('[%s] enrichment starts', self.backend_section)
 
         cfg = self.config.get_conf()
+
+        if 'scroll_size' in cfg['general']:
+            ElasticItems.scroll_size = cfg['general']['scroll_size']
+
+        if 'bulk_size' in cfg['general']:
+            ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
 
         no_incremental = False
         github_token = None

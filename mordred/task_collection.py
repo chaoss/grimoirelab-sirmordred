@@ -26,6 +26,9 @@ import logging
 import time
 
 from grimoire_elk.arthur import feed_backend
+from grimoire_elk.elastic_items import ElasticItems
+from grimoire_elk.elk.elastic import ElasticSearch
+
 from mordred.error import DataCollectionError
 from mordred.task import Task
 from mordred.task_projects import TaskProjects
@@ -46,6 +49,13 @@ class TaskRawDataCollection(Task):
 
     def execute(self):
         cfg = self.config.get_conf()
+
+        if 'scroll_size' in cfg['general']:
+            ElasticItems.scroll_size = cfg['general']['scroll_size']
+
+        if 'bulk_size' in cfg['general']:
+            ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
+
 
         if 'collect' in cfg[self.backend_section] and \
             cfg[self.backend_section]['collect'] == False:
