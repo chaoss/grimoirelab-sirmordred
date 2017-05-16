@@ -113,7 +113,7 @@ class TaskIdentitiesLoad(Task):
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
-        if 'load_orgs' in cfg['sortinghat']:
+        if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:
             if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
                 raise RuntimeError("Load orgs active but no orgs_file configured")
             logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
