@@ -8,6 +8,7 @@ if [ $RELEASE ];
     then
     unset SORTINGHAT
     unset GRIMOIREELK
+    unset GRIMOIRELAB_TOOLKIT
     unset MORDRED
     unset PANELS
     unset PERCEVAL
@@ -59,6 +60,13 @@ cd /home/bitergia && \
 git clone https://github.com/grimoirelab/reports.git reports && \
     cd reports && \
     git checkout $REPORTS
+
+# get GrimoireLab Toolkit repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/grimoirelab-toolkit.git && \
+    cd grimoirelab-toolkit && \
+    git checkout $GRIMOIRELAB_TOOLKIT && \
+    sudo python3 setup.py install
 
 # get Perceval repository
 cd /home/bitergia && \
