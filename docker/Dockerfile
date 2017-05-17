@@ -44,7 +44,8 @@ RUN apt-get -y remove python3-requests
 RUN pip3 install sqlalchemy
 
 # sortinghat needs pandas
-RUN pip3 install pandas
+# With 0.20 it does not work with current SH 0.3
+RUN pip3 install pandas==0.19.2
 
 # reports needs prettylotlib and elasticsearch_dsl
 RUN pip3 install prettyplotlib
