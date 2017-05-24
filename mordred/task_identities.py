@@ -47,9 +47,6 @@ logger = logging.getLogger(__name__)
 class TaskIdentitiesCollection(Task):
     """ Class aimed to get identites from raw data """
 
-    # Not used yet because the same task is implemented during enrichment
-    # Also, it misses the support for filter-raw and filters-raw-prefix
-
     def __init__(self, config, load_ids=True):
         super().__init__(config)
 

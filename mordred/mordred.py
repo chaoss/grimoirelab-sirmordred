@@ -38,7 +38,7 @@ from mordred.error import DataEnrichmentError
 from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
-from mordred.task_identities import TaskIdentitiesLoad, TaskIdentitiesMerge
+from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesLoad, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsMenu
 from mordred.task_projects import TaskProjects
@@ -245,6 +245,8 @@ class Mordred:
         try:
             if self.conf['phases']['collection']:
                 tasks_cls = [TaskRawDataCollection]
+                if self.conf['phases']['identities']:
+                    tasks_cls.append(TaskIdentitiesCollection)
                 logger.warning(tasks_cls)
                 self.execute_tasks(tasks_cls)
 
@@ -327,6 +329,8 @@ class Mordred:
             # load identities and orgs periodically for updates
             all_tasks_cls.append(TaskIdentitiesLoad)
             all_tasks_cls.append(TaskIdentitiesMerge)
+            if self.conf['phases']['collection']:
+                all_tasks_cls.append(TaskIdentitiesCollection)
         if self.conf['phases']['enrichment']:
             all_tasks_cls.append(TaskEnrich)
         if self.conf['phases']['track_items']:
