@@ -138,13 +138,53 @@ class Task():
 
         return enrich_backend
 
+    def __filters_raw(self, repo):
+        """ Get the filters raw for a repository """
+        p2o_args = self._compose_p2o_params(self.backend_section, repo)
+        filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+        filters_raw_prefix = p2o_args['filters-raw-prefix'] \
+                            if 'filters-raw-prefix' in p2o_args else None
+
+        # filter_raw must be converted from the string param to a dict
+        filter_raw_dict = {}
+        if filter_raw:
+            filter_raw_dict['name'] = filter_raw.split(":")[0].replace('"', '')
+            filter_raw_dict['value'] = filter_raw.split(":")[1].replace('"', '')
+        # filters_raw_prefix must be converted from the list param to
+        # DSL query format for a should filter inside a boolean filter
+        filter_raw_should = None
+        if filters_raw_prefix:
+            filter_raw_should = {"should": []}
+            for filter_prefix in filters_raw_prefix:
+                fname = filter_prefix.split(":")[0].replace('"', '')
+                fvalue = filter_prefix.split(":")[1].replace('"', '')
+                filter_raw_should["should"].append(
+                    {
+                        "prefix": {fname : fvalue}
+                    }
+                )
+        return (filter_raw_dict, filter_raw_should)
+
+
     def _get_ocean_backend(self, enrich_backend):
         backend_cmd = None
 
         no_incremental = False
         clean = False
 
-        ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
+        from .task_projects import TaskProjects
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
+        if len(repos) == 1:
+            # Support for filter raw when we have one repo
+            (filter_raw, filters_raw_prefix) = self.__filters_raw(repos[0])
+            if filter_raw or filters_raw_prefix:
+                logger.info("Using %s %s for getting identities from raw",
+                            filter_raw, filters_raw_prefix)
+            ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental,
+                                              filter_raw, filters_raw_prefix)
+        else:
+            ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
+
         elastic_ocean = get_elastic(self._get_collection_url(),
                                     self.conf[self.backend_section]['raw_index'],
                                     clean, ocean_backend)
