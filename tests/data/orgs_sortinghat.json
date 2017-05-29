@@ -1,0 +1,139 @@
+{
+    "blacklist": [], 
+    "organizations": {
+        "Barco": [
+            {
+                "domain": "barco.com", 
+                "is_top": true
+            }
+        ], 
+        "Beamly": [
+            {
+                "domain": "beamly.com", 
+                "is_top": true
+            }
+        ], 
+        "Beijing Rising Technology Co.": [
+            {
+                "domain": "rising-global.com", 
+                "is_top": true
+            }, 
+            {
+                "domain": "rising.com.cn", 
+                "is_top": true
+            }
+        ], 
+        "Belden": [
+            {
+                "domain": "belden.com", 
+                "is_top": true
+            }
+        ], 
+        "BestSolution": [
+            {
+                "domain": "bestsolution.at", 
+                "is_top": true
+            }
+        ], 
+        "BetterLinux": [
+            {
+                "domain": "betterlinux.com", 
+                "is_top": true
+            }
+        ], 
+        "Big Switch Networks": [
+            {
+                "domain": "bigswitch.com", 
+                "is_top": true
+            }
+        ], 
+        "Bigfoot Networks": [
+            {
+                "domain": "bigfootnetworks.com", 
+                "is_top": true
+            }
+        ], 
+        "Bigpoint": [
+            {
+                "domain": "bigppoint.com", 
+                "is_top": true
+            }, 
+            {
+                "domain": "bigppoint.net", 
+                "is_top": true
+            }
+        ], 
+        "Bingham University": [
+            {
+                "domain": "binghamuni.edu.ng", 
+                "is_top": true
+            }
+        ], 
+        "Birst": [
+            {
+                "domain": "birst.com", 
+                "is_top": true
+            }
+        ], 
+        "Bit-isle, Inc.": [
+            {
+                "domain": "bit-isle.jp", 
+                "is_top": true
+            }
+        ], 
+        "BitBox, Ltd.": [
+            {
+                "domain": "bitbox.co.uk", 
+                "is_top": true
+            }
+        ], 
+        "BitGo": [
+            {
+                "domain": "bitgo.com", 
+                "is_top": true
+            }
+        ], 
+        "BitPay": [
+            {
+                "domain": "bitpay.com", 
+                "is_top": true
+            }
+        ], 
+        "BitSim": [
+            {
+                "domain": "bitsim.com", 
+                "is_top": true
+            }
+        ], 
+        "BitSource.org": [
+            {
+                "domain": "bitsource.org", 
+                "is_top": true
+            }
+        ], 
+        "BitWagon Software": [
+            {
+                "domain": "bitwagon.com", 
+                "is_top": true
+            }
+        ], 
+        "Bitcoin Foundation": [
+            {
+                "domain": "bitcoin-contact.org", 
+                "is_top": true
+            }, 
+            {
+                "domain": "bitcoin.org.pl", 
+                "is_top": true
+            }
+        ], 
+        "Bitergia": [
+            {
+                "domain": "bitergia.com", 
+                "is_top": true
+            }
+        ]
+    },
+    "time": "2016-04-25 17:14:30.375769",
+    "uidentities": {}
+} 

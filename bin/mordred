@@ -28,13 +28,21 @@ import configparser
 import logging
 import os
 import sys
+import traceback
 
 sys.path.insert(1, '.')
-from mordred.mordred import Mordred, ElasticSearchError
+
+from mordred.config import Config
+from mordred.error import ElasticSearchError
+from mordred.error import DataCollectionError
+from mordred.mordred import Mordred
 
 
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
 """need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
+
+
+logger = logging.getLogger(__name__)
 
 
 def setup_logs(logs_dir, debug_mode):
@@ -97,50 +105,50 @@ def parse_args():
         )
 
     parser.add_argument('-c','--config', help='Configuration file',
-        required=True, dest='config_file')
+                        dest='config_file')
+    parser.add_argument('-t','--template', help='Create template configuration file',
+                        dest='config_template_file')
+    parser.add_argument('-p','--phases', nargs='*',
+                        help='List of phases to execute (update is set to false)')
 
     args = parser.parse_args()
     return args
 
-
-def log_conf_from(config_file):
-
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    try:
-        logs_dir = config.get('general','logs_dir')
-    except:
-        print("Error reading the configuration file %s: 'logs_dir' variable in 'general' section is missing"% (str(config_file)))
-        sys.exit(1)
-
-    try:
-        debug_mode = config.getboolean('general', 'debug')
-    except:
-        debug_mode = False
-    return logs_dir, debug_mode
-
-def debug__dir_from(config_file):
-
-    config = configparser.ConfigParser()
-    config.read(config_file)
-
-    try:
-        logs_dir = config.get('general','logs_dir')
-    except:
-        print("Error reading the configuration file %s: 'logs_dir' variable in 'general' section is missing"% (str(config_file)))
-        sys.exit(1)
-    return logs_dir
-
-
 if __name__ == '__main__':
     args = parse_args()
-    logs_dir, debug_mode = log_conf_from(args.config_file)
+    if args.config_template_file is not None:
+        Config.create_config_file(args.config_template_file)
+        logger.info("Sample config file created in %s", args.config_template_file)
+        sys.exit(0)
+    elif args.config_file is None:
+        logger.error("Option -t or -c is required")
+        sys.exit(1)
+
+    config = Config(args.config_file)
+    config_dict = config.get_conf()
+    logs_dir = config_dict['general']['logs_dir']
+    debug_mode = config_dict['general']['debug']
     logger = setup_logs(logs_dir, debug_mode)
-    obj = Mordred(args.config_file)
+
+    if args.phases:
+        logger.info("Executing mordred for phases: %s", args.phases)
+        # HACK: the internal dict of Config is modified directly
+        # In manual phases execute mordred as an script
+        config_dict['general']['update'] = False
+        for phase in config_dict['phases']:
+            config_dict['phases'][phase] = True if phase in args.phases else False
+
+    obj = Mordred(config)
+
     try:
         obj.run()
     except ElasticSearchError as e:
         s = 'Error: %s\n' % str(e)
         sys.stderr.write(s)
+        sys.exit(1)
+    except:
+        logger.info("OTHER EXCEPTION") #FIXME
+        var = traceback.format_exc()
+        logger.error("Unexpected error. See the traceback below")
+        logger.error(var)
         sys.exit(1)

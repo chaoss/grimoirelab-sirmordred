@@ -8,11 +8,14 @@ if [ $RELEASE ];
     then
     unset ARTHUR
     unset GRIMOIREELK
+    unset GRIMOIRELAB_TOOLKIT
     unset MORDRED
     unset PANELS
     unset PERCEVAL
     unset PERCEVAL_MOZILLA
     unset SORTINGHAT
+    unset REPORTS
+    unset VIZGRIMOIREUTILS
     TMPFILE=`mktemp`
     wget https://raw.githubusercontent.com/Bitergia/mordred/master/docker/unified_releases/$RELEASE -O $TMPFILE
     source $TMPFILE
@@ -42,6 +45,12 @@ git clone https://github.com/grimoirelab/GrimoireELK && \
     cd GrimoireELK && \
     git checkout $GRIMOIREELK
 
+# get VizGrimoireUtils repository needed by mordred (eclipse projects)
+cd /home/bitergia && \
+git clone https://github.com/VizGrimoire/VizGrimoireUtils && \
+    cd VizGrimoireUtils && \
+    git checkout $VIZGRIMOIREUTILS
+
 # get Mordred repository
 cd /home/bitergia && \
 git clone https://github.com/Bitergia/mordred.git mordred && \
@@ -54,6 +63,19 @@ git clone https://github.com/grimoirelab/panels.git panels && \
     cd panels && \
     git checkout $PANELS
 
+# reports repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/reports.git reports && \
+    cd reports && \
+    git checkout $REPORTS
+
+# get GrimoireLab Toolkit repository
+cd /home/bitergia && \
+git clone https://github.com/grimoirelab/grimoirelab-toolkit.git && \
+    cd grimoirelab-toolkit && \
+    git checkout $GRIMOIRELAB_TOOLKIT && \
+    sudo python3 setup.py install
+
 # get Perceval repository
 cd /home/bitergia && \
 git clone https://github.com/grimoirelab/perceval.git && \
@@ -61,7 +83,8 @@ git clone https://github.com/grimoirelab/perceval.git && \
     git checkout $PERCEVAL && \
     sudo python3 setup.py install
 
-# get Perceval Mozilla ad-hoc backends
+# Mozilla ad-hoc backends
+
 if [ $PERCEVAL_MOZILLA ]
     then
     cd /home/bitergia && \
@@ -92,6 +115,11 @@ arthurd -g -d redis://localhost/8 --es-index $ARTHUR_ELASTICSEARCH_INDEX --log-p
 # Two workers
 arthurw -g -d redis://localhost/8 > /home/bitergia/logs/worker-collect.log 2>&1
 arthurw -g -d redis://localhost/8 update > /home/bitergia/logs/worker-update.log 2>&1
+# some links we need until GrimoireELK and panels and reports can be installed
+ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
+ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
+ln -s /home/bitergia/panels /home/bitergia/mordred/panels
+ln -s /home/bitergia/reports /home/bitergia/mordred/reports
 
 cd /home/bitergia/mordred && \
 bin/mordred -c /home/bitergia/conf/setup.cfg

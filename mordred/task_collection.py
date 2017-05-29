@@ -32,9 +32,13 @@ import time
 import requests
 
 from grimoire_elk.arthur import feed_backend
+from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elk.elastic import ElasticSearch
-from grimoire_elk.utils import get_connector_from_name
+
+from mordred.error import DataCollectionError
 from mordred.task import Task
+from mordred.task_projects import TaskProjects
+
 
 logger = logging.getLogger(__name__)
 
@@ -42,50 +46,74 @@ logger = logging.getLogger(__name__)
 class TaskRawDataCollection(Task):
     """ Basic class shared by all collection tasks """
 
-    def __init__(self, conf, repos=None, backend_name=None):
-        super().__init__(conf)
-        self.repos = repos
-        self.backend_name = backend_name
+    def __init__(self, config, backend_section=None):
+        super().__init__(config)
+
+        self.backend_section = backend_section
         # This will be options in next iteration
         self.clean = False
 
-    def run(self):
-        cfg = self.conf
+    def execute(self):
+        cfg = self.config.get_conf()
 
-        if 'collect' in cfg[self.backend_name] and \
-            cfg[self.backend_name]['collect'] == False:
-            logging.info('%s collect disabled', self.backend_name)
+        if 'scroll_size' in cfg['general']:
+            ElasticItems.scroll_size = cfg['general']['scroll_size']
+
+        if 'bulk_size' in cfg['general']:
+            ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
+
+
+        if 'collect' in cfg[self.backend_section] and \
+            cfg[self.backend_section]['collect'] == False:
+            logging.info('%s collect disabled', self.backend_section)
             return
 
         t2 = time.time()
-        logger.info('[%s] raw data collection starts', self.backend_name)
+        logger.info('[%s] raw data collection starts', self.backend_section)
         clean = False
 
         fetch_cache = False
-        if 'fetch-cache' in self.conf[self.backend_name] and \
-            self.conf[self.backend_name]['fetch-cache']:
+        if 'fetch-cache' in cfg[self.backend_section] and \
+            cfg[self.backend_section]['fetch-cache']:
             fetch_cache = True
 
-        for repo in self.repos:
-            p2o_args = self._compose_p2o_params(self.backend_name, repo)
+        # repos could change between executions because changes in projects
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
+
+        if not repos:
+            logger.warning("No collect repositories for %s", self.backend_section)
+
+        for repo in repos:
+            p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+
             if filter_raw:
                 # If filter-raw exists the goal is to enrich already collected
                 # data, so don't collect anything
                 logging.warning("Not collecting filter raw repository: %s", repo)
                 continue
+
             url = p2o_args['url']
-            backend_args = self._compose_perceval_params(self.backend_name, repo)
+            backend_args = self._compose_perceval_params(self.backend_section, repo)
             logger.debug(backend_args)
-            logger.debug('[%s] collection starts for %s', self.backend_name, repo)
+            logger.debug('[%s] collection starts for %s', self.backend_section, repo)
             es_col_url = self._get_collection_url()
-            ds = self.backend_name
-            feed_backend(es_col_url, clean, fetch_cache, ds, backend_args,
-                         cfg[ds]['raw_index'], cfg[ds]['enriched_index'], url)
+            ds = self.backend_section
+            backend = self.get_backend(self.backend_section)
+            project = None  # just used for github in cauldron
+            try:
+                feed_backend(es_col_url, clean, fetch_cache, backend, backend_args,
+                             cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project)
+            except:
+                logger.error("Something went wrong collecting data from this %s repo: %s . " \
+                             "Using the backend_args: %s " % (ds, url, str(backend_args)))
+                raise DataCollectionError('Failed to collect data from %s' % url)
+
+
         t3 = time.time()
+
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
         logger.info('[%s] Data collection finished in %s',
-                    self.backend_name, spent_time)
 
 class TaskRawDataArthurCollection(Task):
     """ Basic class to control arthur for data collection """
@@ -208,3 +236,4 @@ class TaskRawDataArthurCollection(Task):
                 r = requests.post(self.ARTHUR_URL+"/add", json=arthur_repo_json)
                 r.raise_for_status()
                 logger.info('[%s] collection configured in arthur for %s', self.backend_name, repo)
+                    self.backend_section, spent_time)

@@ -35,13 +35,14 @@ class Task():
     ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url']
     PARAMS_WITH_SPACES = ['blacklist-jobs']
 
-    def __init__(self, conf):
-        self.backend_name = None
-        self.conf = conf
-        self.db_sh = self.conf['sh_database']
-        self.db_user = self.conf['sh_user']
-        self.db_password = self.conf['sh_password']
-        self.db_host = self.conf['sh_host']
+    def __init__(self, config):
+        self.backend_section = None
+        self.config = config
+        self.conf = config.get_conf()
+        self.db_sh = self.conf['sortinghat']['database']
+        self.db_user = self.conf['sortinghat']['user']
+        self.db_password = self.conf['sortinghat']['password']
+        self.db_host = self.conf['sortinghat']['host']
 
     def is_backend_task(self):
         """
@@ -50,21 +51,27 @@ class Task():
         """
         return True
 
-    def run(self):
+    def execute(self):
         """ Execute the Task """
         logger.debug("A bored task. It does nothing!")
 
-    def set_repos(self, repos):
-        self.repos = repos
+    @classmethod
+    def get_backend(self, backend_section):
+        # To support the same data source with different configs
+        # remo:activitites is like remo but with an extra param
+        # category = activity
+        backend = backend_section.split(":")[0]
+        return backend
 
-    def set_backend_name(self, backend_name):
-        self.backend_name = backend_name
+    def set_backend_section(self, backend_section):
+        self.backend_section = backend_section
 
-    def _compose_p2o_params(self, backend_name, repo):
+    def _compose_p2o_params(self, backend_section, repo):
         # get p2o params included in the projects list
         params = {}
 
-        connector = get_connector_from_name(backend_name)
+        backend = self.get_backend(backend_section)
+        connector = get_connector_from_name(backend)
         ocean = connector[1]
 
         # First add the params from the URL, which is backend specific
@@ -101,61 +108,93 @@ class Task():
 
         return params
 
-    def _compose_perceval_params(self, backend_name, repo):
-        # Params that are lists separated by white space
-        connector = get_connector_from_name(backend_name)
+    def _compose_perceval_params(self, backend_section, repo):
+        backend = self.get_backend(backend_section)
+        connector = get_connector_from_name(backend)
         ocean = connector[1]
 
         # First add the params from the URL, which is backend specific
         params = ocean.get_perceval_params_from_url(repo)
 
         # Now add the backend params included in the config file
-        for p in self.conf[backend_name]:
+        for p in self.conf[backend_section]:
             if p in self.ES_INDEX_FIELDS:
                 # These params are not for the perceval backend
                 continue
             params.append("--"+p)
-            if self.conf[backend_name][p]:
-                if type(self.conf[backend_name][p]) != bool:
-                    if p in self.PARAMS_WITH_SPACES:
+            if self.conf[backend_section][p]:
+                # If param is boolean, no values must be added
+                if type(self.conf[backend_section][p]) != bool:
+                    if type(self.conf[backend_section][p]) == list:
                         # '--blacklist-jobs', 'a', 'b', 'c'
                         # 'a', 'b', 'c' must be added as items in the list
-                        list_params = self.conf[backend_name][p].split()
+                        list_params = self.conf[backend_section][p]
                         params += list_params
                     else:
-                        params.append(self.conf[backend_name][p])
+                        params.append(self.conf[backend_section][p])
         return params
 
     def _get_collection_url(self):
-        es_col_url = self.conf['es_collection']
-        if self.backend_name and self.backend_name in self.conf:
-            if 'es_collection_url' in self.conf[self.backend_name]:
-                es_col_url = self.conf[self.backend_name]['es_collection_url']
+        es_col_url = self.conf['es_collection']['url']
+        if self.backend_section and self.backend_section in self.conf:
+            if 'es_collection_url' in self.conf[self.backend_section]:
+                es_col_url = self.conf[self.backend_section]['es_collection_url']
         else:
-            logger.warning("No config for the backend %s", self.backend_name)
+            logger.warning("No config for the backend %s", self.backend_section)
         return es_col_url
 
     def _get_enrich_backend(self):
         db_projects_map = None
         json_projects_map = None
         clean = False
-        connector = get_connector_from_name(self.backend_name)
+        connector = get_connector_from_name(self.get_backend(self.backend_section))
 
         enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
                                       self.db_user, self.db_password, self.db_host)
-        elastic_enrich = get_elastic(self.conf['es_enrichment'],
-                                     self.conf[self.backend_name]['enriched_index'],
+        elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
+                                     self.conf[self.backend_section]['enriched_index'],
                                      clean, enrich_backend)
         enrich_backend.set_elastic(elastic_enrich)
 
         if 'github' in self.conf.keys() and \
             'backend_token' in self.conf['github'].keys() and \
-            self.backend_name == "git":
+            self.get_backend(self.backend_section) == "git":
 
             gh_token = self.conf['github']['backend_token']
             enrich_backend.set_github_token(gh_token)
 
+        if 'unaffiliated_group' in self.conf['sortinghat']:
+            enrich_backend.unaffiliated_group = self.conf['sortinghat']['unaffiliated_group']
+
         return enrich_backend
+
+    def __filters_raw(self, repo):
+        """ Get the filters raw for a repository """
+        p2o_args = self._compose_p2o_params(self.backend_section, repo)
+        filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+        filters_raw_prefix = p2o_args['filters-raw-prefix'] \
+                            if 'filters-raw-prefix' in p2o_args else None
+
+        # filter_raw must be converted from the string param to a dict
+        filter_raw_dict = {}
+        if filter_raw:
+            filter_raw_dict['name'] = filter_raw.split(":")[0].replace('"', '')
+            filter_raw_dict['value'] = filter_raw.split(":")[1].replace('"', '')
+        # filters_raw_prefix must be converted from the list param to
+        # DSL query format for a should filter inside a boolean filter
+        filter_raw_should = None
+        if filters_raw_prefix:
+            filter_raw_should = {"should": []}
+            for filter_prefix in filters_raw_prefix:
+                fname = filter_prefix.split(":")[0].replace('"', '')
+                fvalue = filter_prefix.split(":")[1].replace('"', '')
+                filter_raw_should["should"].append(
+                    {
+                        "prefix": {fname : fvalue}
+                    }
+                )
+        return (filter_raw_dict, filter_raw_should)
+
 
     def _get_ocean_backend(self, enrich_backend):
         backend_cmd = None
@@ -163,9 +202,21 @@ class Task():
         no_incremental = False
         clean = False
 
-        ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
+        from .task_projects import TaskProjects
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
+        if len(repos) == 1:
+            # Support for filter raw when we have one repo
+            (filter_raw, filters_raw_prefix) = self.__filters_raw(repos[0])
+            if filter_raw or filters_raw_prefix:
+                logger.info("Using %s %s for getting identities from raw",
+                            filter_raw, filters_raw_prefix)
+            ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental,
+                                              filter_raw, filters_raw_prefix)
+        else:
+            ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
+
         elastic_ocean = get_elastic(self._get_collection_url(),
-                                    self.conf[self.backend_name]['raw_index'],
+                                    self.conf[self.backend_section]['raw_index'],
                                     clean, ocean_backend)
         ocean_backend.set_elastic(elastic_ocean)
 

@@ -15,17 +15,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA. 
+# Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1335, USA.
 #
 # Authors:
 #     Santiago Dueñas <sduenas@bitergia.com>
 #
 
+import logging
 import sys
 import unittest
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.WARNING,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
     test_suite = unittest.TestLoader().discover('.', pattern='test*.py')
     result = unittest.TextTestRunner(buffer=True).run(test_suite)
     sys.exit(not result.wasSuccessful())

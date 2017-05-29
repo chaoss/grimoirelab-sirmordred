@@ -39,51 +39,55 @@ logger = logging.getLogger(__name__)
 class TaskPanels(Task):
     """ Create the panels  """
 
-    panels_common = ["panels/dashboards/overview.json",
-                     "panels/dashboards/about.json",
-                     "panels/dashboards/data-status.json"]
+    panels_common = ["panels/dashboards5/overview.json",
+                     "panels/dashboards5/about.json",
+                     "panels/dashboards5/data-status.json"]
 
-    # aliases not following the ds-dev and ds rule
+    # aliases not following the ds-raw and ds rule
     aliases = {
         "bugzillarest": {
-            "raw":["bugzilla-dev"],
+            "raw":["bugzilla-raw"],
             "enrich":["bugzilla"]
         },
         "git": {
-            "raw":["git-dev"],
+            "raw":["git-raw"],
             "enrich":["git", "git_author", "git_enrich"]
         },
         "github": {
-            "raw":["github-dev"],
+            "raw":["github-raw"],
             "enrich":["github_issues", "github_issues_enrich", "issues_closed",
                       "issues_created", "issues_updated"]
         },
         "jenkins": {
-            "raw":["jenkins-dev"],
+            "raw":["jenkins-raw"],
             "enrich":["jenkins", "jenkins_enrich"]
         },
         "mbox": {
-            "raw":["mbox-dev"],
+            "raw":["mbox-raw"],
             "enrich":["mbox", "mbox_enrich"]
         },
         "pipermail": {
-            "raw":["pipermail-dev"],
+            "raw":["pipermail-raw"],
             "enrich":["mbox", "mbox_enrich"]
         },
         "phabricator": {
-            "raw":["phabricator-dev"],
+            "raw":["phabricator-raw"],
             "enrich":["phabricator", "maniphest"]
         },
         "remo": {
-            "raw":["remo-dev"],
-            "enrich":["remo", "remo2-events"]
+            "raw":["remo-raw"],
+            "enrich":["remo", "remo2-events", "remo-events_metadata__timestamp"]
+        },
+        "remo:activities": {
+            "raw":["remo_activities-raw"],
+            "enrich":["remo-activities", "remo2-activities", "remo-activities_metadata__timestamp"]
         },
         "stackexchange": {
-            "raw":["stackexchange-dev"],
+            "raw":["stackexchange-raw"],
             "enrich":["stackoverflow"]
         },
         "supybot": {
-            "raw":["irc-dev"],
+            "raw":["irc-raw"],
             "enrich":["irc"]
         }
     }
@@ -100,7 +104,8 @@ class TaskPanels(Task):
         # Panels are extracted from the global menu file
         self.panels = {}
         for ds in self.panels_menu:
-            self.panels[ds['source']] = []
+            if ds['source'] not in self.panels:
+                self.panels[ds['source']] = []
             for entry in ds['menu']:
                 self.panels[ds['source']].append(entry['panel'])
 
@@ -116,7 +121,7 @@ class TaskPanels(Task):
             {
                 "actions" : [
                     {"remove" : { "index" : "%s",
-                               "alias" : "%s" }}
+                                  "alias" : "%s" }}
                ]
              }
             """ % (real_index, alias)
@@ -146,39 +151,43 @@ class TaskPanels(Task):
 
     def __create_aliases(self):
         """ Create aliases in ElasticSearch used by the panels """
-        ds = self.backend_name
+        real_alias = self.backend_section.replace(":","_")  # remo:activities -> remo_activities
         es_col_url = self._get_collection_url()
-        es_enrich_url = self.conf['es_enrichment']
+        es_enrich_url = self.conf['es_enrichment']['url']
 
-        index_raw = self.conf[ds]['raw_index']
-        index_enrich = self.conf[ds]['enriched_index']
+        index_raw = self.conf[self.backend_section]['raw_index']
+        index_enrich = self.conf[self.backend_section]['enriched_index']
 
-        if ds in self.aliases and 'raw' in self.aliases[ds]:
-            for alias in self.aliases[ds]['raw']:
+        if self.backend_section in self.aliases and \
+            'raw' in self.aliases[self.backend_section]:
+            for alias in self.aliases[self.backend_section]['raw']:
                 self.__create_alias(es_col_url, index_raw, alias)
         else:
             # Standard alias for the raw index
-            self.__create_alias(es_col_url, index_raw, ds+"-dev")
+            self.__create_alias(es_col_url, index_raw, real_alias + "-raw")
 
-        if ds in self.aliases and 'enrich' in self.aliases[ds]:
-            for alias in self.aliases[ds]['enrich']:
+        if self.backend_section in self.aliases and \
+            'enrich' in self.aliases[self.backend_section]:
+            for alias in self.aliases[self.backend_section]['enrich']:
                 self.__create_alias(es_enrich_url, index_enrich, alias)
         else:
             # Standard alias for the enrich index
-            self.__create_alias(es_enrich_url, index_enrich, ds)
+            self.__create_alias(es_enrich_url, index_enrich, real_alias)
 
 
-    def run(self):
+    def execute(self):
         # Create the aliases
         self.__create_aliases()
         # Create the commons panels
         # TODO: do it only one time, not for every backend
         for panel_file in self.panels_common:
-            import_dashboard(self.conf['es_enrichment'], panel_file)
+            import_dashboard(self.conf['es_enrichment']['url'], panel_file)
         # Create the panels which uses the aliases as data source
-        for panel_file in self.panels[self.backend_name]:
-            import_dashboard(self.conf['es_enrichment'], panel_file)
-
+        if self.backend_section in self.panels:
+            for panel_file in self.panels[self.get_backend(self.backend_section)]:
+                import_dashboard(self.conf['es_enrichment']['url'], panel_file)
+        else:
+            logger.warning("No panels found for %s", self.backend_section)
 
 
 class TaskPanelsMenu(Task):
@@ -219,7 +228,7 @@ class TaskPanelsMenu(Task):
     def __create_dashboard_menu(self, dash_menu):
         """ Create the menu definition to access the panels in a dashboard """
         logger.info("Adding dashboard menu definition")
-        menu_url = urljoin(self.conf['es_enrichment'] + "/", ".kibana/metadashboard/main")
+        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
         r = requests.post(menu_url, data=json.dumps(dash_menu))
         r.raise_for_status()
@@ -227,7 +236,7 @@ class TaskPanelsMenu(Task):
     def __remove_dashboard_menu(self):
         """ The dashboard must be removed before creating a new one """
         logger.info("Remove dashboard menu definition")
-        menu_url = urljoin(self.conf['es_enrichment'] + "/" , ".kibana/metadashboard/main")
+        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/" , ".kibana/metadashboard/main")
         requests.delete(menu_url)
 
     def __get_menu_entries(self):
@@ -236,12 +245,12 @@ class TaskPanelsMenu(Task):
         for entry in self.panels_menu:
             if entry['source'] not in self.data_sources:
                 continue
-            if 'kibana' in self.conf and self.conf['kibana'] == '5':
+            if self.conf['general']['kibana'] == '5':
                 menu_entries[entry['name']] = {}
             for subentry in entry['menu']:
                 dash_name = get_dashboard_name(subentry['panel'])
                 # The name for the entry is in self.panels_menu
-                if 'kibana' in self.conf and self.conf['kibana'] == '5':
+                if self.conf['general']['kibana'] == '5':
                     menu_entries[entry['name']][subentry['name']] = dash_name
                 else:
                     menu_entries[dash_name] = dash_name
@@ -254,14 +263,13 @@ class TaskPanelsMenu(Task):
         current_menu = {}
 
         omenu = OrderedDict()
-        if 'kibana' in self.conf and self.conf['kibana'] == '5':
+        if self.conf['general']['kibana'] == '5':
             # Kibana5 menu version
-            # First Main with Overview, Data Status and About
-            omenu["Main"] = {"Overview": self.menu_panels_common['Overview']}
-            omenu["Main"].update({"Data Status": self.menu_panels_common['Data Status']})
-            omenu["Main"].update({"About": self.menu_panels_common['About']})
+            omenu["Overview"] = self.menu_panels_common['Overview']
             ds_menu = self.__get_menu_entries()
             omenu.update(ds_menu)
+            omenu["Data Status"] = self.menu_panels_common['Data Status']
+            omenu["About"] = self.menu_panels_common['About']
         else:
             # First the Overview
             omenu["Overview"] = self.menu_panels_common['Overview']
@@ -278,7 +286,7 @@ class TaskPanelsMenu(Task):
 
         return omenu
 
-    def run(self):
+    def execute(self):
         # Create the panels menu
         menu = self.__get_dash_menu()
         # Remove the current menu and create the new one

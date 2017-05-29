@@ -22,133 +22,44 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 #
 
-import configparser
 import logging
-import time
-import json
-import sys
+import queue
 import requests
 import threading
+import time
+import traceback
 
 from datetime import datetime, timedelta
 
 from grimoire_elk.utils import get_connectors
 
+from mordred.config import Config
+from mordred.error import ElasticSearchError
+from mordred.error import DataCollectionError
+from mordred.error import DataEnrichmentError
+from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from mordred.task_enrich import TaskEnrich
-from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesInit, TaskIdentitiesMerge
+from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesLoad, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsMenu
+from mordred.task_projects import TaskProjects
+from mordred.task_report import TaskReport
+from mordred.task_track import TaskTrackItems
 
-SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
-"""need the 'sleep_for' variable in sortinghat section\n - Mordred said."""
 ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
 "at '%(uri)s' is available!!\n - Mordred said."
 
+
 logger = logging.getLogger(__name__)
 
-class ElasticSearchError(Exception):
-    """Exception raised for errors in the list of backends
-    """
-    def __init__(self, expression):
-        self.expression = expression
 
 class Mordred:
 
-    def __init__(self, conf_file):
-        self.conf_file = conf_file
-        self.conf = None
-        self.conf = self.__read_conf_files()
-
-    def __read_conf_files(self):
-        conf = {}
-
-        logger.debug("Reading conf files")
-        config = configparser.ConfigParser()
-        config.read(self.conf_file)
-        logger.debug(config.sections())
-
-        if 'min_update_delay' in config['general'].keys():
-            conf['min_update_delay'] = config.getint('general','min_update_delay')
-        else:
-            # if no parameter is included, the update won't be performed more
-            # than once every minute
-            conf['min_update_delay'] = 60
-
-        # FIXME: Read all options in a generic way
-        conf['es_collection'] = config.get('es_collection', 'url')
-        conf['arthur_on'] = False
-        if 'arthur' in config['es_collection'].keys():
-            conf['arthur_on'] = config.getboolean('es_collection','arthur')
-        conf['es_enrichment'] = config.get('es_enrichment', 'url')
-        conf['autorefresh_on'] = config.getboolean('es_enrichment', 'autorefresh')
-        conf['studies_on'] = config.getboolean('es_enrichment', 'studies')
-
-        projects_file = config.get('projects','projects_file')
-        conf['projects_file'] = projects_file
-        with open(projects_file,'r') as fd:
-            projects = json.load(fd)
-        conf['projects'] = projects
-
-        conf['collection_on'] = config.getboolean('phases','collection')
-        conf['identities_on'] = config.getboolean('phases','identities')
-        conf['enrichment_on'] = config.getboolean('phases','enrichment')
-        conf['panels_on'] = config.getboolean('phases','panels')
-
-        conf['update'] = config.getboolean('general','update')
-        try:
-            conf['kibana'] = config.get('general','kibana')
-        except configparser.NoOptionError:
-            pass
-
-        conf['sh_bots_names'] = config.get('sortinghat', 'bots_names').split(',')
-        # Optional config params
-        try:
-            conf['sh_no_bots_names'] = config.get('sortinghat', 'no_bots_names').split(',')
-        except configparser.NoOptionError:
-            pass
-        conf['sh_database'] = config.get('sortinghat', 'database')
-        conf['sh_host'] = config.get('sortinghat', 'host')
-        conf['sh_user'] = config.get('sortinghat', 'user')
-        conf['sh_password'] = config.get('sortinghat', 'password')
-        aux_matching = config.get('sortinghat', 'matching')
-        conf['sh_matching'] = aux_matching.replace(' ','').split(',')
-        aux_autoprofile = config.get('sortinghat', 'autoprofile')
-        conf['sh_autoprofile'] = aux_autoprofile.replace(' ','').split(',')
-        conf['sh_orgs_file'] = config.get('sortinghat', 'orgs_file')
-        conf['sh_load_orgs'] = config.getboolean('sortinghat', 'load_orgs')
-
-        try:
-            conf['sh_sleep_for'] = config.getint('sortinghat','sleep_for')
-        except configparser.NoOptionError:
-            if conf['identities_on'] and conf['update']:
-                logging.error(SLEEPFOR_ERROR)
-            sys.exit(1)
-
-        try:
-            conf['sh_ids_file'] = config.get('sortinghat', 'identities_file')
-        except configparser.NoOptionError:
-            logger.info("No identities files")
-
-
-        params_int = ['offset']  # Hack until we fix config management
-        for backend in self.__get_backends():
-            try:
-                raw = config.get(backend, 'raw_index')
-                enriched = config.get(backend, 'enriched_index')
-                conf[backend] = {'raw_index':raw, 'enriched_index':enriched}
-                for p in config[backend]:
-                    try:
-                        conf[backend][p] = config.getboolean(backend, p)
-                    except ValueError:
-                        conf[backend][p] = config.get(backend, p)
-                        if p in params_int:
-                            conf[backend][p] = int(conf[backend][p])
-
-            except configparser.NoSectionError:
-                pass
-
-        return conf
+    def __init__(self, config):
+        """ config is a Config object """
+        self.config = config
+        self.conf = config.get_conf()
 
     def check_es_access(self):
         ##
@@ -164,7 +75,7 @@ class Mordred:
             else:
                 return uri
 
-        es = self.conf['es_collection']
+        es = self.conf['es_collection']['url']
         try:
             r = requests.get(es, verify=False)
             if r.status_code != 200:
@@ -173,8 +84,9 @@ class Mordred:
             raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
 
-        if self.conf['enrichment_on'] or self.conf['studies_on']:
-            es = self.conf['es_enrichment']
+        if self.conf['phases']['enrichment'] or \
+           self.conf['es_enrichment']['studies']:
+            es = self.conf['es_enrichment']['url']
             try:
                 r = requests.get(es, verify=False)
                 if r.status_code != 200:
@@ -182,27 +94,21 @@ class Mordred:
             except:
                 raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
 
-
-    def __get_backends(self):
-        gelk_backends = list(get_connectors().keys())
-        extra_backends = ["google_hits"]
-
-        return gelk_backends + extra_backends
-
-    def __get_repos_by_backend(self):
+    def _get_repos_by_backend(self):
         #
         # return dict with backend and list of repositories
         #
         output = {}
-        projects = self.conf['projects']
+        projects = TaskProjects.get_projects()
 
-        for backend in self.__get_backends():
+        for backend_section in Config.get_backend_sections():
             for pro in projects:
+                backend = Task.get_backend(backend_section)
                 if backend in projects[pro]:
-                    if not backend in output:
-                        output[backend]  = projects[pro][backend]
+                    if not backend_section in output:
+                        output[backend_section]  = projects[pro][backend]
                     else:
-                        output[backend] = output[backend] + projects[pro][backend]
+                        output[backend_section] += projects[pro][backend]
 
         # backend could be in project/repo file but not enabled in
         # mordred conf file
@@ -224,7 +130,9 @@ class Mordred:
         """
             Just a wrapper to the execute_batch_tasks method
         """
-        self.execute_batch_tasks(tasks_cls, self.conf['sh_sleep_for'], self.conf['min_update_delay'], False)
+        self.execute_batch_tasks(tasks_cls,
+                                 self.conf['sortinghat']['sleep_for'],
+                                 self.conf['general']['min_update_delay'], False)
 
     def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
         """
@@ -232,7 +140,7 @@ class Mordred:
 
         :param task_cls: list of tasks classes to be executed
         :param big_delay: seconds before global tasks are executed, should be days usually
-        :param small_delay: seconds before blackend tasks are executed, should be minutes
+        :param small_delay: seconds before backend tasks are executed, should be minutes
         :param wait_for_threads: boolean to set when threads are infinite or
                                 should be synchronized in a meeting point
         """
@@ -250,7 +158,7 @@ class Mordred:
                     global_t.append(t)
             return backend_t, global_t
 
-        logger.debug(' Task Manager starting .. ')
+        logger.debug('Tasks Manager starting .. ')
 
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
         logger.debug ('backend_tasks = %s' % (backend_tasks))
@@ -263,18 +171,18 @@ class Mordred:
 
         # launching threads for tasks by backend
         if len(backend_tasks) > 0:
-            repos_backend = self.__get_repos_by_backend()
+            repos_backend = self._get_repos_by_backend()
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
-                t = TasksManager(backend_tasks, backend, repos_backend[backend],
-                                 stopper, self.conf, small_delay)
+                t = TasksManager(backend_tasks, backend, stopper, self.config, small_delay)
                 threads.append(t)
                 t.start()
 
         # launch thread for global tasks
         if len(global_tasks) > 0:
             #FIXME timer is applied to all global_tasks, does it make sense?
-            gt = TasksManager(global_tasks, None, None, stopper, self.conf, big_delay)
+            # All tasks are executed in the same thread sequentially
+            gt = TasksManager(global_tasks, None, stopper, self.config, big_delay)
             threads.append(gt)
             gt.start()
             if big_delay > 0:
@@ -291,9 +199,116 @@ class Mordred:
         for t in threads:
             t.join()
 
+        # Checking for exceptions in threads to log them
+        self.__check_queue_for_errors()
+
         logger.debug(" Task manager and all its tasks (threads) finished!")
 
+    def __check_queue_for_errors(self):
+        try:
+            exc = TasksManager.COMM_QUEUE.get(block=False)
+        except queue.Empty:
+            logger.debug("No exceptions in threads. Let's continue ..")
+        else:
+            exc_type, exc_obj, exc_trace = exc
+            # deal with the exception
+            logger.error(exc_type)
+            raise exc_obj
+
+    def __execute_initial_load(self):
+        """
+        The first time mordred execute the tasks it does it in a special way:
+        - It starts the threads to collect the data sources raw items
+        - It waits until all collect threads have finished
+        - It execute the identities tasks
+        - It waits until all identities tasks have finished
+        - It starts the threads to enrich the data sources raw items
+        - It waits until all identities tasks have finished
+        """
+
+        tasks_cls = []
+
+        # phase one
+        # we get all the items with Perceval + identites browsing the
+        # raw items
+
+        tasks_cls = [TaskProjects]  # projects is always needed
+        self.execute_tasks(tasks_cls)
+
+        if self.conf['collection_on']:
+            if not self.conf['arthur_on']:
+                tasks_cls = [TaskRawDataCollection]
+            else:
+                tasks_cls = [TaskRawDataArthurCollection]
+            #self.execute_tasks(tasks_cls)
+            if self.conf['identities_on']:
+                tasks_cls.append(TaskIdentitiesCollection)
+            all_tasks_cls += tasks_cls
+
+        if self.conf['phases']['identities']:
+            tasks_cls = [TaskIdentitiesLoad]
+            self.execute_tasks(tasks_cls)
+
+        # handling the exception below and continuing the execution is
+        # a bit unstable, we could have several threads collecting data
+        # and one of them crash, where this behaviour is ok. But we also
+        # could have all of them crashed and this piece of code should
+        # be smart enough to stop the execution. #FIXME
+        try:
+            if self.conf['phases']['collection']:
+                tasks_cls = [TaskRawDataCollection]
+                if self.conf['phases']['identities']:
+                    tasks_cls.append(TaskIdentitiesCollection)
+                logger.warning(tasks_cls)
+                self.execute_tasks(tasks_cls)
+
+        except DataCollectionError as e:
+            logger.error(str(e))
+            var = traceback.format_exc()
+            logger.error(var)
+
+        if self.conf['phases']['identities']:
+            tasks_cls = [TaskIdentitiesMerge]
+            self.execute_tasks(tasks_cls)
+
+        # handling this exception adds the same issue as above with the
+        # exception for DataCollectionError. So this is another #FIXME
+        try:
+            if self.conf['phases']['enrichment']:
+                # raw items + sh database with merged identities + affiliations
+                # will used to produce a enriched index
+                tasks_cls = [TaskEnrich]
+                self.execute_tasks(tasks_cls)
+
+        except DataEnrichmentError as e:
+            logger.error(str(e))
+            var = traceback.format_exc()
+            logger.error(var)
+
+        if self.conf['phases']['panels']:
+            tasks_cls = [TaskPanels, TaskPanelsMenu]
+            self.execute_tasks(tasks_cls)
+
+        if self.conf['phases']['track_items']:
+            tasks_cls = [TaskTrackItems]
+            self.execute_tasks(tasks_cls)
+
+        if self.conf['phases']['report']:
+            tasks_cls = [TaskReport]
+            self.execute_tasks(tasks_cls)
+
+        return
+
+
     def run(self):
+        """
+        This method defines the workflow of Mordred. So it calls to:
+        - initialize the databases
+        - execute the different phases for the first iteration
+          (collection, identities, enrichment)
+        - start the collection and enrichment in parallel by data source
+        - start also the Sorting Hat merge
+        """
 
         #logger.debug("Starting Mordred engine ...")
         logger.info("")
@@ -306,50 +321,54 @@ class Mordred:
 
         # do we need ad-hoc scripts?
 
-        tasks_cls = []
-        all_tasks_cls = []
-
-        # phase one
-        # we get all the items with Perceval + identites browsing the
-        # raw items
-
-        if self.conf['identities_on']:
-            tasks_cls = [TaskIdentitiesInit]
-            self.execute_tasks(tasks_cls)
-
-        if self.conf['collection_on']:
-            if not self.conf['arthur_on']:
-                tasks_cls = [TaskRawDataCollection]
-            else:
-                tasks_cls = [TaskRawDataArthurCollection]
-            #self.execute_tasks(tasks_cls)
-            if self.conf['identities_on']:
-                tasks_cls.append(TaskIdentitiesCollection)
-            all_tasks_cls += tasks_cls
-            self.execute_tasks(tasks_cls)
-
-        if self.conf['identities_on']:
-            tasks_cls = [TaskIdentitiesMerge]
-            all_tasks_cls += tasks_cls
-            self.execute_tasks(tasks_cls)
-
-        if self.conf['enrichment_on']:
-            # raw items + sh database with merged identities + affiliations
-            # will used to produce a enriched index
-            tasks_cls = [TaskEnrich]
-            all_tasks_cls += tasks_cls
-            self.execute_tasks(tasks_cls)
-
-        if self.conf['panels_on']:
-            # Remove first the dashboard menu
-            tasks_cls = [TaskPanels, TaskPanelsMenu]
-            self.execute_tasks(tasks_cls)
+        # Initial round: projects -> collect -> identities -> enrich
+        if not self.conf['general']['skip_initial_load']:
+            self.__execute_initial_load()
+        else:
+            logging.warning("Skipping the initial load")
 
         logger.debug(' - - ')
         logger.debug('Meeting point 0 reached')
         time.sleep(1)
 
-        while self.conf['update']:
-            self.execute_nonstop_tasks(all_tasks_cls)
+
+        # Tasks to be executed during updating process
+        all_tasks_cls = []
+        all_tasks_cls.append(TaskProjects)  # projects is always needed
+        if self.conf['phases']['collection']:
+            all_tasks_cls.append(TaskRawDataCollection)
+        if self.conf['phases']['identities']:
+            # load identities and orgs periodically for updates
+            all_tasks_cls.append(TaskIdentitiesLoad)
+            all_tasks_cls.append(TaskIdentitiesMerge)
+            if self.conf['phases']['collection']:
+                all_tasks_cls.append(TaskIdentitiesCollection)
+        if self.conf['phases']['enrichment']:
+            all_tasks_cls.append(TaskEnrich)
+        if self.conf['phases']['track_items']:
+            all_tasks_cls.append(TaskTrackItems)
+
+        # this is the main loop, where the execution should spend
+        # most of its time
+        while self.conf['general']['update']:
+            try:
+                if len(all_tasks_cls) == 0:
+                    logger.warning("No tasks to execute in update mode.")
+                    break
+                self.execute_nonstop_tasks(all_tasks_cls)
+
+                #FIXME this point is never reached so despite the exception is
+                #handled and the error is shown, the traceback is not printed
+
+            except DataCollectionError as e:
+                logger.error(str(e))
+                var = traceback.format_exc()
+                logger.error(var)
+                pass
+            except DataEnrichmentError as e:
+                logger.error(str(e))
+                var = traceback.format_exc()
+                logger.error(var)
+                pass
 
         logger.info("Finished Mordred engine ...")

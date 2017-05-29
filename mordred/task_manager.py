@@ -23,11 +23,10 @@
 #
 
 import logging
+import queue
 import threading
+import sys
 import time
-
-from grimoire_elk.arthur import get_ocean_backend
-from grimoire_elk.utils import get_connector_from_name, get_elastic
 
 logger = logging.getLogger(__name__)
 
@@ -40,19 +39,20 @@ class TasksManager(threading.Thread):
 
     """
 
-    def __init__(self, tasks_cls, backend_name, repos, stopper, conf, timer = 0):
+    # this queue supports the communication from threads to mother process
+    COMM_QUEUE = queue.Queue()
+
+    def __init__(self, tasks_cls, backend_section, stopper, config, timer = 0):
         """
         :tasks_cls : tasks classes to be executed using the backend
-        :backend_name: perceval backend name
-        :repos: list of repositories to be managed
-        :conf: conf for the manager
+        :backend_section: perceval backend section name
+        :config: config object for the manager
         """
         super().__init__()  # init the Thread
-        self.conf = conf
+        self.config = config
         self.tasks_cls = tasks_cls  # tasks classes to be executed
         self.tasks = []  # tasks to be executed
-        self.backend_name = backend_name
-        self.repos = repos
+        self.backend_section = backend_section
         self.stopper = stopper  # To stop the thread from parent
         self.timer = timer
 
@@ -60,31 +60,35 @@ class TasksManager(threading.Thread):
         self.tasks.append(task)
 
     def run(self):
-        logger.debug('Starting Task Manager thread %s', self.backend_name)
+        logger.debug('Starting Task Manager thread %s', self.backend_section)
 
         # Configure the tasks
         logger.debug(self.tasks_cls)
         for tc in self.tasks_cls:
             # create the real Task from the class
-            task = tc(self.conf)
-            task.set_repos(self.repos)
-            task.set_backend_name(self.backend_name)
+            task = tc(self.config)
+            task.set_backend_section(self.backend_section)
             self.tasks.append(task)
 
         if not self.tasks:
-            logger.debug('Task Manager thread %s without tasks', self.backend_name)
+            logger.debug('Task Manager thread %s without tasks', self.backend_section)
 
-        logger.debug('run(tasks) - run(%s)' % (self.tasks))
+        logger.debug('run(tasks) - run(%s)', self.tasks)
         while not self.stopper.is_set():
             # we give 1 extra second to the stopper, so this loop does
             # not finish before it is set.
             time.sleep(1)
 
             if self.timer > 0:
+                logger.debug("Sleeping in Task Manager %s s", self.timer)
                 time.sleep(self.timer)
 
             for task in self.tasks:
-                task.run()
+                logger.debug("Executing task %s", task)
+                try:
+                    task.execute()
+                except Exception as ex:
+                    logger.error("Exception in Task Manager %s", ex)
+                    TasksManager.COMM_QUEUE.put(sys.exc_info())
 
-        logger.debug('Exiting Task Manager thread %s', self.backend_name)
-
+        logger.debug('Exiting Task Manager thread %s', self.backend_section)
