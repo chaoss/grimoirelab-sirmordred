@@ -116,7 +116,7 @@ class TaskEnrich(Task):
                 logger.error("Something went wrong producing enriched data for %s . " \
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
                 logger.error("Exception: %s", ex)
-                raise DataEnrichmentError('Failed to produce enriched data for %s', self.backend_name)
+                raise DataEnrichmentError('Failed to produce enriched data for %s', self.backend_section)
 
         time.sleep(5)  # Safety sleep tp avoid too quick execution
 
