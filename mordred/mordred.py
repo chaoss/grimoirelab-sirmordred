@@ -228,27 +228,6 @@ class Mordred:
 
         tasks_cls = []
 
-        # phase one
-        # we get all the items with Perceval + identites browsing the
-        # raw items
-
-        tasks_cls = [TaskProjects]  # projects is always needed
-        self.execute_tasks(tasks_cls)
-
-        if self.conf['collection_on']:
-            if not self.conf['arthur_on']:
-                tasks_cls = [TaskRawDataCollection]
-            else:
-                tasks_cls = [TaskRawDataArthurCollection]
-            #self.execute_tasks(tasks_cls)
-            if self.conf['identities_on']:
-                tasks_cls.append(TaskIdentitiesCollection)
-            all_tasks_cls += tasks_cls
-
-        if self.conf['phases']['identities']:
-            tasks_cls = [TaskIdentitiesLoad]
-            self.execute_tasks(tasks_cls)
-
         # handling the exception below and continuing the execution is
         # a bit unstable, we could have several threads collecting data
         # and one of them crash, where this behaviour is ok. But we also
@@ -256,7 +235,10 @@ class Mordred:
         # be smart enough to stop the execution. #FIXME
         try:
             if self.conf['phases']['collection']:
-                tasks_cls = [TaskRawDataCollection]
+                if not self.conf['es_collection']['arthur']:
+                    tasks_cls = [TaskRawDataCollection]
+                else:
+                    tasks_cls = [TaskRawDataArthurCollection]
                 if self.conf['phases']['identities']:
                     tasks_cls.append(TaskIdentitiesCollection)
                 logger.warning(tasks_cls)
@@ -336,7 +318,10 @@ class Mordred:
         all_tasks_cls = []
         all_tasks_cls.append(TaskProjects)  # projects is always needed
         if self.conf['phases']['collection']:
-            all_tasks_cls.append(TaskRawDataCollection)
+            if not self.conf['es_collection']['arthur']:
+                all_tasks_cls.append(TaskRawDataCollection)
+            else:
+                all_tasks_cls.append(TaskRawDataArthurCollection)
         if self.conf['phases']['identities']:
             # load identities and orgs periodically for updates
             all_tasks_cls.append(TaskIdentitiesLoad)

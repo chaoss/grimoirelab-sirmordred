@@ -34,6 +34,7 @@ import requests
 from grimoire_elk.arthur import feed_backend
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elk.elastic import ElasticSearch
+from grimoire_elk.utils import get_connector_from_name
 
 from mordred.error import DataCollectionError
 from mordred.task import Task
@@ -114,6 +115,7 @@ class TaskRawDataCollection(Task):
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
         logger.info('[%s] Data collection finished in %s',
+                    self.backend_section, spent_time)
 
 class TaskRawDataArthurCollection(Task):
     """ Basic class to control arthur for data collection """
@@ -122,10 +124,10 @@ class TaskRawDataArthurCollection(Task):
     ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
     REPOSITORY_DIR = "/tmp"
 
-    def __init__(self, conf, repos=None, backend_name=None):
-        super().__init__(conf)
-        self.repos = repos
-        self.backend_name = backend_name
+    def __init__(self, config, backend_section=None):
+        super().__init__(config)
+
+        self.backend_section = backend_section
 
     def __create_arthur_json(self, repo, backend_args):
         """ Create the JSON for configuring arthur to collect data
@@ -156,10 +158,10 @@ class TaskRawDataArthurCollection(Task):
 
         ajson = {"tasks":[{}]}
         # This is the perceval tag
-        ajson["tasks"][0]['task_id'] = repo + "_" + self.backend_name
-        ajson["tasks"][0]['backend'] = self.backend_name
-        backend_args = self._compose_arthur_params(self.backend_name, repo)
-        if self.backend_name == 'git':
+        ajson["tasks"][0]['task_id'] = repo + "_" + self.backend_section
+        ajson["tasks"][0]['backend'] = self.backend_section
+        backend_args = self._compose_arthur_params(self.backend_section, repo)
+        if self.backend_section == 'git':
             backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
         backend_args['tag'] = ajson["tasks"][0]['task_id']
         ajson["tasks"][0]['backend_args'] = backend_args
@@ -169,10 +171,10 @@ class TaskRawDataArthurCollection(Task):
         ajson["tasks"][0]['scheduler'] = {"delay": self.ARTHUR_TASK_DELAY}
         # from-date or offset param must be added
         es_col_url = self._get_collection_url()
-        es_index =  self.conf[self.backend_name]['raw_index']
+        es_index =  self.conf[self.backend_section]['raw_index']
         # Get the last activity for the data source
         es = ElasticSearch(es_col_url, es_index)
-        connector = get_connector_from_name(self.backend_name)
+        connector = get_connector_from_name(self.backend_section)
         klass = connector[0]  # Backend for the connector
         signature = inspect.signature(klass.fetch)
 
@@ -188,25 +190,31 @@ class TaskRawDataArthurCollection(Task):
         logging.info("Getting raw item with arthur since %s", last_activity)
         return(ajson)
 
-    def run(self):
-        cfg = self.conf
+    def execute(self):
+        cfg = self.config.get_conf()
 
-        if 'collect' in cfg[self.backend_name] and \
-            cfg[self.backend_name]['collect'] == False:
-            logging.info('%s collect disabled', self.backend_name)
+        if 'collect' in cfg[self.backend_section] and \
+            cfg[self.backend_section]['collect'] == False:
+            logging.info('%s collect disabled', self.backend_section)
             return
 
         t2 = time.time()
-        logger.info('Programming arthur for [%s] raw data collection', self.backend_name)
+        logger.info('Programming arthur for [%s] raw data collection', self.backend_section)
         clean = False
 
         fetch_cache = False
-        if 'fetch-cache' in self.conf[self.backend_name] and \
-            self.conf[self.backend_name]['fetch-cache']:
+        if 'fetch-cache' in self.conf[self.backend_section] and \
+            self.conf[self.backend_section]['fetch-cache']:
             fetch_cache = True
 
-        for repo in self.repos:
-            p2o_args = self._compose_p2o_params(self.backend_name, repo)
+        # repos could change between executions because changes in projects
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
+
+        if not repos:
+            logger.warning("No collect repositories for %s", self.backend_section)
+
+        for repo in repos:
+            p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
             if filter_raw:
                 # If filter-raw exists the goal is to enrich already collected
@@ -214,7 +222,7 @@ class TaskRawDataArthurCollection(Task):
                 logging.warning("Not collecting filter raw repository: %s", repo)
                 continue
             url = p2o_args['url']
-            backend_args = self._compose_perceval_params(self.backend_name, repo)
+            backend_args = self._compose_perceval_params(self.backend_section, repo)
             logger.debug(backend_args)
             arthur_repo_json = self.__create_arthur_json(repo, backend_args)
             logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json))
@@ -235,5 +243,4 @@ class TaskRawDataArthurCollection(Task):
             else:
                 r = requests.post(self.ARTHUR_URL+"/add", json=arthur_repo_json)
                 r.raise_for_status()
-                logger.info('[%s] collection configured in arthur for %s', self.backend_name, repo)
-                    self.backend_section, spent_time)
+                logger.info('[%s] collection configured in arthur for %s', self.backend_section, repo)
