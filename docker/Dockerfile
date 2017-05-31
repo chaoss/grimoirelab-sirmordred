@@ -24,7 +24,6 @@ RUN apt-get update && \
         python3-bs4 \
         python3-pip python3-dev \
         python-mysqldb \
-        python3-cherrypy3 \
         python3-redis \
         python3-yaml \
         gcc make libmysqlclient-dev mariadb-client \
