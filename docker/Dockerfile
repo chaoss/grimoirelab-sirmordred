@@ -40,6 +40,10 @@ RUN pip3 install pip --upgrade
 RUN pip3 install requests --upgrade
 RUN apt-get -y remove python3-requests
 
+# Needed a newer version of setuptools
+RUN apt-get -y remove python3-setuptools python3-pkg-resources
+RUN pip3 install setuptools
+
 # solves issues with UNICODE and SH
 RUN pip3 install sqlalchemy
 
