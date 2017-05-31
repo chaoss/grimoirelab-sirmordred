@@ -27,7 +27,7 @@ RUN apt-get update && \
         python3-redis \
         python3-yaml \
         gcc make libmysqlclient-dev mariadb-client \
-        unzip curl wget sudo ssh\
+        vim unzip curl wget sudo ssh\
         && \
     apt-get clean && \
     find /var/lib/apt/lists -type f -delete

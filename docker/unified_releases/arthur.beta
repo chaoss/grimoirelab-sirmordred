@@ -1,5 +1,6 @@
 #!/bin/bash
-ARTHUR='50a2b47249ecdbf9c743fbbfb2fdd439fc9fe08a'
+# Using https://github.com/acs/arthur/tree/mordred
+ARTHUR='4284dd45447e0625121c75f6b90138ed19cf2556'
 SORTINGHAT='0.3.0-4-geedd68e'
 GRIMOIREELK='0.30-8-g802c04f'
 GRIMOIRELAB_TOOLKIT='0.1.0'

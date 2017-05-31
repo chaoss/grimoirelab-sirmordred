@@ -111,11 +111,14 @@ ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_el
 ln -s /home/bitergia/panels /home/bitergia/mordred/panels
 ln -s /home/bitergia/panels/dashboards5 /home/bitergia/panels/dashboards
 
+# This could be an ENV var probably
+REDIS="redis"
+
 # arthur on
-arthurd -g -d redis://localhost/8 --es-index $ARTHUR_ELASTICSEARCH_INDEX --log-path /home/bitergia/logs/arthurd --no-cache
+arthurd -g -d redis://$REDIS/8 --es-index $ARTHUR_ELASTICSEARCH_INDEX --log-path /home/bitergia/logs/arthurd --no-cache
 # Two workers
-arthurw -g -d redis://localhost/8 > /home/bitergia/logs/worker-collect.log 2>&1
-arthurw -g -d redis://localhost/8 update > /home/bitergia/logs/worker-update.log 2>&1
+arthurw -g -d redis://$REDIS/8 > /home/bitergia/logs/worker-collect.log 2>&1
+arthurw -g -d redis://$REDIS/8 update > /home/bitergia/logs/worker-update.log 2>&1
 # some links we need until GrimoireELK and panels and reports can be installed
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
 ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
