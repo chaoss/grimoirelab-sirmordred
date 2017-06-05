@@ -126,6 +126,8 @@ class TaskIdentitiesLoad(Task):
             filenames = cfg['sortinghat']['identities_file']
             for f in filenames:
                 f = f.replace(' ', '')  # spaces used in config file list
+                if f is '':
+                  continue
                 if is_remote(f):
                     r = requests.get(f)
                     with tempfile.NamedTemporaryFile() as temp:

@@ -1,6 +1,5 @@
 # Mordred
 
-**THIS DOCUMENT IS NOT UPDATED**
 
 ## Intro
 
@@ -13,7 +12,7 @@ just use Kibana 4.4.1, but you'll miss the improvements we added ;).
 The different files we will have to modify are:
 - setup.cfg: Mordred's configuration file
 - requirements.cfg: file with the versions of the components we will use
-- projects.json: JSON file with projects and his repositories
+- projects.json: JSON file with projects and its repositories
 - orgs_file.json: a Sorting Hat file format with companies/organizations and domains
 - docker-compose.yml: easy, the file where the container is specified
 
@@ -24,17 +23,51 @@ Let's start hacking!.
 The Mordred's configuration file have several sections but don't panic, it is
 easier than you may think at a glance.
 
-First, we define the project name, where the projects file will be. The only thing
-you need to modify here is the "short_name".
+First, we define the project name. The only thing you need to modify here is
+the "short_name".
 ```
 [general]
 short_name = Grimoire
 update = false
 debug = false
 logs_dir = /home/bitergia/logs
+```
 
+You can do further adjustments, but not needed by default:
+
+```
+# to support the bitergia/kibiter:5.1.1 just change to 5
+kibana = "4"
+# to avoid the special startup of mordred and start with the update loop
+skip_initial_load = False
+```
+
+To increase the performance during collection and enrichment of data you
+can modify the number of items that are pack in bulk packets and send to
+Elasticsearch. In general it is safe to increase it to 5000 if the items
+you are collection are between 1-10 KB.
+
+```
+# number of items per bulk request to Elasticsearch
+bulk_size = 1000
+```
+
+During enrichment, the collect of the raw items to be enriched is done using
+the scroll API. The number of items to be packed together has impact also
+in the performance. 1000 is normally a safe value. The limit is 9999.
+
+```
+# number of items to get from Elasticsearch when scrolling
+scroll_size = 1000
+```
+
+The "projects" section  specifies where the projects file is
+
+```
 [projects]
 projects_file = /home/bitergia/conf/projects.json
+# Uncommnet it to get projects information from Eclipse server
+# load_eclipse = True
 ```
 
 The following two sections are used to store the 'raw' information we will
@@ -71,12 +104,13 @@ user = root
 password =
 database = grimoire_sh
 load_orgs = true
-orgs_file = /home/bitergia/conf/orgs_file.json
+orgs_file = [/home/bitergia/conf/orgs_file.json]
 #matching  see: sortinghat unify --help
-matching = email-name, github
-autoprofile = customer, git, github
+matching = [email-name, github]
+autoprofile = [customer, git, github]
 sleep_for = 86400
-bots_names =
+bots_names = [Beloved Bot]
+unaffiliated_group = Unknown
 ```
 
 We can also enable of disable the different phases. Let's start will all of
@@ -107,13 +141,13 @@ backend-token = [your github token]
 
 ## requirements.cfg
 
-Place here our latest release file. Current one is named 'catwoman.beta' and
-you can get it from https://github.com/Bitergia/mordred/blob/master/docker/unified_releases/catwoman.beta
+Place here our latest release file. Current one is named 'elasticgirl.9' and
+you can get it from https://github.com/Bitergia/mordred/blob/master/docker/unified_releases/elasticgirl.9
 
 If you don't need so much detail (it includes the different versions of the Bitergia stack) just include the name of the release in a variable named "RELEASE" as I did below:
 ```
 #!/bin/bash
-RELEASE='catwoman.beta'
+RELEASE='elasticgirl.9'
 ```
 
 **NOTE**: in case you are using a version =< catwoman you'll need to use a special image of the docker image. It is called bitergia/mordred:catwoman, insted of bitergia/mordred:latest
@@ -255,4 +289,72 @@ Peasant 3: [meekly after a long pause] ... I got better.
 Crowd: [shouts] Burn her anyway!
 ```
 
-Bitergia 2016. Software metrics for your peace of mind.
+## Advanced features
+
+mordred includes some extra features, like tracking items (gerrit reviews, git commits ...) from a specific Elasticsearch raw index and to enrich and to include them in the default enriched index.
+
+```
+[phases]
+...
+track_items = true
+
+
+[track_items]
+upstream_items_url = https://git.opnfv.org/doctor/plain/UPSTREAM
+# Name of the project for the items tracked
+project = "OpenStack"
+upstream_raw_es_url = http://raw.elasticsearch:9200
+raw_index_gerrit = gerrit_openstack_170322
+raw_index_git = git_openstack_170313
+```
+
+Also, items to be enriched can be collected from a raw index using filters. A project can be specified as:
+
+```
+{
+    "RDO": {
+        "askbot": [
+            "https://ask.openstack.org --filter-raw data.tags:rdo"
+        ]
+    }
+}
+```
+
+and to define in setup.cfg the raw index from which to get the raw items using the above filter:
+
+```
+[askbot]
+raw_index = askbot_openstack_170524
+enriched_index = askbot_openstack_170524_enriched_170529
+es_collection_url = http://raw.elasticsearch:9200
+```
+
+Also, you can execute just one specific step in the phases of the config with "-p" param, and you can create a sample config file with the "-t" param.
+
+All command line options can be accessed with:
+
+```
+(acs@dellx) (master *$% u=) ~/devel/mordred $ bin/mordred -h
+usage: mordred [-h] [-c CONFIG_FILE] [-t CONFIG_TEMPLATE_FILE]
+               [-p [PHASES [PHASES ...]]]
+
+Mordred, the friendly friend of GrimoireELK
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config CONFIG_FILE
+                        Configuration file
+  -t CONFIG_TEMPLATE_FILE, --template CONFIG_TEMPLATE_FILE
+                        Create template configuration file
+  -p [PHASES [PHASES ...]], --phases [PHASES [PHASES ...]]
+                        List of phases to execute (update is set to false)
+
+Software metrics for your peace of mind
+```
+
+
+Above features are not included in this demo.
+
+
+
+Bitergia 2017. Software metrics for your peace of mind.
