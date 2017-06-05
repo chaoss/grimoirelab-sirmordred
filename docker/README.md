@@ -113,6 +113,13 @@ bots_names = [Beloved Bot]
 unaffiliated_group = Unknown
 ```
 
+For builidng the dashboard, mordred configures Kibiter. No config is needed
+by default but sometimes is useful to change the default time frame is shown.
+
+[panels]
+kibiter_time_from="now-90d"
+kibiter_default_index="git"
+
 We can also enable of disable the different phases. Let's start will all of
 them enabled.
 ```
@@ -354,7 +361,6 @@ Software metrics for your peace of mind
 
 
 Above features are not included in this demo.
-
 
 
 Bitergia 2017. Software metrics for your peace of mind.

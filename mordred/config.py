@@ -223,6 +223,21 @@ class Config():
             }
         }
 
+        params_panels = {
+            "panels": {
+                "kibiter_time_from": {
+                    "optional": True,
+                    "default": "now-90d",
+                    "type": str
+                },
+                "kibiter_default_index": {
+                    "optional": True,
+                    "default": "git",
+                    "type": str
+                }
+            }
+        }
+
         params_report = {
             "report": {
                 "start_date": {
@@ -324,8 +339,8 @@ class Config():
             }
         }
 
-        tasks_config_params = [params_collection, params_enrichment, params_report,
-                               params_sortinghat, params_track_items]
+        tasks_config_params = [params_collection, params_enrichment, params_panels,
+                               params_report, params_sortinghat, params_track_items]
 
         for section_params in tasks_config_params:
             params.update(section_params)

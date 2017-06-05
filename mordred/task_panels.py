@@ -175,7 +175,42 @@ class TaskPanels(Task):
             self.__create_alias(es_enrich_url, index_enrich, real_alias)
 
 
+    def __kibiter_version(self):
+        """ Get the kibiter vesion """
+        config_url = '/.kibana/config/_search'
+        es_url = self.conf['es_enrichment']['url']
+        url = urljoin(es_url + "/", config_url)
+        r = requests.get(url)
+        r.raise_for_status()
+        return r.json()['hits']['hits'][0]['_id']
+
+    def __configure_kibiter(self):
+        if 'panels' not in self.conf:
+            logger.warning("Panels config not availble. Not configuring Kibiter.")
+            return
+
+        kibiter_version = self.__kibiter_version()
+        kibiter_time_from = self.conf['panels']['kibiter_time_from']
+        kibiter_default_index = self.conf['panels']['kibiter_default_index']
+
+        logger.info("Configuring Kibiter %s for default index %s and time frame %s",
+                    kibiter_version, kibiter_default_index, kibiter_time_from)
+
+        config_url = '/.kibana/config/' + kibiter_version
+        kibiter_config = {
+            "defaultIndex": kibiter_default_index,
+            "timepicker:timeDefaults":
+                "{\n  \"from\": \""+ kibiter_time_from + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
+        }
+
+        es_url = self.conf['es_enrichment']['url']
+        url = urljoin(es_url + "/", config_url)
+        r = requests.post(url, data=json.dumps(kibiter_config))
+        r.raise_for_status()
+
     def execute(self):
+        # Configure kibiter
+        self.__configure_kibiter()
         # Create the aliases
         self.__create_aliases()
         # Create the commons panels
@@ -231,7 +266,11 @@ class TaskPanelsMenu(Task):
         menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
         r = requests.post(menu_url, data=json.dumps(dash_menu))
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError:
+            logger.error("Can not create Kibiter menu. Probably it already exists for a different kibiter version.")
+            raise
 
     def __remove_dashboard_menu(self):
         """ The dashboard must be removed before creating a new one """
