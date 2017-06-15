@@ -170,6 +170,10 @@ class Mordred:
         # launching threads for tasks by backend
         if len(backend_tasks) > 0:
             repos_backend = self._get_repos_by_backend()
+            # Init the shared dict to control if autorefresh must be done
+            backends_autorefresh = {backend: False for backend in repos_backend}
+            TasksManager.AUTOREFRESH_QUEUE.put(backends_autorefresh)
+            logger.debug("Autorefresh queue: %s", backends_autorefresh)
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
                 t = TasksManager(backend_tasks, backend, stopper, self.config, small_delay)
@@ -215,74 +219,11 @@ class Mordred:
 
     def __execute_initial_load(self):
         """
-        The first time mordred execute the tasks it does it in a special way:
-        - It starts the threads to collect the data sources raw items
-        - It waits until all collect threads have finished
-        - It execute the identities tasks
-        - It waits until all identities tasks have finished
-        - It starts the threads to enrich the data sources raw items
-        - It waits until all identities tasks have finished
+        Tasks that should be done just one time
         """
-
-        tasks_cls = []
-
-        # phase one
-        # we get all the items with Perceval + identites browsing the
-        # raw items
-
-        tasks_cls = [TaskProjects]  # projects is always needed
-        self.execute_tasks(tasks_cls)
-
-        if self.conf['phases']['identities']:
-            tasks_cls = [TaskIdentitiesLoad]
-            self.execute_tasks(tasks_cls)
-
-        # handling the exception below and continuing the execution is
-        # a bit unstable, we could have several threads collecting data
-        # and one of them crash, where this behaviour is ok. But we also
-        # could have all of them crashed and this piece of code should
-        # be smart enough to stop the execution. #FIXME
-        try:
-            if self.conf['phases']['collection']:
-                tasks_cls = [TaskRawDataCollection]
-                if self.conf['phases']['identities']:
-                    tasks_cls.append(TaskIdentitiesCollection)
-                logger.warning(tasks_cls)
-                self.execute_tasks(tasks_cls)
-
-        except DataCollectionError as e:
-            logger.error(str(e))
-            var = traceback.format_exc()
-            logger.error(var)
-
-        if self.conf['phases']['identities']:
-            tasks_cls = [TaskIdentitiesMerge]
-            self.execute_tasks(tasks_cls)
-
-        # handling this exception adds the same issue as above with the
-        # exception for DataCollectionError. So this is another #FIXME
-        try:
-            if self.conf['phases']['enrichment']:
-                # raw items + sh database with merged identities + affiliations
-                # will used to produce a enriched index
-                tasks_cls = [TaskEnrich]
-                self.execute_tasks(tasks_cls)
-
-        except DataEnrichmentError as e:
-            logger.error(str(e))
-            var = traceback.format_exc()
-            logger.error(var)
 
         if self.conf['phases']['panels']:
             tasks_cls = [TaskPanels, TaskPanelsMenu]
-            self.execute_tasks(tasks_cls)
-
-        if self.conf['phases']['track_items']:
-            tasks_cls = [TaskTrackItems]
-            self.execute_tasks(tasks_cls)
-
-        if self.conf['phases']['report']:
-            tasks_cls = [TaskReport]
             self.execute_tasks(tasks_cls)
 
         return
@@ -335,6 +276,9 @@ class Mordred:
             all_tasks_cls.append(TaskEnrich)
         if self.conf['phases']['track_items']:
             all_tasks_cls.append(TaskTrackItems)
+        if self.conf['phases']['report']:
+            all_tasks_cls.append(TaskReport)
+
 
         # this is the main loop, where the execution should spend
         # most of its time

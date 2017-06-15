@@ -29,6 +29,7 @@ import tempfile
 import requests
 
 from mordred.task import Task
+from mordred.task_manager import TasksManager
 from sortinghat import api
 from sortinghat.cmd.affiliate import Affiliate
 from sortinghat.cmd.autoprofile import AutoProfile
@@ -269,3 +270,9 @@ class TaskIdentitiesMerge(Task):
                         profile = {"is_bot": False}
                         for uuid in uuids:
                             api.edit_profile(self.db, uuid, **profile)
+        # Autorefresh must be done once identities processing has finished
+        autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
+        for backend_section in autorefresh_backends:
+            autorefresh_backends[backend_section] = True
+        TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+        logger.debug("Autorefresh queue after processing identities: %s", autorefresh_backends)

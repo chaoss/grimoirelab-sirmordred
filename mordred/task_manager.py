@@ -41,6 +41,7 @@ class TasksManager(threading.Thread):
 
     # this queue supports the communication from threads to mother process
     COMM_QUEUE = queue.Queue()
+    AUTOREFRESH_QUEUE = queue.Queue()
 
     def __init__(self, tasks_cls, backend_section, stopper, config, timer = 0):
         """
@@ -89,6 +90,7 @@ class TasksManager(threading.Thread):
                     task.execute()
                 except Exception as ex:
                     logger.error("Exception in Task Manager %s", ex)
+                    raise
                     TasksManager.COMM_QUEUE.put(sys.exc_info())
 
         logger.debug('Exiting Task Manager thread %s', self.backend_section)

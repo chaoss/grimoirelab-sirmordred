@@ -32,6 +32,7 @@ from grimoire_elk.elk.elastic import ElasticSearch
 
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
+from mordred.task_manager import TasksManager
 from mordred.task_projects import TaskProjects
 
 
@@ -157,6 +158,13 @@ class TaskEnrich(Task):
 
         self.__enrich_items()
         if cfg['es_enrichment']['autorefresh']:
-            self.__autorefresh()
+            # Check it we should do the autorefresh
+            autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
+            if autorefresh_backends[self.backend_section]:
+                logger.debug("Doing autorefresh for %s", self.backend_section)
+                autorefresh_backends[self.backend_section] = False
+                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+                self.__autorefresh()
+
         if cfg['es_enrichment']['studies']:
             self.__studies()
