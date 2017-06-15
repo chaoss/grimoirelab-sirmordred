@@ -163,8 +163,9 @@ class TaskEnrich(Task):
             if autorefresh_backends[self.backend_section]:
                 logger.debug("Doing autorefresh for %s", self.backend_section)
                 autorefresh_backends[self.backend_section] = False
-                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
                 self.__autorefresh()
+            TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+
 
         if cfg['es_enrichment']['studies']:
             self.__studies()
