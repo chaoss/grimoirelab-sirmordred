@@ -40,7 +40,7 @@ from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesLoad, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
-from mordred.task_panels import TaskPanels, TaskPanelsMenu
+from mordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
 from mordred.task_projects import TaskProjects
 from mordred.task_report import TaskReport
 from mordred.task_track import TaskTrackItems
@@ -223,9 +223,8 @@ class Mordred:
         """
 
         if self.conf['phases']['panels']:
-            tasks_cls = [TaskPanels, TaskPanelsMenu]
+            tasks_cls = [TaskPanelsAliases, TaskPanels, TaskPanelsMenu]
             self.execute_tasks(tasks_cls)
-
         return
 
 
@@ -274,6 +273,8 @@ class Mordred:
                 all_tasks_cls.append(TaskIdentitiesCollection)
         if self.conf['phases']['enrichment']:
             all_tasks_cls.append(TaskEnrich)
+            # During enrich new indexes can be created a they need their aliases
+            all_tasks_cls.append(TaskPanelsAliases)
         if self.conf['phases']['track_items']:
             all_tasks_cls.append(TaskTrackItems)
         if self.conf['phases']['report']:
