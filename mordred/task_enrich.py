@@ -33,6 +33,7 @@ from grimoire_elk.elk.elastic import ElasticSearch
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
 from mordred.task_manager import TasksManager
+from mordred.task_panels import TaskPanelsAliases
 from mordred.task_projects import TaskProjects
 
 
@@ -47,6 +48,8 @@ class TaskEnrich(Task):
         self.backend_section = backend_section
         # This will be options in next iteration
         self.clean = False
+          # check whether the aliases has beed already created
+        self.enrich_aliases = False
 
     def __enrich_items(self):
 
@@ -119,7 +122,14 @@ class TaskEnrich(Task):
                 logger.error("Exception: %s", ex)
                 raise DataEnrichmentError('Failed to produce enriched data for %s', self.backend_name)
 
-        time.sleep(5)  # Safety sleep tp avoid too quick execution
+            # Let's try to create the aliases for the enriched index
+            if not self.enrich_aliases:
+                logger.debug("Creating aliases after enrich")
+                task_aliases = TaskPanelsAliases(self.config)
+                task_aliases.set_backend_section(self.backend_section)
+                task_aliases.execute()
+                logger.debug("Done creating aliases after enrich")
+                self.enrich_aliases = True
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-time_start))
         logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
@@ -165,7 +175,6 @@ class TaskEnrich(Task):
                 autorefresh_backends[self.backend_section] = False
                 self.__autorefresh()
             TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
-
 
         if cfg['es_enrichment']['studies']:
             self.__studies()
