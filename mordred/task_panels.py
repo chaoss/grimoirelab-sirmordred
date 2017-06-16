@@ -168,11 +168,20 @@ class TaskPanelsAliases(Task):
         }
     }
 
+    def __exists_alias(self, es_url, alias):
+        exists = False
+
+        alias_url = urljoin(es_url+"/", "_alias/"+alias)
+        r = requests.get(alias_url)
+        if r.status_code == 200:
+            # The alias exists
+            exists = True
+        return exists
+
     def __remove_alias(self, es_url, alias):
         alias_url = urljoin(es_url+"/", "_alias/"+alias)
         r = requests.get(alias_url)
         if r.status_code == 200:
-            # The alias exists, let's remove it
             real_index = list(r.json())[0]
             logger.debug("Removing alias %s to %s", alias, real_index)
             aliases_url = urljoin(es_url+"/", "_aliases")
@@ -188,7 +197,9 @@ class TaskPanelsAliases(Task):
             r.raise_for_status()
 
     def __create_alias(self, es_url, es_index, alias):
-        self.__remove_alias(es_url, alias)
+        if self.__exists_alias(es_url, alias):
+            # The alias already exists
+            return
         logger.debug("Adding alias %s to %s", alias, es_index)
         alias_url = urljoin(es_url+"/", "_aliases")
         action = """
