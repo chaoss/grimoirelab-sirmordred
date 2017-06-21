@@ -28,6 +28,8 @@ import tempfile
 
 import requests
 
+from queue import Empty
+
 from mordred.task import Task
 from mordred.task_manager import TasksManager
 from sortinghat import api
@@ -172,7 +174,7 @@ class TaskIdentitiesMerge(Task):
                     uuids.append(p.uuid)
         return uuids
 
-    def __get_sh_command(self):
+    def __build_sh_command(self):
         cfg = self.config.get_conf()
 
         db_user = cfg['sortinghat']['user']
@@ -184,27 +186,56 @@ class TaskIdentitiesMerge(Task):
 
         return cmd
 
-    def do_affiliate(self):
-        cmd = self.__get_sh_command()
-        cmd += ['affiliate']
+    def __execute_sh_command(self, cmd):
         logger.debug("Executing %s", cmd)
-        return subprocess.call(cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        outs, errs = proc.communicate()
+        uuids = self.__get_uuids_to_refresh(outs.decode("utf8"))
+        return uuids
+
+    def __get_uuids_to_refresh(self, data):
+        """
+        Return the Sortinggat unique identifiers that must be refreshed
+        after a unify and affiliate command
+
+        Formats:
+        Unique identity ab882b9c6f29837b263448aeb6eab1ec373d7688 merged on 75fc28ef4643de5323e89fb26e4e67c97b24f507
+        Unique identity 12deb94aa946193e28c2a933cbee4b338a928042 (acs_at_bitergia.com) affiliated to Bitergia
+        """
+
+        if data is None:
+            return None
+
+        lines = data.split("\n")
+        uuids = []
+        for line in lines:
+            fields = line.split()
+            if 'merged' in line:
+                uuids.append(fields[2])
+            elif 'affiliated' in line:
+                uuids.append(fields[2])
+        return uuids
+
+    def do_affiliate(self):
+        cmd = self.__build_sh_command()
+        cmd += ['affiliate']
+        uuids = self.__execute_sh_command(cmd)
         # return Affiliate(**self.sh_kwargs).affiliate()
+        return uuids
 
     def do_autoprofile(self, sources):
-        cmd = self.__get_sh_command()
+        cmd = self.__build_sh_command()
         cmd += ['autoprofile'] + sources
-        logger.debug("Executing %s", cmd)
-        return subprocess.call(cmd)
+        self.__execute_sh_command(cmd)
         # return  AutoProfile(**self.sh_kwargs).autocomplete(sources)
-
+        return None
 
     def do_unify(self, kwargs):
-        cmd = self.__get_sh_command()
+        cmd = self.__build_sh_command()
         cmd += ['unify', '--fast-matching', '-m', kwargs['matching']]
-        logger.debug("Executing %s", cmd)
-        return subprocess.call(cmd)
+        uuids = self.__execute_sh_command(cmd)
         # return Unify(**self.sh_kwargs).unify(**kwargs)
+        return uuids
 
     def execute(self):
         cfg = self.config.get_conf()
@@ -218,9 +249,8 @@ class TaskIdentitiesMerge(Task):
                 # if code != CMD_SUCCESS:
                 #     logger.error("[sortinghat] Error in unify %s", kwargs)
                 # Using subprocess approach to be sure memory is freed
-                code = self.do_unify(kwargs)
-                if code != 0:
-                    logger.error("[sortinghat] Error in unify %s", kwargs)
+                uuids = self.do_unify(kwargs)
+                logger.debug("uuids to refresh from unify: %s", uuids)
 
         if self.affiliate:
             # Global enrollments using domains
@@ -229,9 +259,8 @@ class TaskIdentitiesMerge(Task):
             # if code != CMD_SUCCESS:
             #     logger.error("[sortinghat] Error in affiliate %s", kwargs)
             # Using subprocess approach to be sure memory is freed
-            code = self.do_affiliate()
-            if code != 0:
-                logger.error("[sortinghat] Error in affiliate")
+            uuids = self.do_affiliate()
+            logger.debug("uuids to refresh from affiliate: %s", uuids)
 
         if self.autoprofile:
             if not 'autoprofile' in cfg['sortinghat']:
@@ -244,9 +273,8 @@ class TaskIdentitiesMerge(Task):
                 # if code != CMD_SUCCESS:
                 #     logger.error("Error in autoprofile %s", kwargs)
                 # Using subprocess approach to be sure memory is freed
-                code = self.do_autoprofile(sources)
-                if code != 0:
-                    logger.error("[sortinghat] Error in autoprofile %s", sources)
+                uuids = self.do_autoprofile(sources)
+                logger.debug("uuids to refresh from autoprofile: %s", uuids)
 
         if self.bots:
             if not 'bots_names' in cfg['sortinghat']:
@@ -271,8 +299,12 @@ class TaskIdentitiesMerge(Task):
                         for uuid in uuids:
                             api.edit_profile(self.db, uuid, **profile)
         # Autorefresh must be done once identities processing has finished
-        autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
-        for backend_section in autorefresh_backends:
-            autorefresh_backends[backend_section] = True
-        TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
-        logger.debug("Autorefresh queue after processing identities: %s", autorefresh_backends)
+        # Give 5s so the queue is filled and if not, continue without it
+        try:
+            autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get(timeout=5)
+            for backend_section in autorefresh_backends:
+                autorefresh_backends[backend_section] = True
+            TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+            logger.debug("Autorefresh queue after processing identities: %s", autorefresh_backends)
+        except Empty:
+            logger.warning("Autorefresh not active because the queue for it is empty.")
