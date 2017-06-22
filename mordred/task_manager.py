@@ -41,7 +41,10 @@ class TasksManager(threading.Thread):
 
     # this queue supports the communication from threads to mother process
     COMM_QUEUE = queue.Queue()
+    # data sources that need a autorefresh execution
     AUTOREFRESH_QUEUE = queue.Queue()
+    # uuids that must be refreshed in enriched data
+    UPDATED_UUIDS_QUEUE = queue.Queue()
 
     def __init__(self, tasks_cls, backend_section, stopper, config, timer = 0):
         """

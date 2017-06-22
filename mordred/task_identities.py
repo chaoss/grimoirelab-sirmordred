@@ -33,11 +33,8 @@ from queue import Empty
 from mordred.task import Task
 from mordred.task_manager import TasksManager
 from sortinghat import api
-from sortinghat.cmd.affiliate import Affiliate
-from sortinghat.cmd.autoprofile import AutoProfile
 from sortinghat.cmd.init import Init
 from sortinghat.cmd.load import Load
-from sortinghat.cmd.unify import Unify
 from sortinghat.command import CMD_SUCCESS
 from sortinghat.db.database import Database
 from sortinghat.db.model import Profile
@@ -191,6 +188,10 @@ class TaskIdentitiesMerge(Task):
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         outs, errs = proc.communicate()
         uuids = self.__get_uuids_to_refresh(outs.decode("utf8"))
+        return_code = proc.returncode
+        if return_code != 0:
+            logger.error("[sortinghat] Error in command %s", cmd)
+            uuids = []
         return uuids
 
     def __get_uuids_to_refresh(self, data):
@@ -220,46 +221,39 @@ class TaskIdentitiesMerge(Task):
         cmd = self.__build_sh_command()
         cmd += ['affiliate']
         uuids = self.__execute_sh_command(cmd)
-        # return Affiliate(**self.sh_kwargs).affiliate()
         return uuids
 
     def do_autoprofile(self, sources):
         cmd = self.__build_sh_command()
         cmd += ['autoprofile'] + sources
         self.__execute_sh_command(cmd)
-        # return  AutoProfile(**self.sh_kwargs).autocomplete(sources)
         return None
 
     def do_unify(self, kwargs):
         cmd = self.__build_sh_command()
         cmd += ['unify', '--fast-matching', '-m', kwargs['matching']]
         uuids = self.__execute_sh_command(cmd)
-        # return Unify(**self.sh_kwargs).unify(**kwargs)
         return uuids
 
     def execute(self):
         cfg = self.config.get_conf()
+
+        uuids_refresh = []
 
         if self.unify:
             for algo in cfg['sortinghat']['matching']:
                 kwargs = {'matching':algo, 'fast_matching':True}
                 logger.info("[sortinghat] Unifying identities using algorithm %s",
                             kwargs['matching'])
-                # code = self.do_unify(kwargs)
-                # if code != CMD_SUCCESS:
-                #     logger.error("[sortinghat] Error in unify %s", kwargs)
-                # Using subprocess approach to be sure memory is freed
                 uuids = self.do_unify(kwargs)
+                uuids_refresh += uuids
                 logger.debug("uuids to refresh from unify: %s", uuids)
 
         if self.affiliate:
             # Global enrollments using domains
             logger.info("[sortinghat] Executing affiliate")
-            # code = self.do_affiliate()
-            # if code != CMD_SUCCESS:
-            #     logger.error("[sortinghat] Error in affiliate %s", kwargs)
-            # Using subprocess approach to be sure memory is freed
             uuids = self.do_affiliate()
+            uuids_refresh += uuids
             logger.debug("uuids to refresh from affiliate: %s", uuids)
 
         if self.autoprofile:
@@ -269,12 +263,18 @@ class TaskIdentitiesMerge(Task):
                 logger.info("[sortinghat] Executing autoprofile for sources: %s",
                             cfg['sortinghat']['autoprofile'])
                 sources = cfg['sortinghat']['autoprofile']
-                # code = self.do_autoprofile()
-                # if code != CMD_SUCCESS:
-                #     logger.error("Error in autoprofile %s", kwargs)
-                # Using subprocess approach to be sure memory is freed
-                uuids = self.do_autoprofile(sources)
-                logger.debug("uuids to refresh from autoprofile: %s", uuids)
+                self.do_autoprofile(sources)
+
+        # The uuids must be refreshed in all backends (data sources)
+        # Give 5s so the queue is filled and if not, continue without it
+        try:
+            autorefresh_backends_uuids = TasksManager.UPDATED_UUIDS_QUEUE.get(timeout=5)
+            for backend_section in autorefresh_backends_uuids:
+                autorefresh_backends_uuids[backend_section] += uuids_refresh
+            TasksManager.UPDATED_UUIDS_QUEUE.put(autorefresh_backends_uuids)
+            logger.debug("Autorefresh uuids queue after processing identities: %s", autorefresh_backends_uuids)
+        except Empty:
+            logger.warning("Autorefresh uuids not active because the queue for it is empty.")
 
         if self.bots:
             if not 'bots_names' in cfg['sortinghat']:
@@ -298,6 +298,7 @@ class TaskIdentitiesMerge(Task):
                         profile = {"is_bot": False}
                         for uuid in uuids:
                             api.edit_profile(self.db, uuid, **profile)
+
         # Autorefresh must be done once identities processing has finished
         # Give 5s so the queue is filled and if not, continue without it
         try:

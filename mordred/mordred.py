@@ -174,6 +174,10 @@ class Mordred:
             backends_autorefresh = {backend: False for backend in repos_backend}
             TasksManager.AUTOREFRESH_QUEUE.put(backends_autorefresh)
             logger.debug("Autorefresh queue: %s", backends_autorefresh)
+            # Init the shared dict to control the uuids to be autorefreshed in
+            # each backend
+            backends_autorefresh_uuids = {backend: [] for backend in repos_backend}
+            TasksManager.UPDATED_UUIDS_QUEUE.put(backends_autorefresh_uuids)
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
                 t = TasksManager(backend_tasks, backend, stopper, self.config, small_delay)

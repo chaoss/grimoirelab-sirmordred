@@ -136,7 +136,7 @@ class TaskEnrich(Task):
 
     def __autorefresh(self):
         logger.info("[%s] Refreshing project and identities " + \
-                     "fields for all items", self.backend_section)
+                     "fields for updated uuids ", self.backend_section)
         # Refresh projects
         if False:
             # TODO: Waiting that the project info is loaded from yaml files
@@ -150,8 +150,26 @@ class TaskEnrich(Task):
         logger.info("Refreshing identities fields in enriched index")
         enrich_backend = self._get_enrich_backend()
         field_id = enrich_backend.get_field_unique_id()
-        eitems = refresh_identities(enrich_backend)
-        enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+        # Now we need to get the uuids to be refreshed
+        logger.debug("Checking if there are uuids to refresh in %s", self.backend_section)
+        backends_uuids = TasksManager.UPDATED_UUIDS_QUEUE.get()
+        if backends_uuids:
+            logger.debug("Doing autorefresh for %s (%s)", self.backend_section, backends_uuids)
+            if backends_uuids[self.backend_section]:
+                uuids_refresh = backends_uuids[self.backend_section]
+                backends_uuids[self.backend_section] = []
+                logger.debug("New uuids data: %s", backends_uuids)
+                TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
+                logger.debug("Refreshing uuids %s", uuids_refresh)
+                eitems = refresh_identities(enrich_backend,
+                                            {"name": "author_uuid",
+                                             "value": uuids_refresh})
+                enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+            else:
+                TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
+        else:
+            TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
+            logger.warning("No dict with uuids per backend to be refreshed")
 
     def __studies(self):
         logger.info("Executing %s studies ...", self.backend_section)
@@ -169,12 +187,16 @@ class TaskEnrich(Task):
         self.__enrich_items()
         if cfg['es_enrichment']['autorefresh']:
             # Check it we should do the autorefresh
+            logger.debug("Checking autorefresh for %s", self.backend_section)
             autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
             if autorefresh_backends[self.backend_section]:
                 logger.debug("Doing autorefresh for %s", self.backend_section)
                 autorefresh_backends[self.backend_section] = False
+                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
                 self.__autorefresh()
-            TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+            else:
+                logger.debug("Not doing autorefresh for %s", self.backend_section)
+                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
 
         if cfg['es_enrichment']['studies']:
             self.__studies()
