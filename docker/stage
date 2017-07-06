@@ -70,23 +70,29 @@ git clone https://github.com/grimoirelab/grimoirelab-toolkit.git && \
 
 # get Perceval repository
 cd /home/bitergia && \
-git clone https://github.com/grimoirelab/perceval.git && \
+    git clone https://github.com/grimoirelab/perceval.git && \
     cd perceval && \
     git checkout $PERCEVAL && \
     sudo python3 setup.py install
 
 # perceval extras
+cd /home/bitergia && \
+    git clone https://github.com/grimoirelab/perceval-mozilla && \
+    cd perceval-mozilla && \
+    git checkout $PERCEVAL_MOZILLA && \
+    sudo python3 setup.py install
 
-# Mozilla ad-hoc backends
+cd /home/bitergia && \
+    git clone https://github.com/grimoirelab/perceval-puppet && \
+    cd perceval-puppet && \
+    git checkout $PERCEVAL_PUPPET && \
+    sudo python3 setup.py install
 
-if [ $PERCEVAL_MOZILLA ]
-    then
-    cd /home/bitergia && \
-        git clone https://github.com/grimoirelab/perceval-mozilla && \
-        cd perceval-mozilla && \
-        git checkout $PERCEVAL_MOZILLA && \
-        sudo python3 setup.py install
-fi
+cd /home/bitergia && \
+    git clone https://github.com/grimoirelab/perceval-opnfv && \
+    cd perceval-opnfv && \
+    git checkout $PERCEVAL_OPNFV && \
+    sudo python3 setup.py install
 
 # some links we need until GrimoireELK and panels and reports can be installed
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
