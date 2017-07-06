@@ -32,6 +32,8 @@ from grimoire_elk.elk.elastic import ElasticSearch
 
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
+from mordred.task_manager import TasksManager
+from mordred.task_panels import TaskPanelsAliases
 from mordred.task_projects import TaskProjects
 
 
@@ -46,6 +48,8 @@ class TaskEnrich(Task):
         self.backend_section = backend_section
         # This will be options in next iteration
         self.clean = False
+          # check whether the aliases has beed already created
+        self.enrich_aliases = False
 
     def __enrich_items(self):
 
@@ -118,14 +122,21 @@ class TaskEnrich(Task):
                 logger.error("Exception: %s", ex)
                 raise DataEnrichmentError('Failed to produce enriched data for %s', self.backend_name)
 
-        time.sleep(5)  # Safety sleep tp avoid too quick execution
+            # Let's try to create the aliases for the enriched index
+            if not self.enrich_aliases:
+                logger.debug("Creating aliases after enrich")
+                task_aliases = TaskPanelsAliases(self.config)
+                task_aliases.set_backend_section(self.backend_section)
+                task_aliases.execute()
+                logger.debug("Done creating aliases after enrich")
+                self.enrich_aliases = True
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-time_start))
         logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
 
     def __autorefresh(self):
         logger.info("[%s] Refreshing project and identities " + \
-                     "fields for all items", self.backend_section)
+                     "fields for updated uuids ", self.backend_section)
         # Refresh projects
         if False:
             # TODO: Waiting that the project info is loaded from yaml files
@@ -139,8 +150,26 @@ class TaskEnrich(Task):
         logger.info("Refreshing identities fields in enriched index")
         enrich_backend = self._get_enrich_backend()
         field_id = enrich_backend.get_field_unique_id()
-        eitems = refresh_identities(enrich_backend)
-        enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+        # Now we need to get the uuids to be refreshed
+        logger.debug("Checking if there are uuids to refresh in %s", self.backend_section)
+        backends_uuids = TasksManager.UPDATED_UUIDS_QUEUE.get()
+        if backends_uuids:
+            logger.debug("Doing autorefresh for %s (%s)", self.backend_section, backends_uuids)
+            if backends_uuids[self.backend_section]:
+                uuids_refresh = backends_uuids[self.backend_section]
+                backends_uuids[self.backend_section] = []
+                logger.debug("New uuids data: %s", backends_uuids)
+                TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
+                logger.debug("Refreshing uuids %s", uuids_refresh)
+                eitems = refresh_identities(enrich_backend,
+                                            {"name": "author_uuid",
+                                             "value": uuids_refresh})
+                enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+            else:
+                TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
+        else:
+            TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
+            logger.warning("No dict with uuids per backend to be refreshed")
 
     def __studies(self):
         logger.info("Executing %s studies ...", self.backend_section)
@@ -157,6 +186,17 @@ class TaskEnrich(Task):
 
         self.__enrich_items()
         if cfg['es_enrichment']['autorefresh']:
-            self.__autorefresh()
+            # Check it we should do the autorefresh
+            logger.debug("Checking autorefresh for %s", self.backend_section)
+            autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
+            if autorefresh_backends[self.backend_section]:
+                logger.debug("Doing autorefresh for %s", self.backend_section)
+                autorefresh_backends[self.backend_section] = False
+                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+                self.__autorefresh()
+            else:
+                logger.debug("Not doing autorefresh for %s", self.backend_section)
+                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+
         if cfg['es_enrichment']['studies']:
             self.__studies()
