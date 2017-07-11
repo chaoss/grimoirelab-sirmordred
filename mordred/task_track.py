@@ -28,6 +28,7 @@ from grimoire_elk.track_items import fetch_track_items, get_gerrit_numbers, enri
 from grimoire_elk.track_items import get_commits_from_gerrit, enrich_git_items
 
 from mordred.task import Task
+from mordred.task_projects import TaskProjects
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,15 @@ class TaskTrackItems(Task):
             logger.error("gerrit and git are needed for track items.")
             return
 
-        items_url = cfg['track_items']['upstream_items_url']
+        # We need to track the items in all git repositories from OPNFV
+        git_repos = []
+        repos_raw = TaskProjects.get_repos_by_backend_section("git")
+        # git://git.opnfv.org/apex -> https://git.opnfv.org/apex/plain/UPSTREAM
+        for repo in repos_raw:
+            repo = repo.replace("git://", "https://")
+            repo += "/plain/UPSTREAM"
+            git_repos.append(repo)
+
         project = cfg['track_items']['project']
         elastic_url_enrich = cfg['es_enrichment']['url']
 
@@ -68,12 +77,15 @@ class TaskTrackItems(Task):
             "host": cfg['sortinghat']['host']
         }
 
-        logger.info("Importing track items from %s ", items_url)
+        logger.debug("Importing track items from %s ", git_repos)
 
         #
         # Gerrit Reviews
         #
-        gerrit_uris = fetch_track_items(items_url, self.ITEMS_DATA_SOURCE)
+        gerrit_uris = []
+        for git_repo in git_repos:
+            gerrit_uris += fetch_track_items(git_repo, self.ITEMS_DATA_SOURCE)
+
         gerrit_numbers = get_gerrit_numbers(gerrit_uris)
         logger.info("Total gerrit track items to be imported: %i", len(gerrit_numbers))
         enriched_items = enrich_gerrit_items(elastic_url_raw,

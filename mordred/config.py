@@ -332,7 +332,6 @@ class Config():
                     "default": "TrackProject",
                     "type": str
                 },
-                "upstream_items_url": no_optional_empty_string,
                 "upstream_raw_es_url": no_optional_empty_string,
                 "raw_index_gerrit": no_optional_empty_string,
                 "raw_index_git": no_optional_empty_string
