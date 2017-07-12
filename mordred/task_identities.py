@@ -56,9 +56,9 @@ class TaskIdentitiesCollection(Task):
         super().__init__(config)
 
         self.load_ids = load_ids  # Load identities from raw index
-        self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
-                        'database': self.db_sh, 'host': self.db_host,
-                        'port': None}
+        self.sh_kwargs= {'user': self.db_user, 'password': self.db_password,
+                         'database': self.db_sh, 'host': self.db_host,
+                         'port': None}
 
     def execute(self):
 
@@ -105,6 +105,7 @@ class TaskIdentitiesLoad(Task):
             return remote
 
         def load_identities_file(filename):
+            """ Load an identities file in Sortinghat """
             logger.info("[sortinghat] Loading identities from file %s", filename)
             code = Load(**self.sh_kwargs).run("--identities", filename)
             if code != CMD_SUCCESS:
@@ -127,18 +128,19 @@ class TaskIdentitiesLoad(Task):
 
         if 'identities_file' in cfg['sortinghat']:
             filenames = cfg['sortinghat']['identities_file']
-            for f in filenames:
-                f = f.replace(' ', '')  # spaces used in config file list
-                if f is '':
-                  continue
-                if is_remote(f):
-                    r = requests.get(f)
+            for filename in filenames:
+                filename = filename.replace(' ', '')  # spaces used in config file list
+                if filename == '':
+                    continue
+                if is_remote(filename):
+                    res_get = requests.get(filename)
+                    res_get.raise_for_status()
                     with tempfile.NamedTemporaryFile() as temp:
-                        temp.write(r.content)
+                        temp.write(res_get.content)
                         temp.flush()
                         load_identities_file(temp.name)
                 else:
-                    load_identities_file(f)
+                    load_identities_file(filename)
 
 
 class TaskIdentitiesExport(Task):
@@ -155,6 +157,7 @@ class TaskIdentitiesExport(Task):
     def execute(self):
 
         def export_identities(filename):
+            """ Export Sortinghat identities to a file """
             logger.info("[sortinghat] Exporting identities to %s", filename)
             code = Export(**self.sh_kwargs).run("--identities", filename)
             if code != CMD_SUCCESS:
@@ -162,64 +165,67 @@ class TaskIdentitiesExport(Task):
 
         cfg = self.config.get_conf()
 
-        if 'identities_export_url' in cfg['sortinghat']:
-            repo_file_sha = None
-            gzipped_identities_file = None
+        if 'identities_export_url' not in cfg['sortinghat']:
+            return
 
-            repository_url = cfg['sortinghat']['identities_export_url']
-            try:
-                # https://github.com/acs-test/test-uploading/blob/master/README.md
-                repo_file = repository_url.rsplit("/", 1)[1]
-                repository_raw = repository_url.rsplit("/", 1)[0]
-                repository = repository_raw.rsplit("/", 2)[0]
-                repository_api = repository.replace('github.com', 'api.github.com/repos')
-                repository_type = repository_raw.rsplit("/", 2)[1]
-                repository_branch = repository_raw.rsplit("/", 2)[2]
-            except IndexError as ex:
-                logger.error("Can not export identities to: %s", repository_url)
-                logger.debug("Expected format: https://github.com/owner/repo/blob/master/file")
-                logger.debug(ex)
-                return
+        repo_file_sha = None
+        gzipped_identities_file = None
+        github_token = cfg['sortinghat']['github_api_token']
+        headers = {"Authorization": "token " + github_token}
 
-            with tempfile.NamedTemporaryFile() as temp:
-                export_identities(temp.name)
-                logger.debug("SH identities exported to tmp file: %s", temp.name)
-                # Compress the file with gzip
-                with open(temp.name, 'rb') as f_in:
-                    gzipped_identities_file = temp.name + '.gz'
-                    with gzip.open(gzipped_identities_file, 'wb') as f_out:
-                        shutil.copyfileobj(f_in, f_out)
-                # Get sha for the repository_file
-                url_dir = repository_api + "/git/trees/"+ repository_branch
-                logger.debug("Gettting sha data from tree: %s", url_dir)
-                raw_repo_file_info = requests.get(url_dir)
-                for rfile in raw_repo_file_info.json()['tree']:
-                    if rfile['path'] == repo_file:
-                        logger.debug("SHA found: %s, ", rfile["sha"])
-                        repo_file_sha = rfile["sha"]
+        repository_url = cfg['sortinghat']['identities_export_url']
+        try:
+            # https://github.com/<owner>/<repo>/blob/<branch>/<sh_identities>.gz
+            repo_file = repository_url.rsplit("/", 1)[1]
+            repository_raw = repository_url.rsplit("/", 1)[0]
+            repository = repository_raw.rsplit("/", 2)[0]
+            repository_api = repository.replace('github.com', 'api.github.com/repos')
+            # repository_type = repository_raw.rsplit("/", 2)[1]
+            repository_branch = repository_raw.rsplit("/", 2)[2]
+        except IndexError as ex:
+            logger.error("Can not export identities to: %s", repository_url)
+            logger.debug("Expected format: https://github.com/owner/repo/blob/master/file")
+            logger.debug(ex)
+            return
 
-                if repo_file_sha is None:
-                    logger.warning("Can not find sha for %s", repository_url)
-                    logger.warning("Identities not exported to GitHub")
+        with tempfile.NamedTemporaryFile() as temp:
+            export_identities(temp.name)
+            logger.debug("SH identities exported to tmp file: %s", temp.name)
+            # Compress the file with gzip
+            with open(temp.name, 'rb') as f_in:
+                gzipped_identities_file = temp.name + '.gz'
+                with gzip.open(gzipped_identities_file, 'wb') as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+            # Get sha for the repository_file
+            url_dir = repository_api + "/git/trees/"+ repository_branch
+            logger.debug("Gettting sha data from tree: %s", url_dir)
+            raw_repo_file_info = requests.get(url_dir, headers=headers)
+            raw_repo_file_info.raise_for_status()
+            for rfile in raw_repo_file_info.json()['tree']:
+                if rfile['path'] == repo_file:
+                    logger.debug("SHA found: %s, ", rfile["sha"])
+                    repo_file_sha = rfile["sha"]
 
-                # Upload gzipped file to repository_file
-                github_token = cfg['github']['api-token']
-                logger.debug("Encoding to base64 identities file")
-                with open(gzipped_identities_file, "rb") as raw_file:
-                    base64_raw = base64.b64encode(raw_file.read())
-                    # base64 is ascii encoded data
-                    gzipped_base64_identities = base64_raw.decode('ascii')
-                    upload_json = {
-                        "sha": repo_file_sha,
-                        "content": gzipped_base64_identities,
-                        "message": "mordred automatic update"
-                    }
-                    data = json.dumps(upload_json)
-                    url_put = repository_api + "/contents/"+ repo_file
-                    logger.debug("Uploading to GitHub %s", url_put)
-                    headers = {"Authorization": "token " + github_token}
-                    r = requests.put(url_put, headers=headers, data=data)
-                    r.raise_for_status()
+            if repo_file_sha is None:
+                logger.warning("Can not find sha for %s", repository_url)
+                logger.warning("Identities not exported to GitHub")
+
+            # Upload gzipped file to repository_file
+            logger.debug("Encoding to base64 identities file")
+            with open(gzipped_identities_file, "rb") as raw_file:
+                base64_raw = base64.b64encode(raw_file.read())
+                # base64 is ascii encoded data
+                gzipped_base64_identities = base64_raw.decode('ascii')
+                upload_json = {
+                    "sha": repo_file_sha,
+                    "content": gzipped_base64_identities,
+                    "message": "mordred automatic update"
+                }
+                data = json.dumps(upload_json)
+                url_put = repository_api + "/contents/"+ repo_file
+                logger.debug("Uploading to GitHub %s", url_put)
+                upload_res = requests.put(url_put, headers=headers, data=data)
+                upload_res.raise_for_status()
 
 
 class TaskIdentitiesMerge(Task):
