@@ -24,12 +24,13 @@
 
 import logging
 import queue
-import requests
 import threading
 import time
 import traceback
 
 from datetime import datetime, timedelta
+
+import requests
 
 from mordred.config import Config
 from mordred.error import ElasticSearchError
@@ -38,7 +39,7 @@ from mordred.error import DataEnrichmentError
 from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_enrich import TaskEnrich
-from mordred.task_identities import TaskIdentitiesLoad, TaskIdentitiesMerge
+from mordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
 from mordred.task_projects import TaskProjects
@@ -273,6 +274,7 @@ class Mordred:
             # load identities and orgs periodically for updates
             all_tasks_cls.append(TaskIdentitiesLoad)
             all_tasks_cls.append(TaskIdentitiesMerge)
+            all_tasks_cls.append(TaskIdentitiesExport)
             # This is done in enrichement before doing the enrich
             # if self.conf['phases']['collection']:
             #     all_tasks_cls.append(TaskIdentitiesCollection)

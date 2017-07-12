@@ -320,6 +320,7 @@ class Config():
                 },
                 "orgs_file": optional_string_none,
                 "identities_file": optional_empty_list,
+                "identities_export_url": optional_string_none,
                 "bots_names": optional_empty_list,
                 "no_bots_names": optional_empty_list  # to clean bots in SH
             }
