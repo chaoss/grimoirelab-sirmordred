@@ -168,6 +168,10 @@ class TaskIdentitiesExport(Task):
         if 'identities_export_url' not in cfg['sortinghat']:
             return
 
+        if 'github_api_token' not in cfg['sortinghat']:
+            logger.error("github_api_token for uploading data to GitHub not found in sortinghat section")
+            return
+
         repo_file_sha = None
         gzipped_identities_file = None
         github_token = cfg['sortinghat']['github_api_token']
@@ -207,8 +211,7 @@ class TaskIdentitiesExport(Task):
                     repo_file_sha = rfile["sha"]
 
             if repo_file_sha is None:
-                logger.warning("Can not find sha for %s", repository_url)
-                logger.warning("Identities not exported to GitHub")
+                logger.debug("Can not find sha for %s. It will be created.", repository_url)
 
             # Upload gzipped file to repository_file
             logger.debug("Encoding to base64 identities file")
@@ -217,10 +220,12 @@ class TaskIdentitiesExport(Task):
                 # base64 is ascii encoded data
                 gzipped_base64_identities = base64_raw.decode('ascii')
                 upload_json = {
-                    "sha": repo_file_sha,
                     "content": gzipped_base64_identities,
                     "message": "mordred automatic update"
                 }
+                if repo_file_sha:
+                    upload_json["sha"] = repo_file_sha
+
                 data = json.dumps(upload_json)
                 url_put = repository_api + "/contents/"+ repo_file
                 logger.debug("Uploading to GitHub %s", url_put)
