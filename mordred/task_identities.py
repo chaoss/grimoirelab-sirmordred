@@ -165,10 +165,10 @@ class TaskIdentitiesExport(Task):
 
         cfg = self.config.get_conf()
 
-        if 'identities_export_url' not in cfg['sortinghat']:
+        if cfg['sortinghat']['identities_export_url'] is None:
             return
 
-        if 'github_api_token' not in cfg['sortinghat']:
+        if cfg['sortinghat']['github_api_token'] is None:
             logger.error("github_api_token for uploading data to GitHub not found in sortinghat section")
             return
 
