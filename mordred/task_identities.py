@@ -56,9 +56,9 @@ class TaskIdentitiesCollection(Task):
         super().__init__(config)
 
         self.load_ids = load_ids  # Load identities from raw index
-        self.sh_kwargs= {'user': self.db_user, 'password': self.db_password,
-                         'database': self.db_sh, 'host': self.db_host,
-                         'port': None}
+        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
+                          'database': self.db_sh, 'host': self.db_host,
+                          'port': None}
 
     def execute(self):
 
