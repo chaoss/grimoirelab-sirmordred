@@ -147,11 +147,6 @@ class Config():
                     "default": "logs",
                     "type": str
                 },
-                "skip_initial_load": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool
-                },
                 "bulk_size": {
                     "optional": True,
                     "default": 1000,
@@ -217,7 +212,11 @@ class Config():
                     "type": str
                 },
                 "studies": optional_bool_none,
-                "autorefresh": optional_bool_none,
+                "autorefresh": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool
+                },
                 "user": optional_string_none,
                 "password": optional_string_none
             }
