@@ -147,6 +147,11 @@ class Config():
                     "default": "logs",
                     "type": str
                 },
+                "skip_initial_load": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool
+                },
                 "bulk_size": {
                     "optional": True,
                     "default": 1000,
