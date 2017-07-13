@@ -28,7 +28,7 @@ the "short_name".
 ```
 [general]
 short_name = Grimoire
-update = false
+update = true
 debug = false
 logs_dir = /home/bitergia/logs
 ```
@@ -38,8 +38,6 @@ You can do further adjustments, but not needed by default:
 ```
 # to support the bitergia/kibiter:5.1.1 just change to 5
 kibana = "4"
-# to avoid the special startup of mordred and start with the update loop
-skip_initial_load = False
 ```
 
 To increase the performance during collection and enrichment of data you
@@ -113,6 +111,16 @@ bots_names = [Beloved Bot]
 unaffiliated_group = Unknown
 ```
 
+In order to load identities from a file or url or export the identities to a
+GitHub repository, extra params are nedded:
+
+```
+identities_file = [sh_identities.json]
+identities_export_url = "https://github.com/<owner>/<repo>/blob/master/sh_identities.gz"
+# Token with write permissions in the export GitHub repository
+github_api_token = "42207XXXXXXXX"
+```
+
 For builidng the dashboard, mordred configures Kibiter. No config is needed
 by default but sometimes is useful to change the default time frame is shown.
 
@@ -148,13 +156,13 @@ backend-token = [your github token]
 
 ## requirements.cfg
 
-Place here our latest release file. Current one is named 'elasticgirl.9' and
-you can get it from https://github.com/Bitergia/mordred/blob/master/docker/unified_releases/elasticgirl.9
+Place here our latest release file. Current one is named 'elasticgirl.11' and
+you can get it from https://github.com/Bitergia/mordred/blob/master/docker/unified_releases/elasticgirl.12
 
 If you don't need so much detail (it includes the different versions of the Bitergia stack) just include the name of the release in a variable named "RELEASE" as I did below:
 ```
 #!/bin/bash
-RELEASE='elasticgirl.9'
+RELEASE='elasticgirl.12'
 ```
 
 **NOTE**: in case you are using a version =< catwoman you'll need to use a special image of the docker image. It is called bitergia/mordred:catwoman, insted of bitergia/mordred:latest
@@ -298,7 +306,7 @@ Crowd: [shouts] Burn her anyway!
 
 ## Advanced features
 
-mordred includes some extra features, like tracking items (gerrit reviews, git commits ...) from a specific Elasticsearch raw index and to enrich and to include them in the default enriched index.
+mordred includes some extra features, like tracking items (gerrit reviews, git commits ...) from a specific Elasticsearch raw index and to enrich and to include them in the default enriched index. The items to be tracked must be included in a file called "UPSTREAM" at the root of git repositories.
 
 ```
 [phases]
@@ -307,7 +315,6 @@ track_items = true
 
 
 [track_items]
-upstream_items_url = https://git.opnfv.org/doctor/plain/UPSTREAM
 # Name of the project for the items tracked
 project = "OpenStack"
 upstream_raw_es_url = http://raw.elasticsearch:9200
