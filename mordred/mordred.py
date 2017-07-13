@@ -254,7 +254,7 @@ class Mordred:
 
         # do we need ad-hoc scripts?
 
-        # Initial round: projects -> collect -> identities -> enrich
+        # Initial round: panels loading
         if not self.conf['general']['skip_initial_load']:
             self.__execute_initial_load()
         else:
