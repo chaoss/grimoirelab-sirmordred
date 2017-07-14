@@ -174,7 +174,7 @@ class Mordred:
             # Init the shared dict to control if autorefresh must be done
             backends_autorefresh = {backend: False for backend in repos_backend}
             TasksManager.AUTOREFRESH_QUEUE.put(backends_autorefresh)
-            logger.debug("Autorefresh queue: %s", backends_autorefresh)
+            logger.debug("Initial Autorefresh queue: %s", backends_autorefresh)
             # Init the shared dict to control the uuids to be autorefreshed in
             # each backend
             backends_autorefresh_uuids = {backend: [] for backend in repos_backend}
