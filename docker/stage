@@ -6,13 +6,15 @@ source /home/bitergia/conf/requirements.cfg
 # https://github.com/Bitergia/mordred/tree/master/docker/unified_releases/
 if [ $RELEASE ];
     then
-    unset SORTINGHAT
+    unset ARTHUR
     unset GRIMOIREELK
     unset GRIMOIRELAB_TOOLKIT
     unset MORDRED
     unset PANELS
     unset PERCEVAL
     unset PERCEVAL_MOZILLA
+    unset PERCEVAL_OPNFV
+    unset SORTINGHAT
     unset REPORTS
     unset VIZGRIMOIREUTILS
     TMPFILE=`mktemp`
@@ -24,9 +26,17 @@ else
     echo "customized release, see requirements.cfg file" > /home/bitergia/release
 fi
 
+# get Arthur repository
+cd /home/bitergia && \
+# git clone https://github.com/grimoirelab/arthur.git && \
+git clone https://github.com/acs/arthur.git && \
+    cd arthur && \
+    git checkout $ARTHUR && \
+    sudo python3 setup.py install
+
 # get SortingHat repository
 cd /home/bitergia && \
-git clone https://github.com/MetricsGrimoire/sortinghat.git && \
+git clone https://github.com/grimoirelab/sortinghat.git && \
     cd sortinghat && \
     git checkout $SORTINGHAT && \
     sudo python3 setup.py install
@@ -94,6 +104,25 @@ cd /home/bitergia && \
     git checkout $PERCEVAL_OPNFV && \
     sudo python3 setup.py install
 
+
+# some links we need until GrimoireELK and panels can be installed
+ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
+ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
+ln -s /home/bitergia/panels /home/bitergia/mordred/panels
+ln -s /home/bitergia/panels/dashboards5 /home/bitergia/panels/dashboards
+
+# This could be an ENV var probably
+REDIS="redis"
+
+# arthur on
+arthurd -g -d redis://$REDIS/8 --es-index $ARTHUR_ELASTICSEARCH_INDEX --log-path /home/bitergia/logs/arthurd --no-cache
+# Give time to arthur to create the raw index
+echo "Waiting for arthur startup completion ..."
+sleep 5
+echo "Starting two workers: collect and update tasks"
+# Two workers
+(arthurw -g -d redis://$REDIS/8 > /home/bitergia/logs/worker-collect.log 2>&1) &
+(arthurw -g -d redis://$REDIS/8 update > /home/bitergia/logs/worker-update.log 2>&1) &
 # some links we need until GrimoireELK and panels and reports can be installed
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
 ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
