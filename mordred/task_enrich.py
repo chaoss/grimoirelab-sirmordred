@@ -154,7 +154,7 @@ class TaskEnrich(Task):
         logger.debug("Checking if there are uuids to refresh in %s", self.backend_section)
         backends_uuids = TasksManager.UPDATED_UUIDS_QUEUE.get()
         if backends_uuids:
-            logger.debug("Doing autorefresh for %s (%s)", self.backend_section, backends_uuids)
+            logger.debug("Doing autorefresh for %s (%s uuids)", self.backend_section, backends_uuids)
             if backends_uuids[self.backend_section]:
                 uuids_refresh = backends_uuids[self.backend_section]
                 backends_uuids[self.backend_section] = []
@@ -187,8 +187,8 @@ class TaskEnrich(Task):
         self.__enrich_items()
         if cfg['es_enrichment']['autorefresh']:
             # Check it we should do the autorefresh
-            logger.debug("Checking autorefresh for %s", self.backend_section)
             autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
+            logger.debug("Checking autorefresh for %s %s", self.backend_section, autorefresh_backends)
             if autorefresh_backends[self.backend_section]:
                 logger.debug("Doing autorefresh for %s", self.backend_section)
                 autorefresh_backends[self.backend_section] = False
