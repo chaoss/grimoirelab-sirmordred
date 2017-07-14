@@ -24,12 +24,13 @@
 
 import logging
 import queue
-import requests
 import threading
 import time
 import traceback
 
 from datetime import datetime, timedelta
+
+import requests
 
 from grimoire_elk.utils import get_connectors
 
@@ -40,9 +41,9 @@ from mordred.error import DataEnrichmentError
 from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from mordred.task_enrich import TaskEnrich
-from mordred.task_identities import TaskIdentitiesCollection, TaskIdentitiesLoad, TaskIdentitiesMerge
+from mordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge
 from mordred.task_manager import TasksManager
-from mordred.task_panels import TaskPanels, TaskPanelsMenu
+from mordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
 from mordred.task_projects import TaskProjects
 from mordred.task_report import TaskReport
 from mordred.task_track import TaskTrackItems
@@ -172,6 +173,14 @@ class Mordred:
         # launching threads for tasks by backend
         if len(backend_tasks) > 0:
             repos_backend = self._get_repos_by_backend()
+            # Init the shared dict to control if autorefresh must be done
+            backends_autorefresh = {backend: False for backend in repos_backend}
+            TasksManager.AUTOREFRESH_QUEUE.put(backends_autorefresh)
+            logger.debug("Autorefresh queue: %s", backends_autorefresh)
+            # Init the shared dict to control the uuids to be autorefreshed in
+            # each backend
+            backends_autorefresh_uuids = {backend: [] for backend in repos_backend}
+            TasksManager.UPDATED_UUIDS_QUEUE.put(backends_autorefresh_uuids)
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
                 t = TasksManager(backend_tasks, backend, stopper, self.config, small_delay)
@@ -217,68 +226,12 @@ class Mordred:
 
     def __execute_initial_load(self):
         """
-        The first time mordred execute the tasks it does it in a special way:
-        - It starts the threads to collect the data sources raw items
-        - It waits until all collect threads have finished
-        - It execute the identities tasks
-        - It waits until all identities tasks have finished
-        - It starts the threads to enrich the data sources raw items
-        - It waits until all identities tasks have finished
+        Tasks that should be done just one time
         """
 
-        tasks_cls = []
-
-        # handling the exception below and continuing the execution is
-        # a bit unstable, we could have several threads collecting data
-        # and one of them crash, where this behaviour is ok. But we also
-        # could have all of them crashed and this piece of code should
-        # be smart enough to stop the execution. #FIXME
-        try:
-            if self.conf['phases']['collection']:
-                if not self.conf['es_collection']['arthur']:
-                    tasks_cls = [TaskRawDataCollection]
-                else:
-                    tasks_cls = [TaskRawDataArthurCollection]
-                if self.conf['phases']['identities']:
-                    tasks_cls.append(TaskIdentitiesCollection)
-                logger.warning(tasks_cls)
-                self.execute_tasks(tasks_cls)
-
-        except DataCollectionError as e:
-            logger.error(str(e))
-            var = traceback.format_exc()
-            logger.error(var)
-
-        if self.conf['phases']['identities']:
-            tasks_cls = [TaskIdentitiesMerge]
-            self.execute_tasks(tasks_cls)
-
-        # handling this exception adds the same issue as above with the
-        # exception for DataCollectionError. So this is another #FIXME
-        try:
-            if self.conf['phases']['enrichment']:
-                # raw items + sh database with merged identities + affiliations
-                # will used to produce a enriched index
-                tasks_cls = [TaskEnrich]
-                self.execute_tasks(tasks_cls)
-
-        except DataEnrichmentError as e:
-            logger.error(str(e))
-            var = traceback.format_exc()
-            logger.error(var)
-
         if self.conf['phases']['panels']:
-            tasks_cls = [TaskPanels, TaskPanelsMenu]
+            tasks_cls = [TaskPanelsAliases, TaskPanels, TaskPanelsMenu]
             self.execute_tasks(tasks_cls)
-
-        if self.conf['phases']['track_items']:
-            tasks_cls = [TaskTrackItems]
-            self.execute_tasks(tasks_cls)
-
-        if self.conf['phases']['report']:
-            tasks_cls = [TaskReport]
-            self.execute_tasks(tasks_cls)
-
         return
 
 
@@ -303,7 +256,7 @@ class Mordred:
 
         # do we need ad-hoc scripts?
 
-        # Initial round: projects -> collect -> identities -> enrich
+        # Initial round: panels loading
         if not self.conf['general']['skip_initial_load']:
             self.__execute_initial_load()
         else:
@@ -326,12 +279,19 @@ class Mordred:
             # load identities and orgs periodically for updates
             all_tasks_cls.append(TaskIdentitiesLoad)
             all_tasks_cls.append(TaskIdentitiesMerge)
-            if self.conf['phases']['collection']:
-                all_tasks_cls.append(TaskIdentitiesCollection)
+            all_tasks_cls.append(TaskIdentitiesExport)
+            # This is done in enrichement before doing the enrich
+            # if self.conf['phases']['collection']:
+            #     all_tasks_cls.append(TaskIdentitiesCollection)
         if self.conf['phases']['enrichment']:
             all_tasks_cls.append(TaskEnrich)
+            # During enrich new indexes can be created a they need their aliases
+            all_tasks_cls.append(TaskPanelsAliases)
         if self.conf['phases']['track_items']:
             all_tasks_cls.append(TaskTrackItems)
+        if self.conf['phases']['report']:
+            all_tasks_cls.append(TaskReport)
+
 
         # this is the main loop, where the execution should spend
         # most of its time

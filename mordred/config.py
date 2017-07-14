@@ -218,9 +218,28 @@ class Config():
                     "type": str
                 },
                 "studies": optional_bool_none,
-                "autorefresh": optional_bool_none,
+                "autorefresh": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool
+                },
                 "user": optional_string_none,
                 "password": optional_string_none
+            }
+        }
+
+        params_panels = {
+            "panels": {
+                "kibiter_time_from": {
+                    "optional": True,
+                    "default": "now-90d",
+                    "type": str
+                },
+                "kibiter_default_index": {
+                    "optional": True,
+                    "default": "git",
+                    "type": str
+                }
             }
         }
 
@@ -306,6 +325,8 @@ class Config():
                 },
                 "orgs_file": optional_string_none,
                 "identities_file": optional_empty_list,
+                "identities_export_url": optional_string_none,
+                "github_api_token": optional_string_none,
                 "bots_names": optional_empty_list,
                 "no_bots_names": optional_empty_list  # to clean bots in SH
             }
@@ -318,15 +339,14 @@ class Config():
                     "default": "TrackProject",
                     "type": str
                 },
-                "upstream_items_url": no_optional_empty_string,
                 "upstream_raw_es_url": no_optional_empty_string,
                 "raw_index_gerrit": no_optional_empty_string,
                 "raw_index_git": no_optional_empty_string
             }
         }
 
-        tasks_config_params = [params_collection, params_enrichment, params_report,
-                               params_sortinghat, params_track_items]
+        tasks_config_params = [params_collection, params_enrichment, params_panels,
+                               params_report, params_sortinghat, params_track_items]
 
         for section_params in tasks_config_params:
             params.update(section_params)

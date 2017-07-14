@@ -55,7 +55,6 @@ RUN pip3 install pandas==0.19.2
 RUN pip3 install prettyplotlib
 RUN pip3 install elasticsearch_dsl
 
-
 RUN echo "${DEPLOY_USER}    ALL=NOPASSWD: ALL" >> /etc/sudoers
 
 RUN mkdir -p /home/bitergia/logs ; chown -R bitergia:bitergia /home/bitergia/logs
@@ -68,6 +67,10 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     echo 'LANG="en_US.UTF-8"'>/etc/default/locale && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
+
+ADD cacert.pem ${DEPLOY_USER_DIR}/cacert.pem
+RUN CERT_PATH=`python3 -m requests.certs` && \
+    cat ${DEPLOY_USER_DIR}/cacert.pem >> ${CERT_PATH}
 
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en

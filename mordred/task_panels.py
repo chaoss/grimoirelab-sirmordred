@@ -30,7 +30,7 @@ import yaml
 from collections import OrderedDict
 from urllib.parse import urljoin
 
-from grimoire_elk.panels import import_dashboard, get_dashboard_name
+from grimoire_elk.panels import import_dashboard, get_dashboard_name, exists_dashboard
 from mordred.task import Task
 
 logger = logging.getLogger(__name__)
@@ -42,6 +42,82 @@ class TaskPanels(Task):
     panels_common = ["panels/dashboards5/overview.json",
                      "panels/dashboards5/about.json",
                      "panels/dashboards5/data-status.json"]
+
+    def __init__(self, conf):
+        super().__init__(conf)
+        # Read panels and menu description from yaml file """
+        with open(TaskPanelsMenu.MENU_YAML, 'r') as f:
+            try:
+                self.panels_menu = yaml.load(f)
+            except yaml.YAMLError as ex:
+                logger.error(ex)
+                raise
+        # Panels are extracted from the global menu file
+        self.panels = {}
+        for ds in self.panels_menu:
+            if ds['source'] not in self.panels:
+                self.panels[ds['source']] = []
+            for entry in ds['menu']:
+                self.panels[ds['source']].append(entry['panel'])
+
+    def __kibiter_version(self):
+        """ Get the kibiter vesion """
+        config_url = '/.kibana/config/_search'
+        es_url = self.conf['es_enrichment']['url']
+        url = urljoin(es_url + "/", config_url)
+        r = requests.get(url)
+        r.raise_for_status()
+        return r.json()['hits']['hits'][0]['_id']
+
+    def __configure_kibiter(self):
+        if 'panels' not in self.conf:
+            logger.warning("Panels config not availble. Not configuring Kibiter.")
+            return
+
+        kibiter_version = self.__kibiter_version()
+        kibiter_time_from = self.conf['panels']['kibiter_time_from']
+        kibiter_default_index = self.conf['panels']['kibiter_default_index']
+
+        logger.info("Configuring Kibiter %s for default index %s and time frame %s",
+                    kibiter_version, kibiter_default_index, kibiter_time_from)
+
+        config_url = '/.kibana/config/' + kibiter_version
+        kibiter_config = {
+            "defaultIndex": kibiter_default_index,
+            "timepicker:timeDefaults":
+                "{\n  \"from\": \""+ kibiter_time_from + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
+        }
+
+        es_url = self.conf['es_enrichment']['url']
+        url = urljoin(es_url + "/", config_url)
+        r = requests.post(url, data=json.dumps(kibiter_config))
+        r.raise_for_status()
+
+    def __create_dashboard(self, panel_file):
+        es_enrich = self.conf['es_enrichment']['url']
+        # If the panel (dashboard) already exists, don't load it
+        dash_id = get_dashboard_name(panel_file)
+        if exists_dashboard(es_enrich, dash_id):
+            logger.info("Not creating a panel that exists already: %s", dash_id)
+        else:
+            logger.info("Creating the panel: %s", dash_id)
+            import_dashboard(es_enrich, panel_file)
+
+    def execute(self):
+        # Configure kibiter
+        self.__configure_kibiter()
+        # Create the commons panels
+        for panel_file in self.panels_common:
+            self.__create_dashboard(panel_file)
+        # Create the panels which uses the aliases as data source
+        if self.backend_section in self.panels:
+            for panel_file in self.panels[self.get_backend(self.backend_section)]:
+                self.__create_dashboard(panel_file)
+        else:
+            logger.warning("No panels found for %s", self.backend_section)
+
+class TaskPanelsAliases(Task):
+    """ Create the aliases needed for the panels """
 
     # aliases not following the ds-raw and ds rule
     aliases = {
@@ -92,28 +168,20 @@ class TaskPanels(Task):
         }
     }
 
-    def __init__(self, conf):
-        super().__init__(conf)
-        # Read panels and menu description from yaml file """
-        with open(TaskPanelsMenu.MENU_YAML, 'r') as f:
-            try:
-                self.panels_menu = yaml.load(f)
-            except yaml.YAMLError as ex:
-                logger.error(ex)
-                raise
-        # Panels are extracted from the global menu file
-        self.panels = {}
-        for ds in self.panels_menu:
-            if ds['source'] not in self.panels:
-                self.panels[ds['source']] = []
-            for entry in ds['menu']:
-                self.panels[ds['source']].append(entry['panel'])
+    def __exists_alias(self, es_url, alias):
+        exists = False
+
+        alias_url = urljoin(es_url+"/", "_alias/"+alias)
+        r = requests.get(alias_url)
+        if r.status_code == 200:
+            # The alias exists
+            exists = True
+        return exists
 
     def __remove_alias(self, es_url, alias):
         alias_url = urljoin(es_url+"/", "_alias/"+alias)
         r = requests.get(alias_url)
         if r.status_code == 200:
-            # The alias exists, let's remove it
             real_index = list(r.json())[0]
             logger.debug("Removing alias %s to %s", alias, real_index)
             aliases_url = urljoin(es_url+"/", "_aliases")
@@ -129,7 +197,9 @@ class TaskPanels(Task):
             r.raise_for_status()
 
     def __create_alias(self, es_url, es_index, alias):
-        self.__remove_alias(es_url, alias)
+        if self.__exists_alias(es_url, alias):
+            # The alias already exists
+            return
         logger.debug("Adding alias %s to %s", alias, es_index)
         alias_url = urljoin(es_url+"/", "_aliases")
         action = """
@@ -146,8 +216,12 @@ class TaskPanels(Task):
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError:
-            logger.error("Can't create in %s %s", alias_url, action)
-            raise
+            logger.warning("Can't create in %s %s", alias_url, action)
+            if r.status_code == 404:
+                # Enrich index not found
+                logger.warning("The enriched index does not exists: %s", es_index)
+            else:
+                raise
 
     def __create_aliases(self):
         """ Create aliases in ElasticSearch used by the panels """
@@ -174,20 +248,10 @@ class TaskPanels(Task):
             # Standard alias for the enrich index
             self.__create_alias(es_enrich_url, index_enrich, real_alias)
 
-
     def execute(self):
         # Create the aliases
         self.__create_aliases()
-        # Create the commons panels
-        # TODO: do it only one time, not for every backend
-        for panel_file in self.panels_common:
-            import_dashboard(self.conf['es_enrichment']['url'], panel_file)
-        # Create the panels which uses the aliases as data source
-        if self.backend_section in self.panels:
-            for panel_file in self.panels[self.get_backend(self.backend_section)]:
-                import_dashboard(self.conf['es_enrichment']['url'], panel_file)
-        else:
-            logger.warning("No panels found for %s", self.backend_section)
+
 
 
 class TaskPanelsMenu(Task):
@@ -231,7 +295,11 @@ class TaskPanelsMenu(Task):
         menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
         r = requests.post(menu_url, data=json.dumps(dash_menu))
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError:
+            logger.error("Can not create Kibiter menu. Probably it already exists for a different kibiter version.")
+            raise
 
     def __remove_dashboard_menu(self):
         """ The dashboard must be removed before creating a new one """
