@@ -125,6 +125,12 @@
   menu:
   - name: Overview
     panel: panels/dashboards5/irc.json
+- name: Slack
+  source: slack
+  icon: default.png
+  menu:
+  - name: Overview
+    panel: panels/dashboards5/slack.json
 - name: Telegram
   source: telegram
   icon: default.png
