@@ -181,6 +181,8 @@
   menu:
   - name: Overview
     panel: panels/dashboards5/meetup.json
+  - name: Locations
+    panel: panels/dashboards5/meetup_locations.json
 - name: Google Hits
   source: google_hits
   icon: default.png
