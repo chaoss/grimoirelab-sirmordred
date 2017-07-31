@@ -13,6 +13,7 @@ if [ $RELEASE ];
     unset PANELS
     unset PERCEVAL
     unset PERCEVAL_MOZILLA
+    unset PERCEVAL_OPNFV
     unset SORTINGHAT
     unset REPORTS
     unset VIZGRIMOIREUTILS
