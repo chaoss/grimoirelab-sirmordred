@@ -41,7 +41,7 @@ from mordred.error import DataEnrichmentError
 from mordred.task import Task
 from mordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from mordred.task_enrich import TaskEnrich
-from mordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge
+from mordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
 from mordred.task_projects import TaskProjects
@@ -231,6 +231,9 @@ class Mordred:
 
         if self.conf['phases']['panels']:
             tasks_cls = [TaskPanelsAliases, TaskPanels, TaskPanelsMenu]
+            self.execute_tasks(tasks_cls)
+        if self.conf['phases']['identities']:
+            tasks_cls = [TaskInitSortingHat]
             self.execute_tasks(tasks_cls)
         return
 

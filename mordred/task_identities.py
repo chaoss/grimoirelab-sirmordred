@@ -49,6 +49,25 @@ from grimoire_elk.arthur import load_identities
 logger = logging.getLogger(__name__)
 
 
+class TaskInitSortingHat(Task):
+    """ Class aimed to create the SH database """
+
+    def __init__(self, config):
+        super().__init__(config)
+
+        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
+                          'database': self.db_sh, 'host': self.db_host,
+                          'port': None}
+
+    def execute(self):
+        code = Init(**self.sh_kwargs).run(self.db_sh)
+
+        if code != 0:
+            logger.warning("Can not create the SortingHat database")
+
+        logger.debug("Sortinghat initialized")
+
+
 class TaskIdentitiesCollection(Task):
     """ Class aimed to get identites from raw data """
 
