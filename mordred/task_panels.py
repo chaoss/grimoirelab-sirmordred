@@ -39,9 +39,9 @@ logger = logging.getLogger(__name__)
 class TaskPanels(Task):
     """ Create the panels  """
 
-    panels_common = ["panels/dashboards5/overview.json",
-                     "panels/dashboards5/about.json",
-                     "panels/dashboards5/data-status.json"]
+    panels_common = ["panels/json/overview.json",
+                     "panels/json/about.json",
+                     "panels/json/data-status.json"]
 
     def __init__(self, conf):
         super().__init__(conf)
