@@ -4,7 +4,7 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/git-organizations-projects.json
+    panel: panels/json/git.json
   - name: Attraction/Retention
     panel: panels/json/git_demographics-organizations-projects.json
 - name: Gerrit
