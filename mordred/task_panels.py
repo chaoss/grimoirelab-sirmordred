@@ -40,8 +40,9 @@ class TaskPanels(Task):
     """ Create the panels  """
 
     panels_common = ["panels/json/overview.json",
+                    "panels/json/last_month_contributors.json",
                      "panels/json/about.json",
-                     "panels/json/data-status.json"]
+                     "panels/json/data_status.json"]
 
     def __init__(self, conf):
         super().__init__(conf)

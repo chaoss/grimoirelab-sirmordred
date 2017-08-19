@@ -6,7 +6,7 @@
   - name: Overview
     panel: panels/json/git.json
   - name: Attraction/Retention
-    panel: panels/json/git_demographics-organizations-projects.json
+    panel: panels/json/git_demographics.json
 - name: Gerrit
   source: gerrit
   icon: default.png
@@ -17,26 +17,26 @@
     panel: panels/json/gerrit_backlog-organizations-projects.json
   - name: Timing
     panel: panels/json/gerrit_timing-organizations.json
-- name: GitHub Pull Requests
+- name: GitHub PRs
   source: github
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/github_pullrequests-organizations.json
+    panel: panels/json/github_pullrequests.json
   - name: Backlog
-    panel: panels/json/github_backlog_organizations.json
+    panel: panels/json/github_backlog.json
   - name: Timing
-    panel: panels/json/github_pullrequests_delays-organizations.json
+    panel: panels/json/github_pullrequests_timing.json
 - name: GitHub Issues
   source: github
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/github_issues-organizations.json
+    panel: panels/json/github_issues.json
   - name: Backlog
-    panel: panels/json/github_backlog_organizations.json
+    panel: panels/json/github_backlog.json
   - name: Timing
-    panel: panels/json/github_issues_timing-organizations.json
+    panel: panels/json/github_issues_timing.json
 - name: Phabricator
   source: phabricator
   icon: default.png
@@ -62,11 +62,11 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/jira-organizations.json
+    panel: panels/json/jira.json
   - name: Backlog
-    panel: panels/json/jira_backlog-organizations.json
+    panel: panels/json/jira_backlog.json
   - name: Timing
-    panel: panels/json/jira_timing-organizations-projects.json
+    panel: panels/json/jira_timing.json
 - name: Bugzilla
   source: bugzilla
   icon: default.png
@@ -100,13 +100,13 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/mailinglists-organizations-projects.json
+    panel: panels/json/mailinglists.json
 - name: Mailing Lists
   source: pipermail
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/mailinglists-organizations-projects.json
+    panel: panels/json/mailinglists.json
 - name: Discourse
   source: discourse
   icon: default.png
