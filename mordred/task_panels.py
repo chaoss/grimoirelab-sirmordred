@@ -63,7 +63,7 @@ class TaskPanels(Task):
 
     def __kibiter_version(self):
         """ Get the kibiter vesion """
-        config_url = '/.kibana/config/_search'
+        config_url = '.kibana/config/_search'
         es_url = self.conf['es_enrichment']['url']
         url = urljoin(es_url + "/", config_url)
         r = requests.get(url)
@@ -82,7 +82,7 @@ class TaskPanels(Task):
         logger.info("Configuring Kibiter %s for default index %s and time frame %s",
                     kibiter_version, kibiter_default_index, kibiter_time_from)
 
-        config_url = '/.kibana/config/' + kibiter_version
+        config_url = '.kibana/config/' + kibiter_version
         kibiter_config = {
             "defaultIndex": kibiter_default_index,
             "timepicker:timeDefaults":
