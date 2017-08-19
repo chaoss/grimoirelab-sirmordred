@@ -37,8 +37,10 @@ logger = logging.getLogger(__name__)
 
 
 class TaskPanels(Task):
-    """ Create the panels  """
-
+    """ Upload all the Kibana dashboards/GrimoireLab panels based on
+    enabled data sources AND the menu file. Before uploading the panels
+    it also sets up common configuration variables for Kibiter
+    """
     panels_common = ["panels/json/overview.json",
                     "panels/json/last_month_contributors.json",
                      "panels/json/about.json",
@@ -53,13 +55,25 @@ class TaskPanels(Task):
             except yaml.YAMLError as ex:
                 logger.error(ex)
                 raise
-        # Panels are extracted from the global menu file
+
+        #FIXME exceptions raised here are not handled!!
+
+        # Gets the cross set of enabled data sources and data sources
+        # available in the menu file. For the result set gets the file
+        # names to be uploaded
+        enabled_ds = conf.get_data_sources()
         self.panels = {}
+
         for ds in self.panels_menu:
-            if ds['source'] not in self.panels:
-                self.panels[ds['source']] = []
+            if ds['source'] not in enabled_ds:
+                continue
             for entry in ds['menu']:
+                if ds['source'] not in self.panels.keys():
+                    self.panels[ds['source']] = []
                 self.panels[ds['source']].append(entry['panel'])
+
+    def is_backend_task(self):
+        return False
 
     def __kibiter_version(self):
         """ Get the kibiter vesion """
@@ -107,15 +121,19 @@ class TaskPanels(Task):
     def execute(self):
         # Configure kibiter
         self.__configure_kibiter()
+
         # Create the commons panels
         for panel_file in self.panels_common:
             self.__create_dashboard(panel_file)
-        # Create the panels which uses the aliases as data source
-        if self.backend_section in self.panels:
-            for panel_file in self.panels[self.get_backend(self.backend_section)]:
-                self.__create_dashboard(panel_file)
-        else:
-            logger.warning("No panels found for %s", self.backend_section)
+
+        # Upload all the Kibana dashboards/GrimoireLab panels based on
+        # enabled data sources AND the menu file
+        for ds in self.panels:
+            for panel_file in self.panels[ds]:
+                try:
+                    self.__create_dashboard(panel_file)
+                except:
+                    logger.error("%s not correctly uploaded" % panel_file)
 
 class TaskPanelsAliases(Task):
     """ Create the aliases needed for the panels """
