@@ -72,17 +72,17 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/bugzilla-organizations-projects.json
+    panel: panels/json/bugzilla.json
   - name: Backlog
-    panel: panels/json/bugzilla_backlog-organizations-projects.json
+    panel: panels/json/bugzilla_backlog.json
 - name: Bugzilla
   source: bugzillarest
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/bugzilla-organizations-projects.json
+    panel: panels/json/bugzilla.json
   - name: Backlog
-    panel: panels/json/bugzilla_backlog-organizations-projects.json
+    panel: panels/json/bugzilla_backlog.json
 - name: Confluence
   source: confluence
   icon: default.png
