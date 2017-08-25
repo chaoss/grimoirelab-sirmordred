@@ -12,11 +12,11 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/gerrit-organizations.json
+    panel: panels/json/gerrit.json
   - name: Backlog
-    panel: panels/json/gerrit_backlog-organizations-projects.json
+    panel: panels/json/gerrit_backlog.json
   - name: Timing
-    panel: panels/json/gerrit_timing-organizations.json
+    panel: panels/json/gerrit_timing.json
 - name: GitHub PRs
   source: github
   icon: default.png
@@ -42,11 +42,11 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/maniphest-organizations-projects.json
+    panel: panels/json/maniphest.json
   - name: Backlog
-    panel: panels/json/maniphest_backlog-organizations-projects.json
+    panel: panels/json/maniphest_backlog.json
   - name: Timing
-    panel: panels/json/maniphest_timing-organizations-projects.json
+    panel: panels/json/maniphest_timing.json
 - name: Redmine
   source: redmine
   icon: default.png
