@@ -415,7 +415,7 @@ class Config():
     def get_global_data_sources(cls):
         """ Data sources than are collected and enriched globally """
 
-        return ['bugzilla', 'bugzillarest', 'confluence', 'gerrit', 'jenkins', 'jira']
+        return ['bugzilla', 'bugzillarest', 'confluence', 'discourse', 'gerrit', 'jenkins', 'jira']
 
     def get_data_sources(self):
         data_sources = []
