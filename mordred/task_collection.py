@@ -24,6 +24,7 @@
 
 import logging
 import time
+import traceback
 
 from grimoire_elk.arthur import feed_backend
 from grimoire_elk.elastic_items import ElasticItems
@@ -101,6 +102,7 @@ class TaskRawDataCollection(Task):
             except:
                 logger.error("Something went wrong collecting data from this %s repo: %s . " \
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))
+                traceback.print_exc()
                 raise DataCollectionError('Failed to collect data from %s' % url)
 
 
