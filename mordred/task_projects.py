@@ -77,12 +77,11 @@ class TaskProjects(Task):
         backend = Task.get_backend(backend_section)
 
         projects = TaskProjects.get_projects()
-        projects_lowercase = [project.lower() for project in projects]
 
         for pro in projects:
             if backend in projects[pro]:
                 if backend in Config.get_global_data_sources() \
-                    and cls.GLOBAL_PROJECT in projects_lowercase and pro.lower() != cls.GLOBAL_PROJECT:
+                    and cls.GLOBAL_PROJECT in projects and pro != cls.GLOBAL_PROJECT:
                     logger.debug("Skip global data source %s for project %s",
                                  backend, pro)
                 else:
