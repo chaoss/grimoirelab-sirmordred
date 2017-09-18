@@ -144,6 +144,10 @@ class TaskPanelsAliases(Task):
             "raw":["bugzilla-raw"],
             "enrich":["bugzilla"]
         },
+        "dockerhub": {
+            "raw":["dockerhub-raw"],
+            "enrich":["dockerhub"]
+        },
         "git": {
             "raw":["git-raw"],
             "enrich":["git", "git_author", "git_enrich"]

@@ -189,3 +189,9 @@
   menu:
   - name: Overview
     panel: panels/json/google-hits.json
+- name: DockerHub
+  source: dockerhub
+  icon: default.png
+  menu:
+  - name: Overview
+    panel: panels/json/dockerhub.json
