@@ -129,6 +129,7 @@ class TaskIdentitiesLoad(Task):
             code = Load(**self.sh_kwargs).run("--identities", filename)
             if code != CMD_SUCCESS:
                 logger.error("[sortinghat] Error loading %s", filename)
+            logger.info("[sortinghat] End of loading identities from file %s", filename)
 
 
         cfg = self.config.get_conf()
