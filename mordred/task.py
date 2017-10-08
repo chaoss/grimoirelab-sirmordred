@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 class Task():
     """ Basic class shared by all tasks """
 
-    ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url']
+    ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url', 'collect']
 
     def __init__(self, config):
         self.backend_section = None
