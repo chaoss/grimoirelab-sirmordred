@@ -34,7 +34,7 @@ from copy import deepcopy
 
 from mordred.config import Config
 from mordred.task import Task
-from VizGrimoireUtils.eclipse.eclipse_projects_lib import get_repos_list_project, get_mls_repos
+from mordred.eclipse_projects_lib import get_repos_list_project, get_mls_repos
 
 
 
