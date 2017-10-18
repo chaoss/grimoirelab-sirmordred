@@ -293,12 +293,22 @@ class Mordred:
 
         # this is the main loop, where the execution should spend
         # most of its time
-        while self.conf['general']['update']:
+
+
+        while True:
+
+            if not all_tasks_cls:
+                logger.warning("No tasks to execute.")
+                break
+
             try:
-                if len(all_tasks_cls) == 0:
-                    logger.warning("No tasks to execute in update mode.")
+                if not self.conf['general']['update']:
+                    self.execute_batch_tasks(all_tasks_cls,
+                                             self.conf['sortinghat']['sleep_for'],
+                                             self.conf['general']['min_update_delay'])
                     break
-                self.execute_nonstop_tasks(all_tasks_cls)
+                else:
+                    self.execute_nonstop_tasks(all_tasks_cls)
 
                 #FIXME this point is never reached so despite the exception is
                 #handled and the error is shown, the traceback is not printed
@@ -307,11 +317,10 @@ class Mordred:
                 logger.error(str(e))
                 var = traceback.format_exc()
                 logger.error(var)
-                pass
+
             except DataEnrichmentError as e:
                 logger.error(str(e))
                 var = traceback.format_exc()
                 logger.error(var)
-                pass
 
         logger.info("Finished Mordred engine ...")
