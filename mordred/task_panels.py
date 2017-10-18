@@ -140,6 +140,10 @@ class TaskPanelsAliases(Task):
 
     # aliases not following the ds-raw and ds rule
     aliases = {
+        "apache": {
+            "raw":["apache-raw"],
+            "enrich":["apache"]
+        },
         "bugzillarest": {
             "raw":["bugzilla-raw"],
             "enrich":["bugzilla"]
@@ -156,6 +160,10 @@ class TaskPanelsAliases(Task):
             "raw":["github-raw"],
             "enrich":["github_issues", "github_issues_enrich", "issues_closed",
                       "issues_created", "issues_updated"]
+        },
+        "google-hits": {
+            "raw":["google-hits-raw"],
+            "enrich":["google-hits"]
         },
         "jenkins": {
             "raw":["jenkins-raw"],
@@ -175,7 +183,7 @@ class TaskPanelsAliases(Task):
         },
         "remo": {
             "raw":["remo-raw"],
-            "enrich":["remo", "remo2-events", "remo-events_metadata__timestamp"]
+            "enrich":["remo", "remo-events", "remo2-events", "remo-events_metadata__timestamp"]
         },
         "remo:activities": {
             "raw":["remo_activities-raw"],
@@ -270,6 +278,7 @@ class TaskPanelsAliases(Task):
         else:
             # Standard alias for the enrich index
             self.__create_alias(es_enrich_url, index_enrich, real_alias)
+
 
     def execute(self):
         # Create the aliases
