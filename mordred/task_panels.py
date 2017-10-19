@@ -326,11 +326,18 @@ class TaskPanelsMenu(Task):
         logger.info("Adding dashboard menu definition")
         menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
+        metadashboard_mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+                                            ".kibana/_mapping/metadashboard")
+        r = requests.put(metadashboard_mapping_url, data=json.dumps({"dynamic": "true"}))
+        try:
+            r.raise_for_status()
+        except requests.exceptions.HTTPError:
+            logger.error("Cannot create mapping for Kibiter menu.")
         r = requests.post(menu_url, data=json.dumps(dash_menu))
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError:
-            logger.error("Can not create Kibiter menu. Probably it already exists for a different kibiter version.")
+            logger.error("Cannot create Kibiter menu. Probably it already exists for a different kibiter version.")
             raise
 
     def __remove_dashboard_menu(self):
