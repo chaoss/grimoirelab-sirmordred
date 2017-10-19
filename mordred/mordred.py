@@ -189,7 +189,7 @@ class Mordred:
         if len(global_tasks) > 0:
             #FIXME timer is applied to all global_tasks, does it make sense?
             # All tasks are executed in the same thread sequentially
-            gt = TasksManager(global_tasks, None, stopper, self.config, big_delay)
+            gt = TasksManager(global_tasks, "Global tasks", stopper, self.config, big_delay)
             threads.append(gt)
             gt.start()
             if big_delay > 0:

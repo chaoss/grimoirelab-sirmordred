@@ -52,7 +52,7 @@ class TasksManager(threading.Thread):
         :backend_section: perceval backend section name
         :config: config object for the manager
         """
-        super().__init__()  # init the Thread
+        super().__init__(name=backend_section)  # init the Thread
         self.config = config
         self.tasks_cls = tasks_cls  # tasks classes to be executed
         self.tasks = []  # tasks to be executed
