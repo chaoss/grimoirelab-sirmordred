@@ -152,6 +152,10 @@ class TaskPanelsAliases(Task):
             "raw":["dockerhub-raw"],
             "enrich":["dockerhub"]
         },
+        "functest": {
+            "raw":["functest-raw"],
+            "enrich":["functest"]
+        },
         "git": {
             "raw":["git-raw"],
             "enrich":["git", "git_author", "git_enrich"]
