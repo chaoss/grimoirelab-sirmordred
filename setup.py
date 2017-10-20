@@ -70,9 +70,10 @@ setup(name="grimoire-mordred",
           'mordred'
       ],
       install_requires=[
-          'grimoire-elk>=0.30.4',
-          'perceval-mozilla>=0.1.1',
-          'perceval-opnfv>=0.1.0',
+          'grimoire-elk>=0.30.7',
+          'grimoire-kidash>=0.30.4',
+          'grimoire-reports>=0.1.0',
+          'sortinghat>=0.4.2',
           'PyMySQL',
           'pyyaml'
       ],
