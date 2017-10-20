@@ -359,7 +359,11 @@ class TaskPanelsMenu(Task):
             if self.conf['general']['kibana'] == '5':
                 menu_entries[entry['name']] = {}
             for subentry in entry['menu']:
-                dash_name = get_dashboard_name(subentry['panel'])
+                try:
+                    dash_name = get_dashboard_name(subentry['panel'])
+                except FileNotFoundError:
+                    logging.error("Can't open dashboard file %s", subentry['panel'])
+                    continue
                 # The name for the entry is in self.panels_menu
                 if self.conf['general']['kibana'] == '5':
                     menu_entries[entry['name']][subentry['name']] = dash_name
