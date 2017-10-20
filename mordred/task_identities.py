@@ -59,6 +59,9 @@ class TaskInitSortingHat(Task):
                           'database': self.db_sh, 'host': self.db_host,
                           'port': None}
 
+    def is_backend_task(self):
+        return False
+
     def execute(self):
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
