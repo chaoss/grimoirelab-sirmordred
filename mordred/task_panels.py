@@ -132,8 +132,8 @@ class TaskPanels(Task):
             for panel_file in self.panels[ds]:
                 try:
                     self.__create_dashboard(panel_file)
-                except:
-                    logger.error("%s not correctly uploaded" % panel_file)
+                except Exception as ex:
+                    logger.error("%s not correctly uploaded (%s)", panel_file, ex)
 
 class TaskPanelsAliases(Task):
     """ Create the aliases needed for the panels """
