@@ -83,10 +83,6 @@ class TasksManager(threading.Thread):
             # not finish before it is set.
             time.sleep(1)
 
-            if self.timer > 0:
-                logger.debug("Sleeping in Task Manager %s s", self.timer)
-                time.sleep(self.timer)
-
             for task in self.tasks:
                 logger.debug("Executing task %s", task)
                 try:
@@ -95,5 +91,10 @@ class TasksManager(threading.Thread):
                     logger.error("Exception in Task Manager %s", ex)
                     raise
                     TasksManager.COMM_QUEUE.put(sys.exc_info())
+
+            if self.timer > 0 and self.config.get_conf()['general']['update']:
+                logger.debug("Sleeping in Task Manager %s s", self.timer)
+                time.sleep(self.timer)
+
 
         logger.debug('Exiting Task Manager thread %s', self.backend_section)
