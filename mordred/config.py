@@ -276,6 +276,11 @@ class Config():
 
         params_sortinghat = {
             "sortinghat": {
+                "affiliate": {
+                    "optional": False,
+                    "default": "True",
+                    "type": bool
+                },
                 "unaffiliated_group": {
                     "optional": False,
                     "default": "Unknown",

@@ -360,6 +360,10 @@ class TaskIdentitiesMerge(Task):
 
         if self.unify:
             for algo in cfg['sortinghat']['matching']:
+                if not algo:
+                    # cfg['sortinghat']['matching'] is an empty list
+                    logger.debug('Unify not executed because empty algorithm')
+                    continue
                 kwargs = {'matching':algo, 'fast_matching':True}
                 logger.info("[sortinghat] Unifying identities using algorithm %s",
                             kwargs['matching'])
@@ -368,14 +372,19 @@ class TaskIdentitiesMerge(Task):
                 logger.debug("uuids to refresh from unify: %s", uuids)
 
         if self.affiliate:
-            # Global enrollments using domains
-            logger.info("[sortinghat] Executing affiliate")
-            uuids = self.do_affiliate()
-            uuids_refresh += uuids
-            logger.debug("uuids to refresh from affiliate: %s", uuids)
+            if not cfg['sortinghat']['affiliate']:
+                logger.debug("Not doing affiliation")
+            else:
+                # Global enrollments using domains
+                logger.info("[sortinghat] Executing affiliate")
+                uuids = self.do_affiliate()
+                uuids_refresh += uuids
+                logger.debug("uuids to refresh from affiliate: %s", uuids)
 
         if self.autoprofile:
-            if not 'autoprofile' in cfg['sortinghat']:
+            # autoprofile = [] -> cfg['sortinghat']['autoprofile'][0] = ['']
+            if not 'autoprofile' in cfg['sortinghat'] or \
+                not cfg['sortinghat']['autoprofile'][0]:
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Executing autoprofile for sources: %s",
