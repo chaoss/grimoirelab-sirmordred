@@ -26,13 +26,14 @@ import base64
 import gzip
 import json
 import logging
+import os
 import shutil
 import subprocess
 import tempfile
 
-import requests
-
 from queue import Empty
+
+import requests
 
 from mordred.task import Task
 from mordred.task_manager import TasksManager
@@ -117,6 +118,14 @@ class TaskIdentitiesLoad(Task):
     def is_backend_task(self):
         return False
 
+
+    def __execute_command(self, cmd):
+        logger.debug("Executing %s", cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        outs, errs = proc.communicate()
+        if proc.returncode != 0:
+            logger.error("[sortinghat] Error in command %s", cmd)
+
     def execute(self):
 
         def is_remote(filename):
@@ -127,29 +136,22 @@ class TaskIdentitiesLoad(Task):
             return remote
 
         def load_identities_file(filename):
-            """ Load an identities file in Sortinghat """
-            logger.info("[sortinghat] Loading identities from file %s", filename)
-            code = Load(**self.sh_kwargs).run("--identities", filename)
+            """
+            Load an identities file in Sortinghat with reset option
+
+            The reset option cleans all merges in identities that will be
+            loaded to honor the identities grouping from the file.
+            """
+
+            logger.info("[sortinghat] Loading identities with reset from file %s", filename)
+            code = Load(**self.sh_kwargs).run("--reset", "--identities", filename)
             if code != CMD_SUCCESS:
                 logger.error("[sortinghat] Error loading %s", filename)
             logger.info("[sortinghat] End of loading identities from file %s", filename)
 
+        def load_sortinghat_identities(cfg):
+            """ Load identities from a file in SortingHat JSON format """
 
-        cfg = self.config.get_conf()
-
-        # code = 0 when command success
-        code = Init(**self.sh_kwargs).run(self.db_sh)
-
-        if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:
-            if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
-                raise RuntimeError("Load orgs active but no orgs_file configured")
-            logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
-            code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
-            if code != CMD_SUCCESS:
-                logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
-            #FIXME get the number of loaded orgs
-
-        if 'identities_file' in cfg['sortinghat']:
             filenames = cfg['sortinghat']['identities_file']
             for filename in filenames:
                 filename = filename.replace(' ', '')  # spaces used in config file list
@@ -164,6 +166,68 @@ class TaskIdentitiesLoad(Task):
                         load_identities_file(temp.name)
                 else:
                     load_identities_file(filename)
+
+        def load_grimoirelab_identities(cfg):
+            """ Load identities from files in GrimoireLab YAML format """
+
+            # Get the identities and organizations files
+            identities_url = cfg['sortinghat']['identities_file'][0]
+            orgs_url = cfg['sortinghat']['orgs_file']
+            # Only support the case in which this files are in GitLab
+            if 'identities_api_token' not in cfg['sortinghat']:
+                logger.error("API Token not provided. Identities won't be loaded")
+                return
+            token = cfg['sortinghat']['identities_api_token']
+            res = requests.get(identities_url, headers={"PRIVATE-TOKEN":token})
+            identities = tempfile.NamedTemporaryFile()
+            identities.write(res.content)
+            res = requests.get(orgs_url, headers={"PRIVATE-TOKEN":token})
+            orgs = tempfile.NamedTemporaryFile()
+            orgs.write(res.content)
+
+            # Convert to a JSON file in SH format
+            # grimoirelab2sh -i identities.yaml -d orgs.yaml -s ssf:manual -o ssf.json
+            json_identities = tempfile.mktemp()
+            cmd = ['grimoirelab2sh', '-i', identities.name, '-d', orgs.name,
+                   '-s', cfg['general']['short_name'] + ':manual',
+                   '-o', json_identities]
+            self.__execute_command(cmd)
+
+            # Load the JSON file in SH format
+            logger.info("Loading GrimoireLab identities in SortingHat")
+            load_identities_file(json_identities)
+
+            # Closing tmp files so they are removed
+            identities.close()
+            orgs.close()
+            os.remove(json_identities)
+
+            # Convert the files to SortingHat JSON format
+            # Load the JSON file
+
+
+        cfg = self.config.get_conf()
+
+        # code = 0 when command success
+        code = Init(**self.sh_kwargs).run(self.db_sh)
+
+        # Basic loading of organizations from a SH JSON file. Legacy stuff.
+        if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:
+            if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
+                raise RuntimeError("Load orgs active but no orgs_file configured")
+            logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
+            code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
+            if code != CMD_SUCCESS:
+                logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
+            #FIXME get the number of loaded orgs
+
+        # Identities loading from files. It could be in several formats.
+        # Right now GrimoireLab and SortingHat formats are supported
+        if 'identities_file' in cfg['sortinghat']:
+            if cfg['sortinghat']['identities_format'] == 'sortinghat':
+                load_sortinghat_identities(cfg)
+            elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
+                load_grimoirelab_identities(cfg)
 
 
 class TaskIdentitiesExport(Task):

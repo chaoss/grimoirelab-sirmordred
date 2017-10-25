@@ -325,12 +325,25 @@ class Config():
                 "load_orgs": {
                     "optional": True,
                     "default": False,
-                    "type": bool
+                    "type": bool,
+                    "deprecated": "Orgs are loaded if defined always"
+                },
+                "identities_format": {
+                    "optional": True,
+                    "default": "sortinghat",
+                    "type": str,
+                    "doc": "Format of the identities data to be loaded"
+                },
+                "github_api_token": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "deprecated": "Use identities_api_token"
                 },
                 "orgs_file": optional_string_none,
                 "identities_file": optional_empty_list,
                 "identities_export_url": optional_string_none,
-                "github_api_token": optional_string_none,
+                "identities_api_token": optional_string_none,
                 "bots_names": optional_empty_list,
                 "no_bots_names": optional_empty_list  # to clean bots in SH
             }
