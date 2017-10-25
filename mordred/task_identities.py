@@ -30,6 +30,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import time
 
 from queue import Empty
 
@@ -205,6 +206,19 @@ class TaskIdentitiesLoad(Task):
             # Convert the files to SortingHat JSON format
             # Load the JSON file
 
+        # ** START SYNC LOGIC **
+        # Check that enrichment tasks are not active before loading identities
+        while True:
+            time.sleep(1)  # check each second if the identities load could start
+            with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
+                logger.debug("Enrich tasks active: %i", enrich_tasks)
+                if enrich_tasks == 0:
+                    # The load of identities can be started
+                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                        TasksManager.IDENTITIES_TASKS_ON = True
+                    break
+        #  ** END SYNC LOGIC **
 
         cfg = self.config.get_conf()
 
@@ -228,6 +242,9 @@ class TaskIdentitiesLoad(Task):
                 load_sortinghat_identities(cfg)
             elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
                 load_grimoirelab_identities(cfg)
+
+        with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+            TasksManager.IDENTITIES_TASKS_ON = False
 
 
 class TaskIdentitiesExport(Task):
@@ -277,6 +294,10 @@ class TaskIdentitiesExport(Task):
             logger.error("Can not export identities to: %s", repository_url)
             logger.debug("Expected format: https://github.com/owner/repo/blob/master/file")
             logger.debug(ex)
+
+            with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                TasksManager.IDENTITIES_TASKS_ON = True
+
             return
 
         with tempfile.NamedTemporaryFile() as temp:
@@ -418,6 +439,21 @@ class TaskIdentitiesMerge(Task):
         return uuids
 
     def execute(self):
+
+        # ** START SYNC LOGIC **
+        # Check that enrichment tasks are not active before loading identities
+        while True:
+            time.sleep(1)  # check each second if the identities load could start
+            with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
+                logger.debug("Enrich tasks active: %i", enrich_tasks)
+                if enrich_tasks == 0:
+                    # The load of identities can be started
+                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                        TasksManager.IDENTITIES_TASKS_ON = True
+                    break
+        #  ** END SYNC LOGIC **
+
         cfg = self.config.get_conf()
 
         uuids_refresh = []
@@ -500,3 +536,6 @@ class TaskIdentitiesMerge(Task):
             logger.debug("Autorefresh queue after processing identities: %s", autorefresh_backends)
         except Empty:
             logger.warning("Autorefresh not active because the queue for it is empty.")
+
+        with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+            TasksManager.IDENTITIES_TASKS_ON = False

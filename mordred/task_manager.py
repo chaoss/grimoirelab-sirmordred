@@ -45,6 +45,12 @@ class TasksManager(threading.Thread):
     AUTOREFRESH_QUEUE = queue.Queue()
     # uuids that must be refreshed in enriched data
     UPDATED_UUIDS_QUEUE = queue.Queue()
+    # to control if enrichment process are active
+    NUMBER_ENRICH_TASKS_ON_LOCK = threading.Lock()
+    NUMBER_ENRICH_TASKS_ON = 0
+    # to control if identities process are active
+    IDENTITIES_TASKS_ON_LOCK = threading.Lock()
+    IDENTITIES_TASKS_ON = False
 
     def __init__(self, tasks_cls, backend_section, stopper, config, timer = 0):
         """

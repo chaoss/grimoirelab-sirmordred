@@ -184,6 +184,21 @@ class TaskEnrich(Task):
             logger.info('%s enrich disabled', self.backend_section)
             return
 
+        # ** START SYNC LOGIC **
+        # Check that identities tasks are not active before executing
+        while True:
+            time.sleep(1)  # check each second if the enrichment could start
+            with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                in_identities = TasksManager.IDENTITIES_TASKS_ON
+                if not in_identities:
+                    # The enrichment can be started
+                    with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                        TasksManager.NUMBER_ENRICH_TASKS_ON += 1
+                        logger.debug("Number of enrichment tasks active: %i",
+                                     TasksManager.NUMBER_ENRICH_TASKS_ON)
+                    break
+        #  ** END SYNC LOGIC **
+
         self.__enrich_items()
         if cfg['es_enrichment']['autorefresh']:
             # Check it we should do the autorefresh
@@ -200,3 +215,6 @@ class TaskEnrich(Task):
 
         if cfg['es_enrichment']['studies']:
             self.__studies()
+
+        with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+            TasksManager.NUMBER_ENRICH_TASKS_ON -= 1
