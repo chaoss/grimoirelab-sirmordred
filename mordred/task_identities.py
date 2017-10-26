@@ -272,6 +272,28 @@ class TaskIdentitiesExport(Task):
     def is_backend_task(self):
         return False
 
+    @classmethod
+    def sha_github_file(cls, config, repo_file, repository_api, repository_branch):
+        """ Return the GitHub SHA for a file in the repository """
+
+        repo_file_sha = None
+
+        cfg = config.get_conf()
+        github_token = cfg['sortinghat']['github_api_token']
+        headers = {"Authorization": "token " + github_token}
+
+        url_dir = repository_api + "/git/trees/"+ repository_branch
+        logger.debug("Gettting sha data from tree: %s", url_dir)
+        raw_repo_file_info = requests.get(url_dir, headers=headers)
+        raw_repo_file_info.raise_for_status()
+        for rfile in raw_repo_file_info.json()['tree']:
+            if rfile['path'] == repo_file:
+                logger.debug("SHA found: %s, ", rfile["sha"])
+                repo_file_sha = rfile["sha"]
+                break
+
+        return repo_file_sha
+
     def execute(self):
 
         def export_identities(filename):
@@ -310,7 +332,7 @@ class TaskIdentitiesExport(Task):
             logger.debug(ex)
 
             with TasksManager.IDENTITIES_TASKS_ON_LOCK:
-                TasksManager.IDENTITIES_TASKS_ON = True
+                TasksManager.IDENTITIES_TASKS_ON = False
 
             return
 
@@ -323,15 +345,8 @@ class TaskIdentitiesExport(Task):
                 with gzip.open(gzipped_identities_file, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
             # Get sha for the repository_file
-            url_dir = repository_api + "/git/trees/"+ repository_branch
-            logger.debug("Gettting sha data from tree: %s", url_dir)
-            raw_repo_file_info = requests.get(url_dir, headers=headers)
-            raw_repo_file_info.raise_for_status()
-            for rfile in raw_repo_file_info.json()['tree']:
-                if rfile['path'] == repo_file:
-                    logger.debug("SHA found: %s, ", rfile["sha"])
-                    repo_file_sha = rfile["sha"]
-
+            repo_file_sha = self.sha_github_file(self.config, repo_file,
+                                                 repository_api, repository_branch)
             if repo_file_sha is None:
                 logger.debug("Can not find sha for %s. It will be created.", repository_url)
 
