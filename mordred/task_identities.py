@@ -214,9 +214,11 @@ class TaskIdentitiesLoad(Task):
                 # Load the JSON file in SH format
                 load_identities_file(json_identities)
 
-                # Closing tmp files so they are removed
-                identities.close()
-                orgs.close()
+                # Closing tmp files so they are removed for the remote case
+                if is_remote(identities_url):
+                    identities.close()
+                    orgs.close()
+
                 os.remove(json_identities)
 
 
