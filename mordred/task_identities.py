@@ -416,6 +416,8 @@ class TaskIdentitiesMerge(Task):
             fields = line.split()
             if 'merged' in line:
                 uuids.append(fields[2])
+                if fields[5] not in uuids:
+                    uuids.append(fields[5])
             elif 'affiliated' in line:
                 uuids.append(fields[2])
         return uuids
