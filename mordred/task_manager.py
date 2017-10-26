@@ -45,6 +45,12 @@ class TasksManager(threading.Thread):
     AUTOREFRESH_QUEUE = queue.Queue()
     # uuids that must be refreshed in enriched data
     UPDATED_UUIDS_QUEUE = queue.Queue()
+    # to control if enrichment process are active
+    NUMBER_ENRICH_TASKS_ON_LOCK = threading.Lock()
+    NUMBER_ENRICH_TASKS_ON = 0
+    # to control if identities process are active
+    IDENTITIES_TASKS_ON_LOCK = threading.Lock()
+    IDENTITIES_TASKS_ON = False
 
     def __init__(self, tasks_cls, backend_section, stopper, config, timer = 0):
         """
@@ -83,10 +89,6 @@ class TasksManager(threading.Thread):
             # not finish before it is set.
             time.sleep(1)
 
-            if self.timer > 0:
-                logger.debug("Sleeping in Task Manager %s s", self.timer)
-                time.sleep(self.timer)
-
             for task in self.tasks:
                 logger.debug("Executing task %s", task)
                 try:
@@ -95,5 +97,10 @@ class TasksManager(threading.Thread):
                     logger.error("Exception in Task Manager %s", ex)
                     raise
                     TasksManager.COMM_QUEUE.put(sys.exc_info())
+
+            if self.timer > 0 and self.config.get_conf()['general']['update']:
+                logger.debug("Sleeping in Task Manager %s s", self.timer)
+                time.sleep(self.timer)
+
 
         logger.debug('Exiting Task Manager thread %s', self.backend_section)

@@ -263,11 +263,6 @@ class Mordred:
         else:
             logging.warning("Skipping the initial load")
 
-        logger.debug(' - - ')
-        logger.debug('Meeting point 0 reached')
-        time.sleep(1)
-
-
         # Tasks to be executed during updating process
         all_tasks_cls = []
         all_tasks_cls.append(TaskProjects)  # projects is always needed

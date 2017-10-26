@@ -26,13 +26,15 @@ import base64
 import gzip
 import json
 import logging
+import os
 import shutil
 import subprocess
 import tempfile
-
-import requests
+import time
 
 from queue import Empty
+
+import requests
 
 from mordred.task import Task
 from mordred.task_manager import TasksManager
@@ -117,6 +119,15 @@ class TaskIdentitiesLoad(Task):
     def is_backend_task(self):
         return False
 
+
+    def __execute_command(self, cmd):
+        logger.debug("Executing %s", cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        outs, errs = proc.communicate()
+        if proc.returncode != 0:
+            logger.error("[sortinghat] Error in command %s", cmd)
+        return proc.returncode
+
     def execute(self):
 
         def is_remote(filename):
@@ -127,29 +138,22 @@ class TaskIdentitiesLoad(Task):
             return remote
 
         def load_identities_file(filename):
-            """ Load an identities file in Sortinghat """
-            logger.info("[sortinghat] Loading identities from file %s", filename)
-            code = Load(**self.sh_kwargs).run("--identities", filename)
+            """
+            Load an identities file in Sortinghat with reset option
+
+            The reset option cleans all merges in identities that will be
+            loaded to honor the identities grouping from the file.
+            """
+
+            logger.info("[sortinghat] Loading identities with reset from file %s", filename)
+            code = Load(**self.sh_kwargs).run("--reset", "--identities", filename)
             if code != CMD_SUCCESS:
                 logger.error("[sortinghat] Error loading %s", filename)
             logger.info("[sortinghat] End of loading identities from file %s", filename)
 
+        def load_sortinghat_identities(cfg):
+            """ Load identities from a file in SortingHat JSON format """
 
-        cfg = self.config.get_conf()
-
-        # code = 0 when command success
-        code = Init(**self.sh_kwargs).run(self.db_sh)
-
-        if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:
-            if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
-                raise RuntimeError("Load orgs active but no orgs_file configured")
-            logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
-            code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
-            if code != CMD_SUCCESS:
-                logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
-            #FIXME get the number of loaded orgs
-
-        if 'identities_file' in cfg['sortinghat']:
             filenames = cfg['sortinghat']['identities_file']
             for filename in filenames:
                 filename = filename.replace(' ', '')  # spaces used in config file list
@@ -165,6 +169,99 @@ class TaskIdentitiesLoad(Task):
                 else:
                     load_identities_file(filename)
 
+        def load_grimoirelab_identities(cfg):
+            """ Load identities from files in GrimoireLab YAML format """
+
+            logger.info("Loading GrimoireLab identities in SortingHat")
+
+            # Get the identities and organizations files
+            identities_url = cfg['sortinghat']['identities_file'][0]
+            orgs_url = cfg['sortinghat']['orgs_file']
+
+            if not is_remote(identities_url) and not is_remote(orgs_url):
+                orgs_filename = orgs_url
+                identities_filename = identities_url
+            else:
+                # The file should be in gitlab in other case
+                if 'identities_api_token' not in cfg['sortinghat']:
+                    logger.error("API Token not provided. Identities won't be loaded")
+                    return
+                token = cfg['sortinghat']['identities_api_token']
+                res = requests.get(identities_url, headers={"PRIVATE-TOKEN":token})
+                res.raise_for_status()
+                identities = tempfile.NamedTemporaryFile()
+                identities.write(res.content)
+                res = requests.get(orgs_url, headers={"PRIVATE-TOKEN":token})
+                res.raise_for_status()
+                orgs = tempfile.NamedTemporaryFile()
+                orgs.write(res.content)
+                orgs_filename = orgs.name
+                identities_filename = identities.name
+
+
+            # Convert to a JSON file in SH format
+            # grimoirelab2sh -i identities.yaml -d orgs.yaml -s ssf:manual -o ssf.json
+            json_identities = tempfile.mktemp()
+            cmd = ['grimoirelab2sh', '-i', identities_filename, '-d', orgs_filename,
+                   '-s', cfg['general']['short_name'] + ':manual',
+                   '-o', json_identities]
+            if self.__execute_command(cmd) != 0:
+                logger.error('Can not generate the SH JSON file from ' + \
+                             'GrimoireLab yaml files. Do the files exists? ' + \
+                             'Is the API token right?')
+            else:
+
+                # Load the JSON file in SH format
+                load_identities_file(json_identities)
+
+                # Closing tmp files so they are removed for the remote case
+                if is_remote(identities_url):
+                    identities.close()
+                    orgs.close()
+
+                os.remove(json_identities)
+
+
+        # ** START SYNC LOGIC **
+        # Check that enrichment tasks are not active before loading identities
+        while True:
+            time.sleep(1)  # check each second if the identities load could start
+            with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
+                logger.debug("Enrich tasks active: %i", enrich_tasks)
+                if enrich_tasks == 0:
+                    # The load of identities can be started
+                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                        TasksManager.IDENTITIES_TASKS_ON = True
+                    break
+        #  ** END SYNC LOGIC **
+
+        cfg = self.config.get_conf()
+
+        # code = 0 when command success
+        code = Init(**self.sh_kwargs).run(self.db_sh)
+
+        # Basic loading of organizations from a SH JSON file. Legacy stuff.
+        if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:
+            if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
+                raise RuntimeError("Load orgs active but no orgs_file configured")
+            logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
+            code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
+            if code != CMD_SUCCESS:
+                logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
+            #FIXME get the number of loaded orgs
+
+        # Identities loading from files. It could be in several formats.
+        # Right now GrimoireLab and SortingHat formats are supported
+        if 'identities_file' in cfg['sortinghat']:
+            if cfg['sortinghat']['identities_format'] == 'sortinghat':
+                load_sortinghat_identities(cfg)
+            elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
+                load_grimoirelab_identities(cfg)
+
+        with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+            TasksManager.IDENTITIES_TASKS_ON = False
+
 
 class TaskIdentitiesExport(Task):
     def __init__(self, config):
@@ -176,6 +273,28 @@ class TaskIdentitiesExport(Task):
 
     def is_backend_task(self):
         return False
+
+    @classmethod
+    def sha_github_file(cls, config, repo_file, repository_api, repository_branch):
+        """ Return the GitHub SHA for a file in the repository """
+
+        repo_file_sha = None
+
+        cfg = config.get_conf()
+        github_token = cfg['sortinghat']['github_api_token']
+        headers = {"Authorization": "token " + github_token}
+
+        url_dir = repository_api + "/git/trees/"+ repository_branch
+        logger.debug("Gettting sha data from tree: %s", url_dir)
+        raw_repo_file_info = requests.get(url_dir, headers=headers)
+        raw_repo_file_info.raise_for_status()
+        for rfile in raw_repo_file_info.json()['tree']:
+            if rfile['path'] == repo_file:
+                logger.debug("SHA found: %s, ", rfile["sha"])
+                repo_file_sha = rfile["sha"]
+                break
+
+        return repo_file_sha
 
     def execute(self):
 
@@ -213,6 +332,10 @@ class TaskIdentitiesExport(Task):
             logger.error("Can not export identities to: %s", repository_url)
             logger.debug("Expected format: https://github.com/owner/repo/blob/master/file")
             logger.debug(ex)
+
+            with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                TasksManager.IDENTITIES_TASKS_ON = False
+
             return
 
         with tempfile.NamedTemporaryFile() as temp:
@@ -224,15 +347,8 @@ class TaskIdentitiesExport(Task):
                 with gzip.open(gzipped_identities_file, 'wb') as f_out:
                     shutil.copyfileobj(f_in, f_out)
             # Get sha for the repository_file
-            url_dir = repository_api + "/git/trees/"+ repository_branch
-            logger.debug("Gettting sha data from tree: %s", url_dir)
-            raw_repo_file_info = requests.get(url_dir, headers=headers)
-            raw_repo_file_info.raise_for_status()
-            for rfile in raw_repo_file_info.json()['tree']:
-                if rfile['path'] == repo_file:
-                    logger.debug("SHA found: %s, ", rfile["sha"])
-                    repo_file_sha = rfile["sha"]
-
+            repo_file_sha = self.sha_github_file(self.config, repo_file,
+                                                 repository_api, repository_branch)
             if repo_file_sha is None:
                 logger.debug("Can not find sha for %s. It will be created.", repository_url)
 
@@ -331,6 +447,8 @@ class TaskIdentitiesMerge(Task):
             fields = line.split()
             if 'merged' in line:
                 uuids.append(fields[2])
+                if fields[5] not in uuids:
+                    uuids.append(fields[5])
             elif 'affiliated' in line:
                 uuids.append(fields[2])
         return uuids
@@ -354,12 +472,31 @@ class TaskIdentitiesMerge(Task):
         return uuids
 
     def execute(self):
+
+        # ** START SYNC LOGIC **
+        # Check that enrichment tasks are not active before loading identities
+        while True:
+            time.sleep(1)  # check each second if the identities load could start
+            with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
+                logger.debug("Enrich tasks active: %i", enrich_tasks)
+                if enrich_tasks == 0:
+                    # The load of identities can be started
+                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                        TasksManager.IDENTITIES_TASKS_ON = True
+                    break
+        #  ** END SYNC LOGIC **
+
         cfg = self.config.get_conf()
 
         uuids_refresh = []
 
         if self.unify:
             for algo in cfg['sortinghat']['matching']:
+                if not algo:
+                    # cfg['sortinghat']['matching'] is an empty list
+                    logger.debug('Unify not executed because empty algorithm')
+                    continue
                 kwargs = {'matching':algo, 'fast_matching':True}
                 logger.info("[sortinghat] Unifying identities using algorithm %s",
                             kwargs['matching'])
@@ -368,14 +505,19 @@ class TaskIdentitiesMerge(Task):
                 logger.debug("uuids to refresh from unify: %s", uuids)
 
         if self.affiliate:
-            # Global enrollments using domains
-            logger.info("[sortinghat] Executing affiliate")
-            uuids = self.do_affiliate()
-            uuids_refresh += uuids
-            logger.debug("uuids to refresh from affiliate: %s", uuids)
+            if not cfg['sortinghat']['affiliate']:
+                logger.debug("Not doing affiliation")
+            else:
+                # Global enrollments using domains
+                logger.info("[sortinghat] Executing affiliate")
+                uuids = self.do_affiliate()
+                uuids_refresh += uuids
+                logger.debug("uuids to refresh from affiliate: %s", uuids)
 
         if self.autoprofile:
-            if not 'autoprofile' in cfg['sortinghat']:
+            # autoprofile = [] -> cfg['sortinghat']['autoprofile'][0] = ['']
+            if not 'autoprofile' in cfg['sortinghat'] or \
+                not cfg['sortinghat']['autoprofile'][0]:
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Executing autoprofile for sources: %s",
@@ -427,3 +569,6 @@ class TaskIdentitiesMerge(Task):
             logger.debug("Autorefresh queue after processing identities: %s", autorefresh_backends)
         except Empty:
             logger.warning("Autorefresh not active because the queue for it is empty.")
+
+        with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+            TasksManager.IDENTITIES_TASKS_ON = False
