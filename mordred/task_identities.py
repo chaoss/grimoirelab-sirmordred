@@ -126,6 +126,7 @@ class TaskIdentitiesLoad(Task):
         outs, errs = proc.communicate()
         if proc.returncode != 0:
             logger.error("[sortinghat] Error in command %s", cmd)
+        return proc.returncode
 
     def execute(self):
 
@@ -171,40 +172,53 @@ class TaskIdentitiesLoad(Task):
         def load_grimoirelab_identities(cfg):
             """ Load identities from files in GrimoireLab YAML format """
 
+            logger.info("Loading GrimoireLab identities in SortingHat")
+
             # Get the identities and organizations files
             identities_url = cfg['sortinghat']['identities_file'][0]
             orgs_url = cfg['sortinghat']['orgs_file']
-            # Only support the case in which this files are in GitLab
-            if 'identities_api_token' not in cfg['sortinghat']:
-                logger.error("API Token not provided. Identities won't be loaded")
-                return
-            token = cfg['sortinghat']['identities_api_token']
-            res = requests.get(identities_url, headers={"PRIVATE-TOKEN":token})
-            identities = tempfile.NamedTemporaryFile()
-            identities.write(res.content)
-            res = requests.get(orgs_url, headers={"PRIVATE-TOKEN":token})
-            orgs = tempfile.NamedTemporaryFile()
-            orgs.write(res.content)
+
+            if not is_remote(identities_url) and not is_remote(orgs_url):
+                orgs_filename = orgs_url
+                identities_filename = identities_url
+            else:
+                # The file should be in gitlab in other case
+                if 'identities_api_token' not in cfg['sortinghat']:
+                    logger.error("API Token not provided. Identities won't be loaded")
+                    return
+                token = cfg['sortinghat']['identities_api_token']
+                res = requests.get(identities_url, headers={"PRIVATE-TOKEN":token})
+                res.raise_for_status()
+                identities = tempfile.NamedTemporaryFile()
+                identities.write(res.content)
+                res = requests.get(orgs_url, headers={"PRIVATE-TOKEN":token})
+                res.raise_for_status()
+                orgs = tempfile.NamedTemporaryFile()
+                orgs.write(res.content)
+                orgs_filename = orgs.name
+                identities_filename = identities.name
+
 
             # Convert to a JSON file in SH format
             # grimoirelab2sh -i identities.yaml -d orgs.yaml -s ssf:manual -o ssf.json
             json_identities = tempfile.mktemp()
-            cmd = ['grimoirelab2sh', '-i', identities.name, '-d', orgs.name,
+            cmd = ['grimoirelab2sh', '-i', identities_filename, '-d', orgs_filename,
                    '-s', cfg['general']['short_name'] + ':manual',
                    '-o', json_identities]
-            self.__execute_command(cmd)
+            if self.__execute_command(cmd) != 0:
+                logger.error('Can not generate the SH JSON file from ' + \
+                             'GrimoireLab yaml files. Do the files exists? ' + \
+                             'Is the API token right?')
+            else:
 
-            # Load the JSON file in SH format
-            logger.info("Loading GrimoireLab identities in SortingHat")
-            load_identities_file(json_identities)
+                # Load the JSON file in SH format
+                load_identities_file(json_identities)
 
-            # Closing tmp files so they are removed
-            identities.close()
-            orgs.close()
-            os.remove(json_identities)
+                # Closing tmp files so they are removed
+                identities.close()
+                orgs.close()
+                os.remove(json_identities)
 
-            # Convert the files to SortingHat JSON format
-            # Load the JSON file
 
         # ** START SYNC LOGIC **
         # Check that enrichment tasks are not active before loading identities
