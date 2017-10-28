@@ -151,29 +151,55 @@ class TaskIdentitiesLoad(Task):
                 logger.error("[sortinghat] Error loading %s", filename)
             logger.info("[sortinghat] End of loading identities from file %s", filename)
 
-        def load_sortinghat_identities(cfg):
+        def load_sortinghat_identities(config):
             """ Load identities from a file in SortingHat JSON format """
 
+            cfg = config.get_conf()
+
             filenames = cfg['sortinghat']['identities_file']
+            api_token = cfg['sortinghat']['identities_api_token']
             for filename in filenames:
                 filename = filename.replace(' ', '')  # spaces used in config file list
                 if filename == '':
                     continue
                 if is_remote(filename):
-                    res_get = requests.get(filename)
-                    res_get.raise_for_status()
-                    with tempfile.NamedTemporaryFile() as temp:
-                        temp.write(res_get.content)
-                        temp.flush()
-                        load_identities_file(temp.name)
+                    # Use the GitHub Data API to get the file
+                    # First we need the SHA for this file
+                    try:
+                        # https://github.com/<owner>/<repo>/blob/<branch>/<sh_identities>
+                        repo_file = filename.rsplit("/", 1)[1]
+                        repository_raw = filename.rsplit("/", 1)[0]
+                        repository = repository_raw.rsplit("/", 2)[0]
+                        repository_api = repository.replace('github.com', 'api.github.com/repos')
+                        # repository_type = repository_raw.rsplit("/", 2)[1]
+                        repository_branch = repository_raw.rsplit("/", 2)[2]
+                        repo_file_sha = \
+                            TaskIdentitiesExport.sha_github_file(config, repo_file,
+                                                                 repository_api, repository_branch)
+                        if not repo_file_sha:
+                            logger.error("Can't find identities file %s. Not loading identities", filename)
+                            return
+                        file_url = repository_api + "/git/blobs/" + repo_file_sha
+                        headers = {"Authorization": "token " + api_token}
+                        res = requests.get(file_url, headers=headers)
+                        res.raise_for_status()
+                        with tempfile.NamedTemporaryFile() as temp:
+                            temp.write(base64.b64decode(res.json()['content']))
+                            temp.flush()
+                            load_identities_file(temp.name)
+                    except IndexError as ex:
+                        logger.error("Can not load identities from: %s", filename)
+                        logger.debug("Expected format: https://github.com/owner/repo/blob/master/file")
+                        logger.debug(ex)
                 else:
                     load_identities_file(filename)
 
-        def load_grimoirelab_identities(cfg):
+        def load_grimoirelab_identities(config):
             """ Load identities from files in GrimoireLab YAML format """
 
             logger.info("Loading GrimoireLab identities in SortingHat")
 
+            cfg = config.get_conf()
             # Get the identities and organizations files
             identities_url = cfg['sortinghat']['identities_file'][0]
             orgs_url = cfg['sortinghat']['orgs_file']
@@ -255,9 +281,9 @@ class TaskIdentitiesLoad(Task):
         # Right now GrimoireLab and SortingHat formats are supported
         if 'identities_file' in cfg['sortinghat']:
             if cfg['sortinghat']['identities_format'] == 'sortinghat':
-                load_sortinghat_identities(cfg)
+                load_sortinghat_identities(self.config)
             elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
-                load_grimoirelab_identities(cfg)
+                load_grimoirelab_identities(self.config)
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
@@ -281,7 +307,7 @@ class TaskIdentitiesExport(Task):
         repo_file_sha = None
 
         cfg = config.get_conf()
-        github_token = cfg['sortinghat']['github_api_token']
+        github_token = cfg['sortinghat']['identities_api_token']
         headers = {"Authorization": "token " + github_token}
 
         url_dir = repository_api + "/git/trees/"+ repository_branch
@@ -310,13 +336,13 @@ class TaskIdentitiesExport(Task):
         if cfg['sortinghat']['identities_export_url'] is None:
             return
 
-        if cfg['sortinghat']['github_api_token'] is None:
-            logger.error("github_api_token for uploading data to GitHub not found in sortinghat section")
+        if cfg['sortinghat']['identities_api_token'] is None:
+            logger.error("identities_api_token for uploading data to GitHub not found in sortinghat section")
             return
 
         repo_file_sha = None
         gzipped_identities_file = None
-        github_token = cfg['sortinghat']['github_api_token']
+        github_token = cfg['sortinghat']['identities_api_token']
         headers = {"Authorization": "token " + github_token}
 
         repository_url = cfg['sortinghat']['identities_export_url']
