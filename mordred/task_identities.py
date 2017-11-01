@@ -174,12 +174,10 @@ class TaskIdentitiesLoad(Task):
 
             logger.info("Loading GrimoireLab identities in SortingHat")
 
-            # Get the identities and organizations files
+            # Get the identities
             identities_url = cfg['sortinghat']['identities_file'][0]
-            orgs_url = cfg['sortinghat']['orgs_file']
 
-            if not is_remote(identities_url) and not is_remote(orgs_url):
-                orgs_filename = orgs_url
+            if not is_remote(identities_url):
                 identities_filename = identities_url
             else:
                 # The file should be in gitlab in other case
@@ -191,23 +189,17 @@ class TaskIdentitiesLoad(Task):
                 res.raise_for_status()
                 identities = tempfile.NamedTemporaryFile()
                 identities.write(res.content)
-                res = requests.get(orgs_url, headers={"PRIVATE-TOKEN":token})
-                res.raise_for_status()
-                orgs = tempfile.NamedTemporaryFile()
-                orgs.write(res.content)
-                orgs_filename = orgs.name
                 identities_filename = identities.name
 
-
             # Convert to a JSON file in SH format
-            # grimoirelab2sh -i identities.yaml -d orgs.yaml -s ssf:manual -o ssf.json
+            # grimoirelab2sh -i identities.yaml -s ssf:manual -o ssf.json
             json_identities = tempfile.mktemp()
-            cmd = ['grimoirelab2sh', '-i', identities_filename, '-d', orgs_filename,
+            cmd = ['grimoirelab2sh', '-i', identities_filename,
                    '-s', cfg['general']['short_name'] + ':manual',
                    '-o', json_identities]
             if self.__execute_command(cmd) != 0:
                 logger.error('Can not generate the SH JSON file from ' + \
-                             'GrimoireLab yaml files. Do the files exists? ' + \
+                             'GrimoireLab yaml file. Do the files exists? ' + \
                              'Is the API token right?')
             else:
 
@@ -217,7 +209,6 @@ class TaskIdentitiesLoad(Task):
                 # Closing tmp files so they are removed for the remote case
                 if is_remote(identities_url):
                     identities.close()
-                    orgs.close()
 
                 os.remove(json_identities)
 
@@ -502,7 +493,7 @@ class TaskIdentitiesMerge(Task):
                             kwargs['matching'])
                 uuids = self.do_unify(kwargs)
                 uuids_refresh += uuids
-                logger.debug("uuids to refresh from unify: %s", uuids)
+            logger.debug("uuids to refresh from unify: %s", uuids)
 
         if self.affiliate:
             if not cfg['sortinghat']['affiliate']:
