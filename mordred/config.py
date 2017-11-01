@@ -31,12 +31,27 @@ logger = logging.getLogger(__name__)
 
 
 class Config():
-    """ Class aimed to manage mordred configuration """
+    """Class aimed to manage mordred configuration"""
 
-    def __init__(self, conf_file):
-        self.conf_file = conf_file
+    def __init__(self, conf_file, conf_list=[]):
+        """Initialize object.
+
+        The object can be initialized with a configuration file,
+        and, optionally, with a list of other configuration files.
+        If the list of other configuration files exist, it will
+        be read, in order, after the configuration file.
+        Values set in a file read later will overwrite values set
+        in files read earlier. Values not set by any file will
+        be set to the default values, when possible.
+
+        :param conf_file; configuration file name
+        :param conf_list: list of other configuration files (default: empty)
+        """
+
+        self.conf_list = [conf_file] + conf_list
         self.raw_conf = None
-        self.conf = self.__read_conf_files()
+        # Build self.conf
+        self.__read_conf_files()
 
         # If projects are not already loaded do it
         from .task_projects import TaskProjects
@@ -528,13 +543,30 @@ class Config():
                         typed_conf[s][option] = val
         return typed_conf
 
+    def _add_to_conf(self, new_conf):
+        """Add new configuration to self.conf.
+
+        Adds configuration parameters in new_con to self.conf.
+        If they already existed in conf, overwrite them.
+
+        :param new_conf: new configuration, to add
+        """
+
+        for section in new_conf:
+            if section not in self.conf:
+                self.conf[section] = new_conf[section]
+            else:
+                for param in new_conf[section]:
+                    self.conf[section][param] = new_conf[section][param]
+
     def __read_conf_files(self):
         logger.debug("Reading conf files")
-        parser = configparser.ConfigParser()
-        parser.read(self.conf_file)
-        raw_conf = {s:dict(parser.items(s)) for s in parser.sections()}
-        config = self.__add_types(raw_conf)
-
-        self.check_config(config)
-
-        return config
+        self.conf = {}
+        for conf_file in self.conf_list:
+            logger.debug("Reading conf files: %s", conf_file)
+            parser = configparser.ConfigParser()
+            parser.read(conf_file)
+            raw_conf = {s:dict(parser.items(s)) for s in parser.sections()}
+            conf = self.__add_types(raw_conf)
+            self._add_to_conf(conf)
+        self.check_config(self.conf)

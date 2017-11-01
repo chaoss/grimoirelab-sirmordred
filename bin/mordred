@@ -104,8 +104,9 @@ def parse_args():
         epilog='Software metrics for your peace of mind'
         )
 
-    parser.add_argument('-c','--config', help='Configuration file',
-                        dest='config_file')
+    parser.add_argument('-c','--config', help='Configuration files',
+                        type=str, nargs='+', default=['mordred.cfg'],
+                        dest='config_files')
     parser.add_argument('-t','--template', help='Create template configuration file',
                         dest='config_template_file')
     parser.add_argument('-p','--phases', nargs='*',
@@ -120,11 +121,11 @@ if __name__ == '__main__':
         Config.create_config_file(args.config_template_file)
         logger.info("Sample config file created in %s", args.config_template_file)
         sys.exit(0)
-    elif args.config_file is None:
+    elif args.config_files is None:
         logger.error("Option -t or -c is required")
         sys.exit(1)
 
-    config = Config(args.config_file)
+    config = Config(args.config_files[0], args.config_files[1:])
     config_dict = config.get_conf()
     logs_dir = config_dict['general']['logs_dir']
     debug_mode = config_dict['general']['debug']
