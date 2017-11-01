@@ -125,11 +125,15 @@ if __name__ == '__main__':
         logger.error("Option -t or -c is required")
         sys.exit(1)
 
-    config = Config(args.config_files[0], args.config_files[1:])
-    config_dict = config.get_conf()
-    logs_dir = config_dict['general']['logs_dir']
-    debug_mode = config_dict['general']['debug']
-    logger = setup_logs(logs_dir, debug_mode)
+    try:
+        config = Config(args.config_files[0], args.config_files[1:])
+        config_dict = config.get_conf()
+        logs_dir = config_dict['general']['logs_dir']
+        debug_mode = config_dict['general']['debug']
+        logger = setup_logs(logs_dir, debug_mode)
+    except RuntimeError as error:
+        print("Error while consuming configuration: ", error)
+        sys.exit(1)
 
     if args.phases:
         logger.info("Executing mordred for phases: %s", args.phases)
