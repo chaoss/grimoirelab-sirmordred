@@ -24,7 +24,7 @@
   - name: Overview
     panel: panels/json/github_pullrequests.json
   - name: Backlog
-    panel: panels/json/github_backlog.json
+    panel: panels/json/github_pull_requests_backlog.json
   - name: Timing
     panel: panels/json/github_pullrequests_timing.json
 - name: GitHub Issues
@@ -34,7 +34,7 @@
   - name: Overview
     panel: panels/json/github_issues.json
   - name: Backlog
-    panel: panels/json/github_backlog.json
+    panel: panels/json/github_issues_backlog.json
   - name: Timing
     panel: panels/json/github_issues_timing.json
 - name: Phabricator
@@ -52,11 +52,11 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/redmine-projects.json
+    panel: panels/json/redmine.json
   - name: Backlog
-    panel: panels/json/redmine_backlog-projects.json
+    panel: panels/json/redmine_backlog.json
   - name: Timing
-    panel: panels/json/redmine_timing-projects.json
+    panel: panels/json/redmine_timing.json
 - name: Jira
   source: jira
   icon: default.png
@@ -143,12 +143,6 @@
   menu:
   - name: Overview
     panel: panels/json/twitter.json
-- name: Kitsune
-  source: kitsune
-  icon: default.png
-  menu:
-  - name: Overview
-    panel: panels/json/kitsune.json
 - name: Askbot Q&A
   source: askbot
   icon: default.png
@@ -167,14 +161,20 @@
   menu:
   - name: Overview
     panel: panels/json/jenkins.json
+- name: Mozilla Club
+  source: mozillaclub
+  icon: default.png
+  menu:
+  - name: Events
+    panel: panels/json/mozilla_club.json
 - name: Mozilla Reps
   source: remo
   icon: default.png
   menu:
   - name: Events
-    panel: panels/json/reps2.json
+    panel: panels/json/reps_events.json
   - name: Activities
-    panel: panels/json/reps2_activities.json
+    panel: panels/json/reps_activities.json
 - name: Meetup
   source: meetup
   icon: default.png
@@ -188,10 +188,16 @@
   icon: default.png
   menu:
   - name: Overview
-    panel: panels/json/google-hits.json
+    panel: panels/json/google_hits.json
 - name: DockerHub
   source: dockerhub
   icon: default.png
   menu:
   - name: Overview
     panel: panels/json/dockerhub.json
+- name: Apache
+  source: apache
+  icon: default.png
+  menu:
+  - name: Overview
+    panel: panels/json/apache.json
