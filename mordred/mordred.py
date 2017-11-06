@@ -209,6 +209,18 @@ class Mordred:
         # Checking for exceptions in threads to log them
         self.__check_queue_for_errors()
 
+        # Empty the shared queues. They must have just one item.
+        if TasksManager.AUTOREFRESH_QUEUE.qsize() != 1:
+            logger.warning("AUTOREFRESH_QUEUE final size: %i",
+                           TasksManager.AUTOREFRESH_QUEUE.qsize())
+        if TasksManager.UPDATED_UUIDS_QUEUE.qsize() != 1:
+            logger.warning("UPDATED_UUIDS_QUEUE final size: %i",
+                           TasksManager.UPDATED_UUIDS_QUEUE.qsize())
+        while not TasksManager.AUTOREFRESH_QUEUE.empty():
+            TasksManager.AUTOREFRESH_QUEUE.get()
+        while not TasksManager.UPDATED_UUIDS_QUEUE.empty():
+            TasksManager.UPDATED_UUIDS_QUEUE.get()
+
         logger.debug(" Task manager and all its tasks (threads) finished!")
 
     def __check_queue_for_errors(self):

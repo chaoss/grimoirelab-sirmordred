@@ -201,3 +201,9 @@
   menu:
   - name: Overview
     panel: panels/json/apache.json
+- name: Testing
+  source: functest
+  icon: default.png
+  menu:
+  - name: Overview
+    panel: panels/json/testing_all.json
