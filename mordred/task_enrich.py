@@ -173,6 +173,7 @@ class TaskEnrich(Task):
 
     def __studies(self):
         logger.info("Executing %s studies ...", self.backend_section)
+        time.sleep(5)  # Wait so enrichment has finished in ES
         enrich_backend = self._get_enrich_backend()
         do_studies(enrich_backend)
 
