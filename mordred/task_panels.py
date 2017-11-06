@@ -42,8 +42,9 @@ class TaskPanels(Task):
     it also sets up common configuration variables for Kibiter
     """
     panels_common = ["panels/json/overview.json",
-                    "panels/json/last_month_contributors.json",
+                     "panels/json/last_month_contributors.json",
                      "panels/json/about.json",
+                     "panels/json/affiliations.json",
                      "panels/json/data_status.json"]
 
     def __init__(self, conf):
@@ -141,8 +142,7 @@ class TaskPanelsAliases(Task):
     # aliases not following the ds-raw and ds rule
     aliases = {
         "apache": {
-            "raw":["apache-raw"],
-            "enrich":["apache"]
+            "raw":["apache"]
         },
         "bugzillarest": {
             "raw":["bugzilla-raw"],
@@ -165,9 +165,8 @@ class TaskPanelsAliases(Task):
             "enrich":["github_issues", "github_issues_enrich", "issues_closed",
                       "issues_created", "issues_updated"]
         },
-        "google-hits": {
-            "raw":["google-hits-raw"],
-            "enrich":["google-hits"]
+        "google_hits": {
+            "raw":["google-hits"]
         },
         "jenkins": {
             "raw":["jenkins-raw"],
