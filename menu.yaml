@@ -195,3 +195,9 @@
   menu:
   - name: Overview
     panel: panels/json/dockerhub.json
+- name: Testing
+  source: functest
+  icon: default.png
+  menu:
+  - name: Overview
+    panel: panels/json/testing_all.json
