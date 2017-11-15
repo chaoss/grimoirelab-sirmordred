@@ -188,16 +188,19 @@ class TaskEnrich(Task):
         # ** START SYNC LOGIC **
         # Check that identities tasks are not active before executing
         while True:
-            time.sleep(1)  # check each second if the enrichment could start
+            time.sleep(10)  # check each 10s if the enrichment could start
             with TasksManager.IDENTITIES_TASKS_ON_LOCK:
-                in_identities = TasksManager.IDENTITIES_TASKS_ON
-                if not in_identities:
-                    # The enrichment can be started
-                    with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                    in_identities = TasksManager.IDENTITIES_TASKS_ON
+                    if not in_identities:
+                        # The enrichment can be started
                         TasksManager.NUMBER_ENRICH_TASKS_ON += 1
                         logger.debug("Number of enrichment tasks active: %i",
                                      TasksManager.NUMBER_ENRICH_TASKS_ON)
-                    break
+                        break
+                    else:
+                        logger.debug("%s Waiting for enrich until identities is done.",
+                                     self.backend_section)
         #  ** END SYNC LOGIC **
 
         self.__enrich_items()

@@ -244,14 +244,14 @@ class TaskIdentitiesLoad(Task):
         # Check that enrichment tasks are not active before loading identities
         while True:
             time.sleep(1)  # check each second if the identities load could start
-            with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
-                enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
-                logger.debug("Enrich tasks active: %i", enrich_tasks)
-                if enrich_tasks == 0:
-                    # The load of identities can be started
-                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+            with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                    enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
+                    logger.debug("Enrich tasks active: %i", enrich_tasks)
+                    if enrich_tasks == 0:
+                        # The load of identities can be started
                         TasksManager.IDENTITIES_TASKS_ON = True
-                    break
+                        break
         #  ** END SYNC LOGIC **
 
         cfg = self.config.get_conf()
@@ -262,12 +262,13 @@ class TaskIdentitiesLoad(Task):
         # Basic loading of organizations from a SH JSON file. Legacy stuff.
         if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:
             if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
-                raise RuntimeError("Load orgs active but no orgs_file configured")
-            logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
-            code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
-            if code != CMD_SUCCESS:
-                logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
-            #FIXME get the number of loaded orgs
+                logger.error("Load orgs active but no orgs_file configured")
+            else:
+                logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
+                code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
+                if code != CMD_SUCCESS:
+                    logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
+                #FIXME get the number of loaded orgs
 
         # Identities loading from files. It could be in several formats.
         # Right now GrimoireLab and SortingHat formats are supported
@@ -277,6 +278,8 @@ class TaskIdentitiesLoad(Task):
             elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
                 load_grimoirelab_identities(self.config)
 
+        # FIXME: If there are exceptions in the above code the
+        # TasksManager.IDENTITIES_TASKS_ON won't be deactivated
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
 
@@ -350,9 +353,6 @@ class TaskIdentitiesExport(Task):
             logger.error("Can not export identities to: %s", repository_url)
             logger.debug("Expected format: https://github.com/owner/repo/blob/master/file")
             logger.debug(ex)
-
-            with TasksManager.IDENTITIES_TASKS_ON_LOCK:
-                TasksManager.IDENTITIES_TASKS_ON = False
 
             return
 
@@ -494,15 +494,15 @@ class TaskIdentitiesMerge(Task):
         # ** START SYNC LOGIC **
         # Check that enrichment tasks are not active before loading identities
         while True:
-            time.sleep(1)  # check each second if the identities load could start
-            with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
-                enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
-                logger.debug("Enrich tasks active: %i", enrich_tasks)
-                if enrich_tasks == 0:
-                    # The load of identities can be started
-                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+            time.sleep(10)  # check each 10 seconds if the identities load could start
+            with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                    enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
+                    logger.debug("Enrich tasks active: %i", enrich_tasks)
+                    if enrich_tasks == 0:
+                        # The load of identities can be started
                         TasksManager.IDENTITIES_TASKS_ON = True
-                    break
+                        break
         #  ** END SYNC LOGIC **
 
         cfg = self.config.get_conf()
@@ -520,7 +520,7 @@ class TaskIdentitiesMerge(Task):
                             kwargs['matching'])
                 uuids = self.do_unify(kwargs)
                 uuids_refresh += uuids
-            logger.debug("uuids to refresh from unify: %s", uuids)
+                logger.debug("uuids to refresh from unify: %s", uuids)
 
         if self.affiliate:
             if not cfg['sortinghat']['affiliate']:
