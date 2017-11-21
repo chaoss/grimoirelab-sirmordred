@@ -355,6 +355,13 @@ class Config():
                     "type": str,
                     "deprecated": "Use identities_api_token"
                 },
+                "strict_mapping":  {
+                    "optional": True,
+                    "default": True,
+                    "type": bool,
+                    "doc": "rigorous check of values in identities matching " + \
+                            "(i.e, well formed email addresses)"
+                },
                 "orgs_file": optional_string_none,
                 "identities_file": optional_empty_list,
                 "identities_export_url": optional_string_none,

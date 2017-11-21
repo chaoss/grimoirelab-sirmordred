@@ -486,6 +486,8 @@ class TaskIdentitiesMerge(Task):
     def do_unify(self, kwargs):
         cmd = self.__build_sh_command()
         cmd += ['unify', '--fast-matching', '-m', kwargs['matching']]
+        if not kwargs['strict_mapping']:
+            cmd += ['--no-strict-matching']
         uuids = self.__execute_sh_command(cmd)
         return uuids
 
@@ -515,7 +517,8 @@ class TaskIdentitiesMerge(Task):
                     # cfg['sortinghat']['matching'] is an empty list
                     logger.debug('Unify not executed because empty algorithm')
                     continue
-                kwargs = {'matching':algo, 'fast_matching':True}
+                kwargs = {'matching':algo, 'fast_matching':True,
+                          'strict_mapping': cfg['sortinghat']['strict_mapping']}
                 logger.info("[sortinghat] Unifying identities using algorithm %s",
                             kwargs['matching'])
                 uuids = self.do_unify(kwargs)
