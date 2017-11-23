@@ -137,16 +137,19 @@ class TaskIdentitiesLoad(Task):
                 return True
             return remote
 
-        def load_identities_file(filename):
+        def load_identities_file(filename, reset=False):
             """
             Load an identities file in Sortinghat with reset option
 
-            The reset option cleans all merges in identities that will be
+            The reset option cleans all merges and affiliations in identities that will be
             loaded to honor the identities grouping from the file.
             """
-
-            logger.info("[sortinghat] Loading identities with reset from file %s", filename)
-            code = Load(**self.sh_kwargs).run("--reset", "--identities", filename)
+            if reset:
+                logger.info("[sortinghat] Loading identities with reset from file %s", filename)
+                code = Load(**self.sh_kwargs).run("--reset", "--identities", filename)
+            else:
+                logger.info("[sortinghat] Loading identities from file %s", filename)
+                code = Load(**self.sh_kwargs).run("--identities", filename)
             if code != CMD_SUCCESS:
                 logger.error("[sortinghat] Error loading %s", filename)
             logger.info("[sortinghat] End of loading identities from file %s", filename)
@@ -186,13 +189,13 @@ class TaskIdentitiesLoad(Task):
                         with tempfile.NamedTemporaryFile() as temp:
                             temp.write(base64.b64decode(res.json()['content']))
                             temp.flush()
-                            load_identities_file(temp.name)
+                            load_identities_file(temp.name, cfg['sortinghat']['reset_on_load'])
                     except IndexError as ex:
                         logger.error("Can not load identities from: %s", filename)
                         logger.debug("Expected format: https://github.com/owner/repo/blob/master/file")
                         logger.debug(ex)
                 else:
-                    load_identities_file(filename)
+                    load_identities_file(filename, cfg['sortinghat']['reset_on_load'])
 
         def load_grimoirelab_identities(config):
             """ Load identities from files in GrimoireLab YAML format """
@@ -231,7 +234,7 @@ class TaskIdentitiesLoad(Task):
             else:
 
                 # Load the JSON file in SH format
-                load_identities_file(json_identities)
+                load_identities_file(json_identities, cfg['sortinghat']['reset_on_load'])
 
                 # Closing tmp files so they are removed for the remote case
                 if is_remote(identities_url):

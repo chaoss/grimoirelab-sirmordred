@@ -362,6 +362,12 @@ class Config():
                     "doc": "rigorous check of values in identities matching " + \
                             "(i.e, well formed email addresses)"
                 },
+                "reset_on_load":  {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "doc": "Unmerge and remove affiliations for all identities on load"
+                },
                 "orgs_file": optional_string_none,
                 "identities_file": optional_empty_list,
                 "identities_export_url": optional_string_none,
