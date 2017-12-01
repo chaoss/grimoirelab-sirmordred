@@ -44,7 +44,7 @@ for r in rows:
     end = data[2]
     if data[0] > 1:
         # conflict identified, gets organization names and uuid to compose the log
-        cursor.execute("SELECT organizations.name FROM enrollments, organizations WHERE start = '%s' "\
+        cursor.execute("SELECT organizations.name FROM enrollments, organizations WHERE start = '%s' "
                        " AND end = '%s' AND uuid = '%s' AND organization_id = organizations.id" % (start, end, uuid))
         data = cursor.fetchall()
         orgs = []

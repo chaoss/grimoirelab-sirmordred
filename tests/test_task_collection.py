@@ -30,7 +30,6 @@ import unittest
 sys.path.insert(0, '..')
 
 from mordred.config import Config
-from mordred.mordred import Mordred
 from mordred.task_collection import TaskRawDataCollection
 
 CONF_FILE = 'test.cfg'
@@ -38,6 +37,7 @@ PROJ_FILE = 'test-projects.json'
 GIT_BACKEND_SECTION = 'git'
 
 logging.basicConfig(level=logging.INFO)
+
 
 class TestTaskRawDataCollection(unittest.TestCase):
     """Task tests"""

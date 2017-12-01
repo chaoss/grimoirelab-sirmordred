@@ -31,14 +31,16 @@ def write_yaml(file_name, data):
     with open(file_name, 'w+') as f:
         yaml.dump(data, f, default_flow_style=False)
 
+
 def open_file(file_name):
     data = open(file_name).read()
     json_data = json.loads(data)
 
     return json_data
 
+
 def read_arguments():
-    desc="Convert JSON to YML: return hierarchy.yml and projects_repo.yml"
+    desc = "Convert JSON to YML: return hierarchy.yml and projects_repo.yml"
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description=desc)
 
@@ -50,6 +52,7 @@ def read_arguments():
 
     return args
 
+
 def get_hierarchy_list(json_data):
     hierarchy_list = {}
     for data in json_data["projects"]:
@@ -60,6 +63,7 @@ def get_hierarchy_list(json_data):
                 hierarchy_list[data][key] = []
 
     return hierarchy_list
+
 
 def get_repo_list(json_data, not_backend, special_backend):
     repo_to_return = {}
@@ -74,10 +78,11 @@ def get_repo_list(json_data, not_backend, special_backend):
                     if backend_name not in special_backend:
                         repo_list.append(repo['url'])
                     else:
-                        repo_list.append(repo['url']+" "+repo['path'])
+                        repo_list.append(repo['url'] + " " + repo['path'])
                 repo_to_return[data][backend_name] = repo_list
 
     return repo_to_return
+
 
 if __name__ == "__main__":
     args = read_arguments()

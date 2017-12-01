@@ -86,7 +86,7 @@ class TaskIdentitiesCollection(Task):
 
     def execute(self):
 
-        #FIXME this should be called just once
+        # FIXME this should be called just once
         # code = 0 when command success
         code = Init(**self.sh_kwargs).run(self.db_sh)
 
@@ -105,7 +105,7 @@ class TaskIdentitiesCollection(Task):
             enrich_backend = self._get_enrich_backend()
             ocean_backend = self._get_ocean_backend(enrich_backend)
             load_identities(ocean_backend, enrich_backend)
-            #FIXME get the number of ids gathered
+            # FIXME get the number of ids gathered
 
 
 class TaskIdentitiesLoad(Task):
@@ -118,7 +118,6 @@ class TaskIdentitiesLoad(Task):
 
     def is_backend_task(self):
         return False
-
 
     def __execute_command(self, cmd):
         logger.debug("Executing %s", cmd)
@@ -215,7 +214,7 @@ class TaskIdentitiesLoad(Task):
                     logger.error("API Token not provided. Identities won't be loaded")
                     return
                 token = cfg['sortinghat']['identities_api_token']
-                res = requests.get(identities_url, headers={"PRIVATE-TOKEN":token})
+                res = requests.get(identities_url, headers={"PRIVATE-TOKEN": token})
                 res.raise_for_status()
                 identities = tempfile.NamedTemporaryFile()
                 identities.write(res.content)
@@ -228,8 +227,8 @@ class TaskIdentitiesLoad(Task):
                    '-s', cfg['general']['short_name'] + ':manual',
                    '-o', json_identities]
             if self.__execute_command(cmd) != 0:
-                logger.error('Can not generate the SH JSON file from ' + \
-                             'GrimoireLab yaml file. Do the files exists? ' + \
+                logger.error('Can not generate the SH JSON file from ' +
+                             'GrimoireLab yaml file. Do the files exists? ' +
                              'Is the API token right?')
             else:
 
@@ -241,7 +240,6 @@ class TaskIdentitiesLoad(Task):
                     identities.close()
 
                 os.remove(json_identities)
-
 
         # ** START SYNC LOGIC **
         # Check that enrichment tasks are not active before loading identities
@@ -271,7 +269,7 @@ class TaskIdentitiesLoad(Task):
                 code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
                 if code != CMD_SUCCESS:
                     logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
-                #FIXME get the number of loaded orgs
+                # FIXME get the number of loaded orgs
 
         # Identities loading from files. It could be in several formats.
         # Right now GrimoireLab and SortingHat formats are supported
@@ -308,7 +306,7 @@ class TaskIdentitiesExport(Task):
         github_token = cfg['sortinghat']['identities_api_token']
         headers = {"Authorization": "token " + github_token}
 
-        url_dir = repository_api + "/git/trees/"+ repository_branch
+        url_dir = repository_api + "/git/trees/" + repository_branch
         logger.debug("Gettting sha data from tree: %s", url_dir)
         raw_repo_file_info = requests.get(url_dir, headers=headers)
         raw_repo_file_info.raise_for_status()
@@ -387,7 +385,7 @@ class TaskIdentitiesExport(Task):
                     upload_json["sha"] = repo_file_sha
 
                 data = json.dumps(upload_json)
-                url_put = repository_api + "/contents/"+ repo_file
+                url_put = repository_api + "/contents/" + repo_file
                 logger.debug("Uploading to GitHub %s", url_put)
                 upload_res = requests.put(url_put, headers=headers, data=data)
                 upload_res.raise_for_status()
@@ -403,11 +401,11 @@ class TaskIdentitiesMerge(Task):
         self.load_ids = load_ids  # Load identities from raw index
         self.unify = unify  # Unify identities
         self.autoprofile = autoprofile  # Execute autoprofile
-        self.affiliate = affiliate # Affiliate identities
-        self.bots = bots # Mark bots in SH
-        self.sh_kwargs={'user': self.db_user, 'password': self.db_password,
-                        'database': self.db_sh, 'host': self.db_host,
-                        'port': None}
+        self.affiliate = affiliate  # Affiliate identities
+        self.bots = bots  # Mark bots in SH
+        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
+                          'database': self.db_sh, 'host': self.db_host,
+                          'port': None}
         self.db = Database(**self.sh_kwargs)
 
     def is_backend_task(self):
@@ -419,7 +417,7 @@ class TaskIdentitiesMerge(Task):
 
         with self.db.connect() as session:
             query = session.query(Profile).\
-            filter(Profile.name == profile_name)
+                filter(Profile.name == profile_name)
             profiles = query.all()
             if profiles:
                 for p in profiles:
@@ -520,7 +518,7 @@ class TaskIdentitiesMerge(Task):
                     # cfg['sortinghat']['matching'] is an empty list
                     logger.debug('Unify not executed because empty algorithm')
                     continue
-                kwargs = {'matching':algo, 'fast_matching':True,
+                kwargs = {'matching': algo, 'fast_matching': True,
                           'strict_mapping': cfg['sortinghat']['strict_mapping']}
                 logger.info("[sortinghat] Unifying identities using algorithm %s",
                             kwargs['matching'])
@@ -540,8 +538,8 @@ class TaskIdentitiesMerge(Task):
 
         if self.autoprofile:
             # autoprofile = [] -> cfg['sortinghat']['autoprofile'][0] = ['']
-            if not 'autoprofile' in cfg['sortinghat'] or \
-                not cfg['sortinghat']['autoprofile'][0]:
+            if ('autoprofile' not in cfg['sortinghat'] or
+                not cfg['sortinghat']['autoprofile'][0]):
                 logger.info("[sortinghat] Autoprofile not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Executing autoprofile for sources: %s",
@@ -561,7 +559,7 @@ class TaskIdentitiesMerge(Task):
             logger.warning("Autorefresh uuids not active because the queue for it is empty.")
 
         if self.bots:
-            if not 'bots_names' in cfg['sortinghat']:
+            if 'bots_names' not in cfg['sortinghat']:
                 logger.info("[sortinghat] Bots name list not configured. Skipping.")
             else:
                 logger.info("[sortinghat] Marking bots: %s",

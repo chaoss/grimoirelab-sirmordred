@@ -48,14 +48,14 @@ class TaskEnrich(Task):
         self.backend_section = backend_section
         # This will be options in next iteration
         self.clean = False
-          # check whether the aliases has beed already created
+        # check whether the aliases has beed already created
         self.enrich_aliases = False
 
     def __enrich_items(self):
 
         time_start = time.time()
 
-        #logger.info('%s starts for %s ', 'enrichment', self.backend_section)
+        # logger.info('%s starts for %s ', 'enrichment', self.backend_section)
         logger.info('[%s] enrichment starts', self.backend_section)
 
         cfg = self.config.get_conf()
@@ -96,20 +96,20 @@ class TaskEnrich(Task):
                 enrich_backend(es_col_url, self.clean, backend, backend_args,
                                cfg[self.backend_section]['raw_index'],
                                cfg[self.backend_section]['enriched_index'],
-                               None, #projects_db is deprecated
+                               None,  # projects_db is deprecated
                                cfg['projects']['projects_file'],
                                cfg['sortinghat']['database'],
                                no_incremental, only_identities,
                                github_token,
-                               False, # studies are executed in its own Task
+                               False,  # studies are executed in its own Task
                                only_studies,
                                cfg['es_enrichment']['url'],
-                               None, #args.events_enrich
+                               None,  # args.events_enrich
                                cfg['sortinghat']['user'],
                                cfg['sortinghat']['password'],
                                cfg['sortinghat']['host'],
-                               None, #args.refresh_projects,
-                               None, #args.refresh_identities,
+                               None,  # args.refresh_projects,
+                               None,  # args.refresh_identities,
                                author_id=None,
                                author_uuid=None,
                                filter_raw=filter_raw,
@@ -117,7 +117,7 @@ class TaskEnrich(Task):
                                jenkins_rename_file=jenkins_rename_file,
                                unaffiliated_group=cfg['sortinghat']['unaffiliated_group'])
             except Exception as ex:
-                logger.error("Something went wrong producing enriched data for %s . " \
+                logger.error("Something went wrong producing enriched data for %s . "
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
                 logger.error("Exception: %s", ex)
                 raise DataEnrichmentError('Failed to produce enriched data for %s', self.backend_name)
@@ -131,12 +131,12 @@ class TaskEnrich(Task):
                 logger.debug("Done creating aliases after enrich")
                 self.enrich_aliases = True
 
-        spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time()-time_start))
+        spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start))
         logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
 
     def __autorefresh(self):
-        logger.info("[%s] Refreshing project and identities " + \
-                     "fields for updated uuids ", self.backend_section)
+        logger.info("[%s] Refreshing project and identities " +
+                    "fields for updated uuids ", self.backend_section)
         # Refresh projects
         if False:
             # TODO: Waiting that the project info is loaded from yaml files
@@ -180,8 +180,8 @@ class TaskEnrich(Task):
     def execute(self):
         cfg = self.config.get_conf()
 
-        if 'enrich' in cfg[self.backend_section] and \
-            cfg[self.backend_section]['enrich'] is False:
+        if ('enrich' in cfg[self.backend_section] and
+            not cfg[self.backend_section]['enrich']):
             logger.info('%s enrich disabled', self.backend_section)
             return
 

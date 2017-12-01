@@ -57,9 +57,8 @@ class TaskRawDataCollection(Task):
         if 'bulk_size' in cfg['general']:
             ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
 
-
-        if 'collect' in cfg[self.backend_section] and \
-            cfg[self.backend_section]['collect'] == False:
+        if ('collect' in cfg[self.backend_section] and
+            not cfg[self.backend_section]['collect']):
             logging.info('%s collect disabled', self.backend_section)
             return
 
@@ -68,8 +67,8 @@ class TaskRawDataCollection(Task):
         clean = False
 
         fetch_cache = False
-        if 'fetch-cache' in cfg[self.backend_section] and \
-            cfg[self.backend_section]['fetch-cache']:
+        if ('fetch-cache' in cfg[self.backend_section] and
+            cfg[self.backend_section]['fetch-cache']):
             fetch_cache = True
 
         # repos could change between executions because changes in projects
@@ -99,15 +98,14 @@ class TaskRawDataCollection(Task):
             try:
                 feed_backend(es_col_url, clean, fetch_cache, backend, backend_args,
                              cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project)
-            except:
-                logger.error("Something went wrong collecting data from this %s repo: %s . " \
+            except Exception:
+                logger.error("Something went wrong collecting data from this %s repo: %s . "
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))
                 traceback.print_exc()
                 raise DataCollectionError('Failed to collect data from %s' % url)
 
-
         t3 = time.time()
 
-        spent_time = time.strftime("%H:%M:%S", time.gmtime(t3-t2))
+        spent_time = time.strftime("%H:%M:%S", time.gmtime(t3 - t2))
         logger.info('[%s] Data collection finished in %s',
                     self.backend_section, spent_time)

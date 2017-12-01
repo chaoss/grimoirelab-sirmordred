@@ -22,7 +22,6 @@
 #       Luis Cañas-Díaz <lcanas@bitergia.com>
 
 import configparser
-import json
 import logging
 
 from grimoire_elk.utils import get_connectors
@@ -136,12 +135,12 @@ class Config():
                     "default": 60,
                     "type": int
                 },
-                "kibana":  {
+                "kibana": {
                     "optional": True,
                     "default": "5",
                     "type": str
                 },
-                "update":  {
+                "update": {
                     "optional": False,
                     "default": False,
                     "type": bool
@@ -355,14 +354,14 @@ class Config():
                     "type": str,
                     "deprecated": "Use identities_api_token"
                 },
-                "strict_mapping":  {
+                "strict_mapping": {
                     "optional": True,
                     "default": True,
                     "type": bool,
                     "doc": "rigorous check of values in identities matching " + \
-                            "(i.e, well formed email addresses)"
+                           "(i.e, well formed email addresses)"
                 },
-                "reset_on_load":  {
+                "reset_on_load": {
                     "optional": True,
                     "default": False,
                     "type": bool,
@@ -396,9 +395,7 @@ class Config():
         for section_params in tasks_config_params:
             params.update(section_params)
 
-
         return params
-
 
     @classmethod
     def create_config_file(cls, file_path):
@@ -429,7 +426,7 @@ class Config():
                 if param == "enriched_index":
                     val = section_name
                 elif param == "raw_index":
-                    val = section_name+"-raw"
+                    val = section_name + "-raw"
                 else:
                     val = backend_params[param]['default']
                 parser.set(section_name, param, str(val))
@@ -472,7 +469,6 @@ class Config():
                 data_sources.append(section)
 
         return data_sources
-
 
     @classmethod
     def check_config(cls, config):
@@ -534,7 +530,7 @@ class Config():
             typed_conf[s] = {}
             for option in raw_conf[s]:
                 val = raw_conf[s][option]
-                if len(val) > 1  and (val[0] == '"' and val[-1] == '"'):
+                if len(val) > 1 and (val[0] == '"' and val[-1] == '"'):
                     # It is a string
                     typed_conf[s][option] = val[1:-1]
                 # Check list
@@ -579,7 +575,7 @@ class Config():
             logger.debug("Reading conf files: %s", conf_file)
             parser = configparser.ConfigParser()
             parser.read(conf_file)
-            raw_conf = {s:dict(parser.items(s)) for s in parser.sections()}
+            raw_conf = {s: dict(parser.items(s)) for s in parser.sections()}
             conf = self.__add_types(raw_conf)
             self._add_to_conf(conf)
         self.check_config(self.conf)

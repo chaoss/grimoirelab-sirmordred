@@ -36,9 +36,8 @@ from mordred.config import Config
 from mordred.task import Task
 from mordred.eclipse_projects_lib import get_repos_list_project, get_mls_repos
 
-
-
 logger = logging.getLogger(__name__)
+
 
 class TaskProjects(Task):
     """ Task to manage the projects config """
@@ -80,8 +79,8 @@ class TaskProjects(Task):
 
         for pro in projects:
             if backend in projects[pro]:
-                if backend in Config.get_global_data_sources() \
-                    and cls.GLOBAL_PROJECT in projects and pro != cls.GLOBAL_PROJECT:
+                if (backend in Config.get_global_data_sources() and
+                    cls.GLOBAL_PROJECT in projects and pro != cls.GLOBAL_PROJECT):
                     logger.debug("Skip global data source %s for project %s",
                                  backend, pro)
                 else:
@@ -152,7 +151,6 @@ class TaskProjects(Task):
             mls.append(list_new)
 
         return mls
-
 
     def convert_from_eclipse(self, eclipse_projects):
         """ Convert from eclipse projects format to grimoire projects json format """

@@ -20,7 +20,6 @@
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
 
-import json
 import logging
 import sys
 import unittest
@@ -33,7 +32,6 @@ import requests
 sys.path.insert(0, '..')
 
 from mordred.config import Config
-from mordred.mordred import Mordred
 from mordred.task_enrich import TaskEnrich
 
 CONF_FILE = 'test.cfg'
@@ -41,6 +39,7 @@ PROJ_FILE = 'test-projects.json'
 GIT_BACKEND_SECTION = 'git'
 
 logging.basicConfig(level=logging.INFO)
+
 
 class TestTaskEnrich(unittest.TestCase):
     """Task tests"""
@@ -68,9 +67,9 @@ class TestTaskEnrich(unittest.TestCase):
         es_enrichment = cfg['es_enrichment']['url']
         raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
         enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
-        r = requests.get(raw_index+"/_search?size=0")
+        r = requests.get(raw_index + "/_search?size=0")
         raw_items = r.json()['hits']['total']
-        r = requests.get(enrich_index+"/_search?size=0")
+        r = requests.get(enrich_index + "/_search?size=0")
         enriched_items = r.json()['hits']['total']
         self.assertEqual(raw_items, enriched_items)
 
