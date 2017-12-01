@@ -8,14 +8,14 @@ sudo: false
 before_install:
   - pip install flake8
   - pip install coveralls
-  - pip grimoire-elk
-  - pip grimoire-kidash
-  - pip grimoire-reports
-  - pip grimoire-reports
-  - pip install pandas==0.18.1
-  - pip sortinghat
-  - pip install PyMySQL
-  - pip install pyyaml
+  - pip install grimoire-elk
+  - pip install grimoire-kidash
+  - pip install grimoire-reports
+  - pip install grimoire-reports
+  - pip install install pandas==0.18.1
+  - pip install sortinghat
+  - pip install install PyMySQL
+  - pip install install pyyaml
 
 # install:
 #   - ./setup.py install
