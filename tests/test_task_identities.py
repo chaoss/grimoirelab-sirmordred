@@ -38,7 +38,8 @@ from mordred.task_identities import TaskIdentitiesLoad
 
 CONF_FILE = 'test.cfg'
 REMOTE_IDENTITIES_FILE = 'data/remote_identities_sortinghat.json'
-REMOTE_IDENTITIES_FILE_URL = 'http://example.com/identities.json'
+# REMOTE_IDENTITIES_FILE_URL = 'http://example.com/identities.json'
+REMOTE_IDENTITIES_FILE_URL = 'https://github.com/fake/repo/identities.json'
 
 
 def read_file(filename, mode='r'):
@@ -76,9 +77,16 @@ class TestTaskIdentitiesLoad(unittest.TestCase):
     def setUp(self):
         config = Config(CONF_FILE)
         sh = config.get_conf()['sortinghat']
+
         self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
                           'database': sh['database'], 'host': sh['host'],
                           'port': None}
+
+        # Clean the database to start an empty state
+        Database.drop(**self.sh_kwargs)
+
+        # Create command
+        Database.create(**self.sh_kwargs)
         self.sh_db = Database(**self.sh_kwargs)
 
     def test_initialization(self):
@@ -95,21 +103,16 @@ class TestTaskIdentitiesLoad(unittest.TestCase):
         setup_http_server()
 
         config = Config(CONF_FILE)
-        config.set_param("sortinghat", "load_orgs", True)
-        config.set_param("sortinghat", "orgs_file", None)
-        task = TaskIdentitiesLoad(config)
-        with self.assertRaises(RuntimeError):
-            task.execute()
-        config = Config(CONF_FILE)
         task = TaskIdentitiesLoad(config)
         task.execute()
         # Check the number of orgs loaded
         norgs = len(api.registry(self.sh_db))
         self.assertEqual(norgs, 20)
 
-    @httpretty.activate
+    # @httpretty.activate
+    # TODO: remote loading
     def test_identities_load_file(self):
-        """ Check the local and remote loading of identities files """
+        """ Check the local loading of identities files """
         setup_http_server()
 
         config = Config(CONF_FILE)
@@ -117,7 +120,7 @@ class TestTaskIdentitiesLoad(unittest.TestCase):
         task.execute()
         # Check the number of identities loaded from local and remote files
         nuids = len(api.unique_identities(self.sh_db))
-        self.assertEqual(nuids, 18)
+        self.assertEqual(nuids, 9)
 
 
 if __name__ == "__main__":
