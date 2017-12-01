@@ -5,6 +5,10 @@ python:
 
 sudo: false
 
+services:
+  - elasticsearch
+  - mysql
+
 before_install:
   - pip install flake8
   - pip install coveralls
@@ -22,4 +26,4 @@ before_install:
 
 script:
   - flake8 .
-#  - cd tests && ./run_tests.py
+  - cd tests && ./run_tests.py
