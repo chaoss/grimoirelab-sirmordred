@@ -9,22 +9,24 @@ services:
   - elasticsearch
   - mysql
 
+# addons:
+#   mariadb: '10.0'
+
+# sleep to wait for Elasticsearch init
 before_install:
-  - sleep 15
+  - sleep 5
   - pip install flake8
   - pip install coveralls
-  - pip install grimoire-elk
-  - pip install grimoire-kidash
-  - pip install grimoire-reports
-  - pip install grimoire-reports
   - pip install httpretty
   - pip install pandas==0.18.1
-  - pip install PyMySQL
-  - pip install pyyaml
-  - pip install sortinghat
 
-# install:
-#   - ./setup.py install
+install:
+  - ./setup.py install
+
+# To avoid: pymysql.err.OperationalError: (2013, 'Lost connection to MySQL server during query')
+before_script:
+  - echo -e "[mysqld]\nmax_allowed_packet=16M" | sudo tee -a /etc/mysql/my.cnf
+  - sudo service mysql restart
 
 script:
   - flake8 .
