@@ -26,6 +26,7 @@ import unittest
 
 import requests
 
+from sortinghat.db.database import Database
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
@@ -43,6 +44,21 @@ logging.basicConfig(level=logging.INFO)
 
 class TestTaskEnrich(unittest.TestCase):
     """Task tests"""
+
+    def setUp(self):
+        config = Config(CONF_FILE)
+        sh = config.get_conf()['sortinghat']
+
+        self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
+                          'database': sh['database'], 'host': sh['host'],
+                          'port': None}
+
+        # Clean the database to start an empty state
+        Database.drop(**self.sh_kwargs)
+
+        # Create command
+        Database.create(**self.sh_kwargs)
+        self.sh_db = Database(**self.sh_kwargs)
 
     def test_initialization(self):
         """Test whether attributes are initializated"""

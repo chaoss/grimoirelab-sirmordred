@@ -35,7 +35,7 @@ from mordred.task import Task
 
 CONF_FILE = 'test.cfg'
 BACKEND_NAME = 'stackexchange'
-COLLECTION_URL = 'http://bitergia:bitergia@172.17.0.1:9200'
+COLLECTION_URL = 'http://localhost:9200'
 COLLECTION_URL_STACKEXCHANGE = 'http://127.0.0.1:9200'
 REPO_NAME = 'https://stackoverflow.com/questions/tagged/ovirt'
 
