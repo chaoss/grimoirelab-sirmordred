@@ -10,6 +10,7 @@ services:
   - mysql
 
 before_install:
+  - sleep 15
   - pip install flake8
   - pip install coveralls
   - pip install grimoire-elk
