@@ -22,8 +22,11 @@
 
 import logging
 import sys
+import shutil
+import tarfile
 import unittest
 
+from os.path import expanduser, isdir, join
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
@@ -34,6 +37,9 @@ from mordred.task_collection import TaskRawDataCollection
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
+PERCEVAL_CACHE_FILE = './cache-test.tgz'
+HOME_USER = expanduser("~")
+PERCEVAL_CACHE = join(HOME_USER, '.perceval')
 GIT_BACKEND_SECTION = 'git'
 
 logging.basicConfig(level=logging.INFO)
@@ -41,6 +47,44 @@ logging.basicConfig(level=logging.INFO)
 
 class TestTaskRawDataCollection(unittest.TestCase):
     """Task tests"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.__install_perceval_cache()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.__restore_perceval_cache()
+
+    @classmethod
+    def __install_perceval_cache(cls):
+        logging.info("Installing the perceval cache")
+        # First backup the current cache
+        if isdir(PERCEVAL_CACHE + ".orig"):
+            logging.error("Test cache backup exists in %s", PERCEVAL_CACHE + ".orig")
+            raise RuntimeError("Environment not clean. Can't continue")
+
+        try:
+            shutil.move(PERCEVAL_CACHE, PERCEVAL_CACHE + ".orig")
+        except FileNotFoundError:
+            logging.warning("Perceval cache does not exists")
+
+        tfile = tarfile.open(PERCEVAL_CACHE_FILE, 'r:gz')
+        # The cache is extracted in the default place perceval uses
+        # We must use a different place but it is not easy to change that
+        # because it is not configurable now in TaskRawDataCollection
+        tfile.extractall("/tmp")
+        shutil.move("/tmp/perceval-cache", PERCEVAL_CACHE)
+        logging.info("Installed the perceval cache in %s", PERCEVAL_CACHE)
+
+    @classmethod
+    def __restore_perceval_cache(self):
+        logging.info("Restoring the perceval cache")
+        shutil.rmtree(PERCEVAL_CACHE)
+        try:
+            shutil.move(PERCEVAL_CACHE + ".orig", PERCEVAL_CACHE)
+        except FileNotFoundError:
+            logging.warning("Perceval cache did not exists")
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
