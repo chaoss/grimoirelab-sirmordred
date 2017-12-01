@@ -1,0 +1,25 @@
+language: python
+
+python:
+  - "3.4"
+
+sudo: false
+
+before_install:
+  - pip install flake8
+  - pip install coveralls
+  - pip grimoire-elk
+  - pip grimoire-kidash
+  - pip grimoire-reports
+  - pip grimoire-reports
+  - pip install pandas==0.18.1
+  - pip sortinghat
+  - pip install PyMySQL
+  - pip install pyyaml
+
+# install:
+#   - ./setup.py install
+
+script:
+  - flake8 .
+#  - cd tests && ./run_tests.py
