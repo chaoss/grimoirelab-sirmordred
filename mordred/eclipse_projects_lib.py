@@ -29,7 +29,7 @@ import logging
 import os.path
 import urllib
 
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 import pymysql
 
