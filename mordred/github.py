@@ -28,6 +28,7 @@ from mordred.error import GithubFileNotFound
 
 logger = logging.getLogger(__name__)
 
+
 class Github:
 
     def __init__(self, token):

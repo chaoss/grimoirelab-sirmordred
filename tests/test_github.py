@@ -37,6 +37,7 @@ from mordred.github import Github
 
 CONF_FILE = 'test.cfg'
 
+
 class TestGithub(unittest.TestCase):
     """Task tests"""
 

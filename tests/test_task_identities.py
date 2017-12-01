@@ -25,22 +25,15 @@ import unittest
 
 import httpretty
 
-from os import remove
-
 from sortinghat import api
-from sortinghat.cmd.organizations import Organizations
 from sortinghat.db.database import Database
-
-
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
 from mordred.config import Config
-from mordred.task_identities import (
-    TaskIdentitiesCollection, TaskIdentitiesLoad, TaskIdentitiesMerge
-    )
+from mordred.task_identities import TaskIdentitiesLoad
 
 
 CONF_FILE = 'test.cfg'
@@ -52,6 +45,7 @@ def read_file(filename, mode='r'):
     with open(filename, mode) as f:
         content = f.read()
     return content
+
 
 def setup_http_server():
     remote_identities = read_file(REMOTE_IDENTITIES_FILE)
@@ -76,13 +70,6 @@ def setup_http_server():
     return http_requests
 
 
-
-def read_file(filename, mode='r'):
-    with open(filename, mode) as f:
-        content = f.read()
-    return content
-
-
 class TestTaskIdentitiesLoad(unittest.TestCase):
     """Task tests"""
 
@@ -93,7 +80,6 @@ class TestTaskIdentitiesLoad(unittest.TestCase):
                           'database': sh['database'], 'host': sh['host'],
                           'port': None}
         self.sh_db = Database(**self.sh_kwargs)
-
 
     def test_initialization(self):
         """Test whether attributes are initializated"""

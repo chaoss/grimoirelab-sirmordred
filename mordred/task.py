@@ -29,6 +29,7 @@ from grimoire_elk.utils import get_connector_from_name, get_elastic
 
 logger = logging.getLogger(__name__)
 
+
 class Task():
     """ Basic class shared by all tasks """
 
@@ -91,7 +92,7 @@ class Task():
             if p in self.ES_INDEX_FIELDS:
                 # These params are not for the perceval backend
                 continue
-            params.append("--"+p)
+            params.append("--" + p)
             if self.conf[backend_section][p]:
                 # If param is boolean, no values must be added
                 if type(self.conf[backend_section][p]) != bool:
@@ -142,8 +143,7 @@ class Task():
         """ Get the filters raw for a repository """
         p2o_args = self._compose_p2o_params(self.backend_section, repo)
         filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
-        filters_raw_prefix = p2o_args['filters-raw-prefix'] \
-                            if 'filters-raw-prefix' in p2o_args else None
+        filters_raw_prefix = p2o_args['filters-raw-prefix'] if 'filters-raw-prefix' in p2o_args else None
 
         # filter_raw must be converted from the string param to a dict
         filter_raw_dict = {}
@@ -160,11 +160,10 @@ class Task():
                 fvalue = filter_prefix.split(":")[1].replace('"', '')
                 filter_raw_should["should"].append(
                     {
-                        "prefix": {fname : fvalue}
+                        "prefix": {fname: fvalue}
                     }
                 )
         return (filter_raw_dict, filter_raw_should)
-
 
     def _get_ocean_backend(self, enrich_backend):
         backend_cmd = None

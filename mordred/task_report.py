@@ -32,12 +32,12 @@ from distutils.dir_util import copy_tree
 
 from dateutil import parser
 
-from grimoire_elk.elk.elastic import ElasticSearch
 from report.report import Report
 
 from mordred.task import Task
 
 logger = logging.getLogger(__name__)
+
 
 class TaskReport(Task):
     """ Task to generate the PDF report for the project """

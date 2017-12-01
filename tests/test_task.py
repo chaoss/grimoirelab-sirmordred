@@ -39,6 +39,7 @@ COLLECTION_URL = 'http://localhost:9200'
 COLLECTION_URL_STACKEXCHANGE = 'http://127.0.0.1:9200'
 REPO_NAME = 'https://stackoverflow.com/questions/tagged/ovirt'
 
+
 class TestTask(unittest.TestCase):
     """Task tests"""
 

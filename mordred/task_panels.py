@@ -57,7 +57,7 @@ class TaskPanels(Task):
                 logger.error(ex)
                 raise
 
-        #FIXME exceptions raised here are not handled!!
+        # FIXME exceptions raised here are not handled!!
 
         # Gets the cross set of enabled data sources and data sources
         # available in the menu file. For the result set gets the file
@@ -101,7 +101,7 @@ class TaskPanels(Task):
         kibiter_config = {
             "defaultIndex": kibiter_default_index,
             "timepicker:timeDefaults":
-                "{\n  \"from\": \""+ kibiter_time_from + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
+                "{\n  \"from\": \"" + kibiter_time_from + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
         }
 
         es_url = self.conf['es_enrichment']['url']
@@ -136,76 +136,77 @@ class TaskPanels(Task):
                 except Exception as ex:
                     logger.error("%s not correctly uploaded (%s)", panel_file, ex)
 
+
 class TaskPanelsAliases(Task):
     """ Create the aliases needed for the panels """
 
     # aliases not following the ds-raw and ds rule
     aliases = {
         "apache": {
-            "raw":["apache"]
+            "raw": ["apache"]
         },
         "bugzillarest": {
-            "raw":["bugzilla-raw"],
-            "enrich":["bugzilla"]
+            "raw": ["bugzilla-raw"],
+            "enrich": ["bugzilla"]
         },
         "dockerhub": {
-            "raw":["dockerhub-raw"],
-            "enrich":["dockerhub"]
+            "raw": ["dockerhub-raw"],
+            "enrich": ["dockerhub"]
         },
         "functest": {
-            "raw":["functest-raw"],
-            "enrich":["functest"]
+            "raw": ["functest-raw"],
+            "enrich": ["functest"]
         },
         "git": {
-            "raw":["git-raw"],
-            "enrich":["git", "git_author", "git_enrich"]
+            "raw": ["git-raw"],
+            "enrich": ["git", "git_author", "git_enrich"]
         },
         "github": {
-            "raw":["github-raw"],
-            "enrich":["github_issues", "github_issues_enrich", "issues_closed",
-                      "issues_created", "issues_updated"]
+            "raw": ["github-raw"],
+            "enrich": ["github_issues", "github_issues_enrich", "issues_closed",
+                       "issues_created", "issues_updated"]
         },
         "google_hits": {
-            "raw":["google-hits"]
+            "raw": ["google-hits"]
         },
         "jenkins": {
-            "raw":["jenkins-raw"],
-            "enrich":["jenkins", "jenkins_enrich"]
+            "raw": ["jenkins-raw"],
+            "enrich": ["jenkins", "jenkins_enrich"]
         },
         "mbox": {
-            "raw":["mbox-raw"],
-            "enrich":["mbox", "mbox_enrich"]
+            "raw": ["mbox-raw"],
+            "enrich": ["mbox", "mbox_enrich"]
         },
         "pipermail": {
-            "raw":["pipermail-raw"],
-            "enrich":["mbox", "mbox_enrich"]
+            "raw": ["pipermail-raw"],
+            "enrich": ["mbox", "mbox_enrich"]
         },
         "phabricator": {
-            "raw":["phabricator-raw"],
-            "enrich":["phabricator", "maniphest"]
+            "raw": ["phabricator-raw"],
+            "enrich": ["phabricator", "maniphest"]
         },
         "remo": {
-            "raw":["remo-raw"],
-            "enrich":["remo", "remo-events", "remo2-events", "remo-events_metadata__timestamp"]
+            "raw": ["remo-raw"],
+            "enrich": ["remo", "remo-events", "remo2-events", "remo-events_metadata__timestamp"]
         },
         "remo:activities": {
-            "raw":["remo_activities-raw"],
-            "enrich":["remo-activities", "remo2-activities", "remo-activities_metadata__timestamp"]
+            "raw": ["remo_activities-raw"],
+            "enrich": ["remo-activities", "remo2-activities", "remo-activities_metadata__timestamp"]
         },
         "stackexchange": {
-            "raw":["stackexchange-raw"],
-            "enrich":["stackoverflow"]
+            "raw": ["stackexchange-raw"],
+            "enrich": ["stackoverflow"]
         },
         "supybot": {
-            "raw":["irc-raw"],
-            "enrich":["irc"]
+            "raw": ["irc-raw"],
+            "enrich": ["irc"]
         }
     }
 
     def __exists_alias(self, es_url, alias):
         exists = False
 
-        alias_url = urljoin(es_url+"/", "_alias/"+alias)
+        alias_url = urljoin(es_url + "/", "_alias/" + alias)
         r = requests.get(alias_url)
         if r.status_code == 200:
             # The alias exists
@@ -213,12 +214,12 @@ class TaskPanelsAliases(Task):
         return exists
 
     def __remove_alias(self, es_url, alias):
-        alias_url = urljoin(es_url+"/", "_alias/"+alias)
+        alias_url = urljoin(es_url + "/", "_alias/" + alias)
         r = requests.get(alias_url)
         if r.status_code == 200:
             real_index = list(r.json())[0]
             logger.debug("Removing alias %s to %s", alias, real_index)
-            aliases_url = urljoin(es_url+"/", "_aliases")
+            aliases_url = urljoin(es_url + "/", "_aliases")
             action = """
             {
                 "actions" : [
@@ -235,7 +236,7 @@ class TaskPanelsAliases(Task):
             # The alias already exists
             return
         logger.debug("Adding alias %s to %s", alias, es_index)
-        alias_url = urljoin(es_url+"/", "_aliases")
+        alias_url = urljoin(es_url + "/", "_aliases")
         action = """
         {
             "actions" : [
@@ -259,34 +260,32 @@ class TaskPanelsAliases(Task):
 
     def __create_aliases(self):
         """ Create aliases in ElasticSearch used by the panels """
-        real_alias = self.backend_section.replace(":","_")  # remo:activities -> remo_activities
+        real_alias = self.backend_section.replace(":", "_")  # remo:activities -> remo_activities
         es_col_url = self._get_collection_url()
         es_enrich_url = self.conf['es_enrichment']['url']
 
         index_raw = self.conf[self.backend_section]['raw_index']
         index_enrich = self.conf[self.backend_section]['enriched_index']
 
-        if self.backend_section in self.aliases and \
-            'raw' in self.aliases[self.backend_section]:
+        if (self.backend_section in self.aliases and
+            'raw' in self.aliases[self.backend_section]):
             for alias in self.aliases[self.backend_section]['raw']:
                 self.__create_alias(es_col_url, index_raw, alias)
         else:
             # Standard alias for the raw index
             self.__create_alias(es_col_url, index_raw, real_alias + "-raw")
 
-        if self.backend_section in self.aliases and \
-            'enrich' in self.aliases[self.backend_section]:
+        if (self.backend_section in self.aliases and
+            'enrich' in self.aliases[self.backend_section]):
             for alias in self.aliases[self.backend_section]['enrich']:
                 self.__create_alias(es_enrich_url, index_enrich, alias)
         else:
             # Standard alias for the enrich index
             self.__create_alias(es_enrich_url, index_enrich, real_alias)
 
-
     def execute(self):
         # Create the aliases
         self.__create_aliases()
-
 
 
 class TaskPanelsMenu(Task):
@@ -346,7 +345,7 @@ class TaskPanelsMenu(Task):
     def __remove_dashboard_menu(self):
         """ The dashboard must be removed before creating a new one """
         logger.info("Remove dashboard menu definition")
-        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/" , ".kibana/metadashboard/main")
+        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
         requests.delete(menu_url)
 
     def __get_menu_entries(self):

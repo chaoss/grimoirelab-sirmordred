@@ -32,6 +32,7 @@ from mordred.task_projects import TaskProjects
 
 logger = logging.getLogger(__name__)
 
+
 class TaskTrackItems(Task):
     """ Task to track specific items from data sources """
 

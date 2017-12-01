@@ -21,7 +21,6 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 
 import json
-import logging
 import sys
 import unittest
 
@@ -46,6 +45,7 @@ def read_file(filename, mode='r'):
     with open(filename, mode) as f:
         content = f.read()
     return content
+
 
 def setup_http_server():
     eclipse_projects = read_file(ECLIPSE_PROJECTS_FILE)
@@ -110,7 +110,7 @@ class TestTaskProjects(unittest.TestCase):
             add_project = 'new_project'
             new_projects = task.convert_from_eclipse(json.load(eproj)['projects'])
             new_projects.pop(remove_project)
-            new_projects.update({add_project:{}})
+            new_projects.update({add_project: {}})
             task.set_projects(new_projects)
             self.assertEqual(task.get_projects_last_diff().sort(),
                              [add_project, remove_project].sort())

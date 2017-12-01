@@ -20,11 +20,13 @@
 # Authors:
 #     Luis Cañas-Díaz <lcanas@bitergia.com>
 
+
 class DataCollectionError(Exception):
     """Exception raise for error calling feed_backend method
     """
     def __init__(self, expression):
         self.expression = expression
+
 
 class ElasticSearchError(Exception):
     """Exception raised for errors in the list of backends
@@ -32,11 +34,13 @@ class ElasticSearchError(Exception):
     def __init__(self, expression):
         self.expression = expression
 
+
 class DataEnrichmentError(Exception):
     """Exception raised for error calling the enrich_backend method
     """
     def __init__(self, expression):
         self.expression = expression
+
 
 class ConfigError(Exception):
     """Exception raised for errors in the configuration file.
@@ -48,6 +52,7 @@ class ConfigError(Exception):
     def __init__(self, expression, message):
         self.expression = expression
         self.message = message
+
 
 class GithubFileNotFound(Exception):
     """Exception raised when getting a 404 from github

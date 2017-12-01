@@ -20,7 +20,6 @@
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
 
-import json
 import logging
 import sys
 import tarfile
@@ -36,7 +35,6 @@ from os.path import expanduser, isdir, join
 sys.path.insert(0, '..')
 
 from mordred.config import Config
-from mordred.mordred import Mordred
 from mordred.task_enrich import TaskEnrich
 from mordred.task_collection import TaskRawDataCollection
 
@@ -51,6 +49,7 @@ logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
+
 
 class TestTaskEnrichAll(unittest.TestCase):
     """ This class will test the results of full enrichments """
@@ -122,9 +121,9 @@ class TestTaskEnrichAll(unittest.TestCase):
             es_enrichment = config_dict['es_enrichment']['url']
             raw_index = es_collection + "/" + config_dict[backend]['raw_index']
             enrich_index = es_enrichment + "/" + config_dict[backend]['enriched_index']
-            r = requests.get(raw_index+"/_search?size=0")
+            r = requests.get(raw_index + "/_search?size=0")
             raw_items = r.json()['hits']['total']
-            r = requests.get(enrich_index+"/_search?size=0")
+            r = requests.get(enrich_index + "/_search?size=0")
             enriched_items = r.json()['hits']['total']
             self.assertEqual(raw_items, enriched_items)
 

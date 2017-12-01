@@ -30,6 +30,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
+
 class TasksManager(threading.Thread):
     """
     Class to manage tasks execution
@@ -52,7 +53,7 @@ class TasksManager(threading.Thread):
     IDENTITIES_TASKS_ON_LOCK = threading.Lock()
     IDENTITIES_TASKS_ON = False
 
-    def __init__(self, tasks_cls, backend_section, stopper, config, timer = 0):
+    def __init__(self, tasks_cls, backend_section, stopper, config, timer=0):
         """
         :tasks_cls : tasks classes to be executed using the backend
         :backend_section: perceval backend section name
@@ -101,6 +102,5 @@ class TasksManager(threading.Thread):
             if self.timer > 0 and self.config.get_conf()['general']['update']:
                 logger.debug("Sleeping in Task Manager %s s", self.timer)
                 time.sleep(self.timer)
-
 
         logger.debug('Exiting Task Manager thread %s', self.backend_section)

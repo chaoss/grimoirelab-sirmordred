@@ -47,7 +47,7 @@ from mordred.task_report import TaskReport
 from mordred.task_track import TaskTrackItems
 
 ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
-"at '%(uri)s' is available!!\n - Mordred said."
+           "at '%(uri)s' is available!!\n - Mordred said."
 
 
 logger = logging.getLogger(__name__)
@@ -61,9 +61,8 @@ class Mordred:
         self.conf = config.get_conf()
 
     def check_es_access(self):
-        ##
-        ## So far there is no way to distinguish between read and write permission
-        ##
+
+        # So far there is no way to distinguish between read and write permission
 
         def _ofuscate_server_uri(uri):
             if uri.rfind('@') > 0:
@@ -78,20 +77,19 @@ class Mordred:
         try:
             r = requests.get(es, verify=False)
             if r.status_code != 200:
-                raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
-        except:
-            raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
+                raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+        except Exception:
+            raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
 
-
-        if self.conf['phases']['enrichment'] or \
-           self.conf['es_enrichment']['studies']:
+        if (self.conf['phases']['enrichment'] or
+           self.conf['es_enrichment']['studies']):
             es = self.conf['es_enrichment']['url']
             try:
                 r = requests.get(es, verify=False)
                 if r.status_code != 200:
-                    raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
-            except:
-                raise ElasticSearchError(ES_ERROR % {'uri' : _ofuscate_server_uri(es)})
+                    raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+            except Exception:
+                raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
 
     def _get_repos_by_backend(self):
         #
@@ -104,8 +102,8 @@ class Mordred:
             for pro in projects:
                 backend = Task.get_backend(backend_section)
                 if backend in projects[pro]:
-                    if not backend_section in output:
-                        output[backend_section]  = projects[pro][backend]
+                    if backend_section not in output:
+                        output[backend_section] = projects[pro][backend]
                     else:
                         output[backend_section] += projects[pro][backend]
 
@@ -119,7 +117,7 @@ class Mordred:
         # logger.debug('repos to be retrieved: %s ', enabled)
         return enabled
 
-    def execute_tasks (self, tasks_cls):
+    def execute_tasks(self, tasks_cls):
         """
             Just a wrapper to the execute_batch_tasks method
         """
@@ -133,7 +131,7 @@ class Mordred:
                                  self.conf['sortinghat']['sleep_for'],
                                  self.conf['general']['min_update_delay'], False)
 
-    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads = True):
+    def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads=True):
         """
         Start a task manager per backend to complete the tasks.
 
@@ -160,8 +158,8 @@ class Mordred:
         logger.debug('Tasks Manager starting .. ')
 
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
-        logger.debug ('backend_tasks = %s' % (backend_tasks))
-        logger.debug ('global_tasks = %s' % (global_tasks))
+        logger.debug('backend_tasks = %s' % (backend_tasks))
+        logger.debug('global_tasks = %s' % (global_tasks))
 
         threads = []
 
@@ -187,13 +185,13 @@ class Mordred:
 
         # launch thread for global tasks
         if len(global_tasks) > 0:
-            #FIXME timer is applied to all global_tasks, does it make sense?
+            # FIXME timer is applied to all global_tasks, does it make sense?
             # All tasks are executed in the same thread sequentially
             gt = TasksManager(global_tasks, "Global tasks", stopper, self.config, big_delay)
             threads.append(gt)
             gt.start()
             if big_delay > 0:
-                when = datetime.now() + timedelta(seconds = big_delay)
+                when = datetime.now() + timedelta(seconds=big_delay)
                 when_str = when.strftime('%a, %d %b %Y %H:%M:%S %Z')
                 logger.info("%s will be executed on %s" % (global_tasks, when_str))
 
@@ -247,7 +245,6 @@ class Mordred:
             self.execute_tasks(tasks_cls)
         return
 
-
     def run(self):
         """
         This method defines the workflow of Mordred. So it calls to:
@@ -258,7 +255,7 @@ class Mordred:
         - start also the Sorting Hat merge
         """
 
-        #logger.debug("Starting Mordred engine ...")
+        # logger.debug("Starting Mordred engine ...")
         logger.info("")
         logger.info("----------------------------")
         logger.info("Starting Mordred engine ...")
@@ -297,10 +294,8 @@ class Mordred:
         if self.conf['phases']['report']:
             all_tasks_cls.append(TaskReport)
 
-
         # this is the main loop, where the execution should spend
         # most of its time
-
 
         while True:
 
@@ -317,8 +312,8 @@ class Mordred:
                 else:
                     self.execute_nonstop_tasks(all_tasks_cls)
 
-                #FIXME this point is never reached so despite the exception is
-                #handled and the error is shown, the traceback is not printed
+                # FIXME this point is never reached so despite the exception is
+                # handled and the error is shown, the traceback is not printed
 
             except DataCollectionError as e:
                 logger.error(str(e))
