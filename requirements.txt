@@ -1,0 +1,8 @@
+httpretty==0.8.6
+pandas==0.18.1
+PyMySQL
+pyyaml
+sortinghat
+grimoire-elk
+grimoire-kidash
+grimoire-reports
