@@ -7,26 +7,27 @@ sudo: false
 
 services:
   - elasticsearch
-  - mysql
+#  - mysql
 
 # addons:
-#   mariadb: '10.0'
+#    mariadb: '10.0'
 
 # sleep to wait for Elasticsearch init
 before_install:
   - sleep 5
+  - pip install -r "requirements.txt"
   - pip install flake8
   - pip install coveralls
-  - pip install httpretty
-  - pip install pandas==0.18.1
 
-install:
-  - ./setup.py install
+# install:
+#   - ./setup.py install
 
 # To avoid: pymysql.err.OperationalError: (2013, 'Lost connection to MySQL server during query')
 before_script:
-  - echo -e "[mysqld]\nmax_allowed_packet=16M" | sudo tee -a /etc/mysql/my.cnf
+  - echo -e "[mysqld]\nnet_read_timeout=180\nnet_write_timeout=180\nmax_allowed_packet=16M\nwait_timeout=2592000\ninteractive_timeout=2592000\nmax_connections=300" | sudo tee -a /etc/mysql/my.cnf
+#  - cat /etc/mysql/my.cnf
   - sudo service mysql restart
+#  - echo 'SHOW VARIABLES' | mysql -u root
 
 script:
   - flake8 .
