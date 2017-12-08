@@ -161,6 +161,21 @@ class Config():
                     "default": "logs",
                     "type": str
                 },
+                "log_handler": {
+                    "optional": True,
+                    "default": "file",
+                    "type": str
+                },
+                "log_max_bytes": {
+                    "optional": True,
+                    "default": 104857600,  # 100MB
+                    "type": int
+                },
+                "log_backup_count": {
+                    "optional": True,
+                    "default": 5,
+                    "type": int
+                },
                 "skip_initial_load": {
                     "optional": True,
                     "default": False,

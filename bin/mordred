@@ -26,6 +26,7 @@
 import argparse
 import configparser
 import logging
+import logging.handlers
 import os
 import sys
 import traceback
@@ -45,12 +46,20 @@ SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still
 logger = logging.getLogger(__name__)
 
 
-def setup_logs(logs_dir, debug_mode):
+def setup_logs(logs_dir, debug_mode, log_file_handler, max_bytes, backup_count):
 
     if debug_mode:
         logging_mode = logging.DEBUG
     else:
         logging_mode = logging.INFO
+
+    log_file_handler_kwargs = {}
+    if log_file_handler == "rotate":
+        log_file_handler = logging.handlers.RotatingFileHandler
+        log_file_handler_kwargs['maxBytes'] = max_bytes
+        log_file_handler_kwargs['backupCount'] = backup_count
+    else:
+        log_file_handler = logging.FileHandler
 
     # create logger with 'spam_application'
     logger = logging.getLogger()
@@ -58,7 +67,7 @@ def setup_logs(logs_dir, debug_mode):
     # create file handler which logs even debug messages
 
     fh_filepath = os.path.join(logs_dir,'all.log')
-    fh = logging.FileHandler(fh_filepath)
+    fh = log_file_handler(fh_filepath, **log_file_handler_kwargs)
     fh.setLevel(logging_mode)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -72,21 +81,21 @@ def setup_logs(logs_dir, debug_mode):
     logger.addHandler(ch)
 
     pfh_filepath = os.path.join(logs_dir,'perceval.log')
-    pfh = logging.FileHandler(pfh_filepath)
+    pfh = log_file_handler(pfh_filepath, **log_file_handler_kwargs)
     fh.setLevel(logging_mode)
     pfh.setFormatter(formatter)
     perceval_logger = logging.getLogger('perceval')
     perceval_logger.addHandler(pfh)
 
     gfh_filepath = os.path.join(logs_dir,'grimoire.log')
-    gfh = logging.FileHandler(gfh_filepath)
+    gfh = log_file_handler(gfh_filepath, **log_file_handler_kwargs)
     fh.setLevel(logging_mode)
     gfh.setFormatter(formatter)
     perceval_logger = logging.getLogger('grimoire')
     perceval_logger.addHandler(gfh)
 
     wfh_filepath = os.path.join(logs_dir,'mordred.log')
-    wfh = logging.FileHandler(wfh_filepath)
+    wfh = log_file_handler(wfh_filepath, **log_file_handler_kwargs)
     wfh.setLevel(logging_mode)
     wfh.setFormatter(formatter)
     workflow_logger = logging.getLogger('mordred')
@@ -130,7 +139,10 @@ if __name__ == '__main__':
         config_dict = config.get_conf()
         logs_dir = config_dict['general']['logs_dir']
         debug_mode = config_dict['general']['debug']
-        logger = setup_logs(logs_dir, debug_mode)
+        log_file_handler = config_dict['general']['log_handler']
+        log_max_bytes = config_dict['general']['log_max_bytes']
+        log_backup_count = config_dict['general']['log_backup_count']
+        logger = setup_logs(logs_dir, debug_mode, log_file_handler, log_max_bytes, log_backup_count)
     except RuntimeError as error:
         print("Error while consuming configuration: ", error)
         sys.exit(1)
