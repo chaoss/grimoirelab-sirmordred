@@ -1,8 +1,8 @@
-# Copyright (C) 2016 Bitergia
+# Copyright (C) 2016-2017 Bitergia
 # GPLv3 License
 
 FROM debian:8
-MAINTAINER Luis Cañas-Díaz <lcanas@bitergia.com>
+MAINTAINER Luis Cañas-Díaz <lcanas@bitergia.com>, Alvaro del Castillo <acs@bitergia.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEPLOY_USER bitergia
@@ -24,10 +24,10 @@ RUN apt-get update && \
         python3-bs4 \
         python3-pip python3-dev \
         python-mysqldb \
-        python3-cherrypy3 \
+        python3-redis \
         python3-yaml \
         gcc make libmysqlclient-dev mariadb-client \
-        unzip curl wget sudo ssh\
+        vim unzip curl wget sudo ssh\
         && \
     apt-get clean && \
     find /var/lib/apt/lists -type f -delete
@@ -39,6 +39,10 @@ RUN pip3 install mysqlclient
 RUN pip3 install pip --upgrade
 RUN pip3 install requests --upgrade
 RUN apt-get -y remove python3-requests
+
+# Needed a newer version of setuptools
+RUN apt-get -y remove python3-setuptools python3-pkg-resources
+RUN pip3 install setuptools
 
 # solves issues with UNICODE and SH
 RUN pip3 install sqlalchemy

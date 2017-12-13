@@ -32,12 +32,14 @@ from datetime import datetime, timedelta
 
 import requests
 
+from grimoire_elk.utils import get_connectors
+
 from mordred.config import Config
 from mordred.error import ElasticSearchError
 from mordred.error import DataCollectionError
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
-from mordred.task_collection import TaskRawDataCollection
+from mordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
 from mordred.task_manager import TasksManager
@@ -276,7 +278,10 @@ class Mordred:
         all_tasks_cls = []
         all_tasks_cls.append(TaskProjects)  # projects is always needed
         if self.conf['phases']['collection']:
-            all_tasks_cls.append(TaskRawDataCollection)
+            if not self.conf['es_collection']['arthur']:
+                all_tasks_cls.append(TaskRawDataCollection)
+            else:
+                all_tasks_cls.append(TaskRawDataArthurCollection)
         if self.conf['phases']['identities']:
             # load identities and orgs periodically for updates
             all_tasks_cls.append(TaskIdentitiesLoad)
