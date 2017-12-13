@@ -26,16 +26,21 @@ import inspect
 import json
 import logging
 import os
+import pickle
 import sys
 import time
 import traceback
 
+import redis
+
 import requests
+
+from arthur.common import Q_STORAGE_ITEMS
 
 from grimoire_elk.arthur import feed_backend
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elk.elastic import ElasticSearch
-from grimoire_elk.utils import get_connector_from_name
+from grimoire_elk.utils import get_connector_from_name, get_elastic
 
 from mordred.error import DataCollectionError
 from mordred.task import Task
@@ -124,10 +129,58 @@ class TaskRawDataArthurCollection(Task):
     ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
     REPOSITORY_DIR = "/tmp"
 
+    arthur_items = {}  # Hash with tag list with all items collected from arthur queue
+
+
     def __init__(self, config, backend_section=None):
         super().__init__(config)
 
         self.backend_section = backend_section
+
+    def __feed_arthur(self):
+        """ Feed Ocean with backend data collected from arthur redis queue"""
+
+        logger.info("Collecting items from redis queue")
+
+        db_url = 'redis://localhost/8'
+
+        conn = redis.StrictRedis.from_url(db_url)
+        logger.debug("Redis connection stablished with %s.", db_url)
+
+        # Get and remove queued items in an atomic transaction
+        pipe = conn.pipeline()
+        pipe.lrange(Q_STORAGE_ITEMS, 0, -1)
+        pipe.ltrim(Q_STORAGE_ITEMS, 1, 0)
+        items = pipe.execute()[0]
+
+        for item in items:
+            arthur_item = pickle.loads(item)
+            if arthur_item['tag'] not in self.arthur_items:
+                self.arthur_items[arthur_item['tag']] = []
+            self.arthur_items[arthur_item['tag']].append(arthur_item)
+
+        for tag in self.arthur_items:
+            logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
+
+    def backend_tag(self, repo):
+        return repo + "_" + self.backend_section
+
+    def __feed_backend_arthur(self, repo):
+        """ Feed Ocean with backend data collected from arthur redis queue"""
+
+        # Always get pending items from arthur for all data sources
+        self.__feed_arthur()
+
+        tag = self.backend_tag(repo)
+
+        logger.debug("Arthur items available for %s", self.arthur_items.keys())
+
+        logger.debug("Getting arthur items for %s.", tag)
+
+        if tag in self.arthur_items:
+            logger.debug("Found items for %s.", tag)
+            while self.arthur_items[tag]:
+                yield self.arthur_items[tag].pop()
 
     def __create_arthur_json(self, repo, backend_args):
         """ Create the JSON for configuring arthur to collect data
@@ -156,14 +209,15 @@ class TaskRawDataArthurCollection(Task):
         }
         """
 
-        ajson = {"tasks":[{}]}
-        # This is the perceval tag
-        ajson["tasks"][0]['task_id'] = repo + "_" + self.backend_section
-        ajson["tasks"][0]['backend'] = self.backend_section
         backend_args = self._compose_arthur_params(self.backend_section, repo)
         if self.backend_section == 'git':
             backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
-        backend_args['tag'] = ajson["tasks"][0]['task_id']
+        backend_args['tag'] = self.backend_tag(repo)
+
+        ajson = {"tasks":[{}]}
+        # This is the perceval tag
+        ajson["tasks"][0]['task_id'] = self.backend_tag(repo)
+        ajson["tasks"][0]['backend'] = self.backend_section
         ajson["tasks"][0]['backend_args'] = backend_args
         ajson["tasks"][0]['cache'] = {"cache": True,
                                       "fetch_from_cache": False,
@@ -171,7 +225,7 @@ class TaskRawDataArthurCollection(Task):
         ajson["tasks"][0]['scheduler'] = {"delay": self.ARTHUR_TASK_DELAY}
         # from-date or offset param must be added
         es_col_url = self._get_collection_url()
-        es_index =  self.conf[self.backend_section]['raw_index']
+        es_index = self.conf[self.backend_section]['raw_index']
         # Get the last activity for the data source
         es = ElasticSearch(es_col_url, es_index)
         connector = get_connector_from_name(self.backend_section)
@@ -198,7 +252,6 @@ class TaskRawDataArthurCollection(Task):
             logging.info('%s collect disabled', self.backend_section)
             return
 
-        t2 = time.time()
         logger.info('Programming arthur for [%s] raw data collection', self.backend_section)
         clean = False
 
@@ -244,3 +297,15 @@ class TaskRawDataArthurCollection(Task):
                 r = requests.post(self.ARTHUR_URL+"/add", json=arthur_repo_json)
                 r.raise_for_status()
                 logger.info('[%s] collection configured in arthur for %s', self.backend_section, repo)
+
+            # Try to collect existing items from REDIS
+            aitems = self.__feed_backend_arthur(repo)
+            connector = get_connector_from_name(self.backend_section)
+            klass = connector[1]  # Ocean backend for the connector
+            ocean_backend = klass(None)
+            es_col_url = self._get_collection_url()
+            es_index = self.conf[self.backend_section]['raw_index']
+            clean = False
+            elastic_ocean = get_elastic(es_col_url, es_index, clean, ocean_backend)
+            ocean_backend.set_elastic(elastic_ocean)
+            ocean_backend.feed(arthur_items=aitems)
