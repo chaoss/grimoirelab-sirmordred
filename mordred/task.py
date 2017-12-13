@@ -34,6 +34,7 @@ class Task():
     """ Basic class shared by all tasks """
 
     ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url', 'collect']
+    PARAMS_WITH_SPACES = ['blacklist-jobs']
 
     def __init__(self, config):
         self.backend_section = None
