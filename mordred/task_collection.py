@@ -122,6 +122,7 @@ class TaskRawDataCollection(Task):
         logger.info('[%s] Data collection finished in %s',
                     self.backend_section, spent_time)
 
+
 class TaskRawDataArthurCollection(Task):
     """ Basic class to control arthur for data collection """
 
@@ -130,7 +131,6 @@ class TaskRawDataArthurCollection(Task):
     REPOSITORY_DIR = "/tmp"
 
     arthur_items = {}  # Hash with tag list with all items collected from arthur queue
-
 
     def __init__(self, config, backend_section=None):
         super().__init__(config)
@@ -214,7 +214,7 @@ class TaskRawDataArthurCollection(Task):
             backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
         backend_args['tag'] = self.backend_tag(repo)
 
-        ajson = {"tasks":[{}]}
+        ajson = {"tasks": [{}]}
         # This is the perceval tag
         ajson["tasks"][0]['task_id'] = self.backend_tag(repo)
         ajson["tasks"][0]['backend'] = self.backend_section
@@ -232,7 +232,7 @@ class TaskRawDataArthurCollection(Task):
         klass = connector[0]  # Backend for the connector
         signature = inspect.signature(klass.fetch)
 
-        filter_ = {"name" : "tag", "value" : backend_args['tag']}
+        filter_ = {"name": "tag", "value": backend_args['tag']}
         if 'from_date' in signature.parameters:
             last_activity = es.get_last_item_field('metadata__updated_on', [filter_])
             if last_activity:
@@ -247,8 +247,8 @@ class TaskRawDataArthurCollection(Task):
     def execute(self):
         cfg = self.config.get_conf()
 
-        if 'collect' in cfg[self.backend_section] and \
-            cfg[self.backend_section]['collect'] == False:
+        if ('collect' in cfg[self.backend_section] and
+            not cfg[self.backend_section]['collect']):
             logging.info('%s collect disabled', self.backend_section)
             return
 
@@ -256,8 +256,8 @@ class TaskRawDataArthurCollection(Task):
         clean = False
 
         fetch_cache = False
-        if 'fetch-cache' in self.conf[self.backend_section] and \
-            self.conf[self.backend_section]['fetch-cache']:
+        if ('fetch-cache' in self.conf[self.backend_section] and
+            self.conf[self.backend_section]['fetch-cache']):
             fetch_cache = True
 
         # repos could change between executions because changes in projects
@@ -282,7 +282,7 @@ class TaskRawDataArthurCollection(Task):
 
             # First check is the task already exists
             try:
-                r = requests.post(self.ARTHUR_URL+"/tasks")
+                r = requests.post(self.ARTHUR_URL + "/tasks")
             except requests.exceptions.ConnectionError as ex:
                 logging.error("Can not connect to %s", self.ARTHUR_URL)
                 sys.exit(1)
@@ -294,7 +294,7 @@ class TaskRawDataArthurCollection(Task):
             if len(already_tasks) > 0:
                 logger.warning("Tasks not added to arthur because there are already existing tasks %s", already_tasks)
             else:
-                r = requests.post(self.ARTHUR_URL+"/add", json=arthur_repo_json)
+                r = requests.post(self.ARTHUR_URL + "/add", json=arthur_repo_json)
                 r.raise_for_status()
                 logger.info('[%s] collection configured in arthur for %s', self.backend_section, repo)
 

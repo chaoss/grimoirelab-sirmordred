@@ -32,8 +32,6 @@ from datetime import datetime, timedelta
 
 import requests
 
-from grimoire_elk.utils import get_connectors
-
 from mordred.config import Config
 from mordred.error import ElasticSearchError
 from mordred.error import DataCollectionError
