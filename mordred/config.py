@@ -221,7 +221,8 @@ class Config():
                     "type": str
                 },
                 "arthur": optional_false,
-                "arthur_url": optional_string_none
+                "arthur_url": optional_string_none,
+                "redis_url": optional_string_none
             }
         }
 

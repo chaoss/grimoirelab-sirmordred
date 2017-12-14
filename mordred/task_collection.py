@@ -143,7 +143,7 @@ class TaskRawDataArthurCollection(Task):
 
         logger.info("Collecting items from redis queue")
 
-        db_url = 'redis://localhost/8'
+        db_url = self.config.get_conf()['es_collection']['redis_url']
 
         conn = redis.StrictRedis.from_url(db_url)
         logger.debug("Redis connection stablished with %s.", db_url)

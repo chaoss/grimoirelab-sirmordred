@@ -31,10 +31,13 @@ import traceback
 
 from datetime import datetime, timedelta
 
+import redis
 import requests
 
+from arthur.common import Q_STORAGE_ITEMS
+
+
 from mordred.config import Config
-from mordred.error import ElasticSearchError
 from mordred.error import DataCollectionError
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
@@ -47,10 +50,6 @@ from mordred.task_projects import TaskProjects
 from mordred.task_report import TaskReport
 from mordred.task_track import TaskTrackItems
 
-ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
-           "at '%(uri)s' is available!!\n - Mordred said."
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -61,14 +60,35 @@ class Mordred:
         self.config = config
         self.conf = config.get_conf()
 
+    def check_redis_access(self):
+        redis_access = False
+
+        redis_url = self.conf['es_collection']['redis_url']
+        try:
+            # Try to access REDIS items to check it is working
+            conn = redis.StrictRedis.from_url(redis_url)
+            pipe = conn.pipeline()
+            pipe.lrange(Q_STORAGE_ITEMS, 0, 0)
+            pipe.execute()[0]
+            redis_access = True
+        except redis.exceptions.ConnectionError:
+            logging.error("Can not connect to raw items in redis %s", redis_url)
+
+        return redis_access
+
     def check_arthur_access(self):
+
+        arthur_access = False
+
         arthur_url = self.conf['es_collection']['arthur_url']
         try:
             res = requests.post( arthur_url + "/tasks")
             res.raise_for_status()
+            arthur_access = True
         except requests.exceptions.ConnectionError as ex:
             logging.error("Can not connect to arthur %s", arthur_url)
-            sys.exit(1)
+
+        return arthur_access
 
     def check_es_access(self):
 
@@ -106,7 +126,8 @@ class Mordred:
 
         if not es_access:
             logger.error('Can not connect to Elasticsearch: %s', es_error)
-            sys.exit(1)
+
+        return es_access
 
     def _get_repos_by_backend(self):
         #
@@ -279,11 +300,18 @@ class Mordred:
         logger.info("- - - - - - - - - - - - - - ")
 
         # check we have access to the needed ES
-        self.check_es_access()
+        if not self.check_es_access():
+            print('Can not access Elasticsearch service. Exiting mordred ...')
+            sys.exit(1)
 
         # If arthur is configured check that it is working
         if self.conf['es_collection']['arthur']:
-            self.check_arthur_access()
+            if not self.check_redis_access():
+                print('Can not access redis service. Exiting mordred ...')
+                sys.exit(1)
+            if not self.check_arthur_access():
+                print('Can not access arthur service. Exiting mordred ...')
+                sys.exit(1)
 
         # Initial round: panels loading
         if not self.conf['general']['skip_initial_load']:
