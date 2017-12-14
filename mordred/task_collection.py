@@ -27,9 +27,10 @@ import json
 import logging
 import os
 import pickle
-import sys
 import time
 import traceback
+
+from threading import Lock
 
 import redis
 
@@ -128,6 +129,8 @@ class TaskRawDataArthurCollection(Task):
 
     ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
     REPOSITORY_DIR = "/tmp"
+    ARTHUR_FEED_LOCK = Lock()
+
 
     arthur_items = {}  # Hash with tag list with all items collected from arthur queue
 
@@ -141,27 +144,29 @@ class TaskRawDataArthurCollection(Task):
     def __feed_arthur(self):
         """ Feed Ocean with backend data collected from arthur redis queue"""
 
-        logger.info("Collecting items from redis queue")
+        with self.ARTHUR_FEED_LOCK:
 
-        db_url = self.config.get_conf()['es_collection']['redis_url']
+            logger.info("Collecting items from redis queue")
 
-        conn = redis.StrictRedis.from_url(db_url)
-        logger.debug("Redis connection stablished with %s.", db_url)
+            db_url = self.config.get_conf()['es_collection']['redis_url']
 
-        # Get and remove queued items in an atomic transaction
-        pipe = conn.pipeline()
-        pipe.lrange(Q_STORAGE_ITEMS, 0, -1)
-        pipe.ltrim(Q_STORAGE_ITEMS, 1, 0)
-        items = pipe.execute()[0]
+            conn = redis.StrictRedis.from_url(db_url)
+            logger.debug("Redis connection stablished with %s.", db_url)
 
-        for item in items:
-            arthur_item = pickle.loads(item)
-            if arthur_item['tag'] not in self.arthur_items:
-                self.arthur_items[arthur_item['tag']] = []
-            self.arthur_items[arthur_item['tag']].append(arthur_item)
+            # Get and remove queued items in an atomic transaction
+            pipe = conn.pipeline()
+            pipe.lrange(Q_STORAGE_ITEMS, 0, -1)
+            pipe.ltrim(Q_STORAGE_ITEMS, 1, 0)
+            items = pipe.execute()[0]
 
-        for tag in self.arthur_items:
-            logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
+            for item in items:
+                arthur_item = pickle.loads(item)
+                if arthur_item['tag'] not in self.arthur_items:
+                    self.arthur_items[arthur_item['tag']] = []
+                self.arthur_items[arthur_item['tag']].append(arthur_item)
+
+            for tag in self.arthur_items:
+                logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
 
     def backend_tag(self, repo):
         tag = repo  # the default tag in general
