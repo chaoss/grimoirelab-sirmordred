@@ -24,6 +24,7 @@
 
 import logging
 import queue
+import sys
 import threading
 import time
 import traceback
@@ -60,9 +61,21 @@ class Mordred:
         self.config = config
         self.conf = config.get_conf()
 
+    def check_arthur_access(self):
+        arthur_url = self.conf['es_collection']['arthur_url']
+        try:
+            res = requests.post( arthur_url + "/tasks")
+            res.raise_for_status()
+        except requests.exceptions.ConnectionError as ex:
+            logging.error("Can not connect to arthur %s", arthur_url)
+            sys.exit(1)
+
     def check_es_access(self):
 
         # So far there is no way to distinguish between read and write permission
+
+        es_access = True
+        es_error = None
 
         def _ofuscate_server_uri(uri):
             if uri.rfind('@') > 0:
@@ -76,20 +89,24 @@ class Mordred:
         es = self.conf['es_collection']['url']
         try:
             r = requests.get(es, verify=False)
-            if r.status_code != 200:
-                raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+            r.raise_for_status()
         except Exception:
-            raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+            es_access = False
+            es_error = _ofuscate_server_uri(es)
 
         if (self.conf['phases']['enrichment'] or
            self.conf['es_enrichment']['studies']):
             es = self.conf['es_enrichment']['url']
             try:
                 r = requests.get(es, verify=False)
-                if r.status_code != 200:
-                    raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+                r.raise_for_status()
             except Exception:
-                raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+                es_access = False
+                es_error = _ofuscate_server_uri(es)
+
+        if not es_access:
+            logger.error('Can not connect to Elasticsearch: %s', es_error)
+            sys.exit(1)
 
     def _get_repos_by_backend(self):
         #
@@ -245,7 +262,7 @@ class Mordred:
             self.execute_tasks(tasks_cls)
         return
 
-    def run(self):
+    def start(self):
         """
         This method defines the workflow of Mordred. So it calls to:
         - initialize the databases
@@ -264,7 +281,9 @@ class Mordred:
         # check we have access to the needed ES
         self.check_es_access()
 
-        # do we need ad-hoc scripts?
+        # If arthur is configured check that it is working
+        if self.conf['es_collection']['arthur']:
+            self.check_arthur_access()
 
         # Initial round: panels loading
         if not self.conf['general']['skip_initial_load']:
