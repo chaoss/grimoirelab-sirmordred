@@ -164,7 +164,16 @@ class TaskRawDataArthurCollection(Task):
             logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
 
     def backend_tag(self, repo):
-        return repo + "_" + self.backend_section
+        tag = repo  # the default tag in general
+        if 'tag' in self.conf[self.backend_section]:
+            tag = self.conf[self.backend_section]['tag']
+        if self.backend_section in ["git", "github"]:
+            # The same repo could appear in git and github data sources
+            # Two tasks in arthur can not have the same tag
+            tag = repo + "_" + self.backend_section
+
+
+        return tag
 
     def __feed_backend_arthur(self, repo):
         """ Feed Ocean with backend data collected from arthur redis queue"""
