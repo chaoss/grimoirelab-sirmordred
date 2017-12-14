@@ -220,7 +220,8 @@ class Config():
                     "default": "http://172.17.0.1:9200",
                     "type": str
                 },
-                "arthur": optional_false
+                "arthur": optional_false,
+                "arthur_url": optional_string_none
             }
         }
 

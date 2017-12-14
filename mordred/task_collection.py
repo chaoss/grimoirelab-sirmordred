@@ -126,7 +126,6 @@ class TaskRawDataCollection(Task):
 class TaskRawDataArthurCollection(Task):
     """ Basic class to control arthur for data collection """
 
-    ARTHUR_URL = 'http://127.0.0.1:8080'
     ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
     REPOSITORY_DIR = "/tmp"
 
@@ -134,6 +133,8 @@ class TaskRawDataArthurCollection(Task):
 
     def __init__(self, config, backend_section=None):
         super().__init__(config)
+
+        self.arthur_url = config.get_conf()['es_collection']['arthur_url']
 
         self.backend_section = backend_section
 
@@ -232,6 +233,7 @@ class TaskRawDataArthurCollection(Task):
         klass = connector[0]  # Backend for the connector
         signature = inspect.signature(klass.fetch)
 
+        last_activity = None
         filter_ = {"name": "tag", "value": backend_args['tag']}
         if 'from_date' in signature.parameters:
             last_activity = es.get_last_item_field('metadata__updated_on', [filter_])
@@ -241,7 +243,10 @@ class TaskRawDataArthurCollection(Task):
             last_activity = es.get_last_item_field('offset', [filter_])
             if last_activity:
                 ajson["tasks"][0]['backend_args']['offset'] = last_activity
-        logging.info("Getting raw item with arthur since %s", last_activity)
+
+        if last_activity:
+            logging.info("Getting raw item with arthur since %s", last_activity)
+
         return(ajson)
 
     def execute(self):
@@ -278,14 +283,15 @@ class TaskRawDataArthurCollection(Task):
             backend_args = self._compose_perceval_params(self.backend_section, repo)
             logger.debug(backend_args)
             arthur_repo_json = self.__create_arthur_json(repo, backend_args)
-            logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json))
+            logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json, indent=True))
 
             # First check is the task already exists
             try:
-                r = requests.post(self.ARTHUR_URL + "/tasks")
+                r = requests.post(self.arthur_url + "/tasks")
             except requests.exceptions.ConnectionError as ex:
-                logging.error("Can not connect to %s", self.ARTHUR_URL)
-                sys.exit(1)
+                logging.error("Can not connect to %s", self.arthur_url)
+                return
+                # raise RuntimeError("Can not connect to " + self.arthur_url)
 
             task_ids = [task['task_id'] for task in r.json()['tasks']]
             new_task_ids = [task['task_id'] for task in arthur_repo_json['tasks']]
@@ -294,7 +300,7 @@ class TaskRawDataArthurCollection(Task):
             if len(already_tasks) > 0:
                 logger.warning("Tasks not added to arthur because there are already existing tasks %s", already_tasks)
             else:
-                r = requests.post(self.ARTHUR_URL + "/add", json=arthur_repo_json)
+                r = requests.post(self.arthur_url + "/add", json=arthur_repo_json)
                 r.raise_for_status()
                 logger.info('[%s] collection configured in arthur for %s', self.backend_section, repo)
 
