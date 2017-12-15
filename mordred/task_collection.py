@@ -22,13 +22,27 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 #
 
+import inspect
+import json
 import logging
+import os
+import pickle
+import sys
 import time
 import traceback
+
+from threading import Lock
+
+import redis
+
+import requests
+
+from arthur.common import Q_STORAGE_ITEMS
 
 from grimoire_elk.arthur import feed_backend
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elk.elastic import ElasticSearch
+from grimoire_elk.utils import get_connector_from_name, get_elastic
 
 from mordred.error import DataCollectionError
 from mordred.task import Task
@@ -109,3 +123,234 @@ class TaskRawDataCollection(Task):
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3 - t2))
         logger.info('[%s] Data collection finished in %s',
                     self.backend_section, spent_time)
+
+
+class TaskRawDataArthurCollection(Task):
+    """ Basic class to control arthur for data collection """
+
+    ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
+    REPOSITORY_DIR = "/tmp"
+    ARTHUR_FEED_LOCK = Lock()
+
+    arthur_items = {}  # Hash with tag list with all items collected from arthur queue
+
+    def __init__(self, config, backend_section=None):
+        super().__init__(config)
+
+        self.arthur_url = config.get_conf()['es_collection']['arthur_url']
+
+        self.backend_section = backend_section
+
+    # https://goshippo.com/blog/measure-real-size-any-python-object/
+    @classmethod
+    def measure_memory(cls, obj, seen=None):
+        """Recursively finds size of objects"""
+        size = sys.getsizeof(obj)
+        if seen is None:
+            seen = set()
+        obj_id = id(obj)
+        if obj_id in seen:
+            return 0
+        # Important mark as seen *before* entering recursion to gracefully handle
+        # self-referential objects
+        seen.add(obj_id)
+        if isinstance(obj, dict):
+            size += sum([cls.measure_memory(v, seen) for v in obj.values()])
+            size += sum([cls.measure_memory(k, seen) for k in obj.keys()])
+        elif hasattr(obj, '__dict__'):
+            size += cls.measure_memory(obj.__dict__, seen)
+        elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+            size += sum([cls.measure_memory(i, seen) for i in obj])
+        return size
+
+    def __feed_arthur(self):
+        """ Feed Ocean with backend data collected from arthur redis queue"""
+
+        with self.ARTHUR_FEED_LOCK:
+
+            logger.info("Collecting items from redis queue")
+
+            db_url = self.config.get_conf()['es_collection']['redis_url']
+
+            conn = redis.StrictRedis.from_url(db_url)
+            logger.debug("Redis connection stablished with %s.", db_url)
+
+            # Get and remove queued items in an atomic transaction
+            pipe = conn.pipeline()
+            pipe.lrange(Q_STORAGE_ITEMS, 0, -1)
+            pipe.ltrim(Q_STORAGE_ITEMS, 1, 0)
+            items = pipe.execute()[0]
+
+            for item in items:
+                arthur_item = pickle.loads(item)
+                if arthur_item['tag'] not in self.arthur_items:
+                    self.arthur_items[arthur_item['tag']] = []
+                self.arthur_items[arthur_item['tag']].append(arthur_item)
+
+            for tag in self.arthur_items:
+                logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
+
+            logger.debug("Measuring the memory used by the raw items dict ...")
+            logger.debug("Arthur items memory size: %0.2f MB",
+                         self.measure_memory(self.arthur_items) / (1024 * 1024))
+
+    def backend_tag(self, repo):
+        tag = repo  # the default tag in general
+        if 'tag' in self.conf[self.backend_section]:
+            tag = self.conf[self.backend_section]['tag']
+        if self.backend_section in ["git", "github"]:
+            # The same repo could appear in git and github data sources
+            # Two tasks in arthur can not have the same tag
+            tag = repo + "_" + self.backend_section
+
+        return tag
+
+    def __feed_backend_arthur(self, repo):
+        """ Feed Ocean with backend data collected from arthur redis queue"""
+
+        # Always get pending items from arthur for all data sources
+        self.__feed_arthur()
+
+        tag = self.backend_tag(repo)
+
+        logger.debug("Arthur items available for %s", self.arthur_items.keys())
+
+        logger.debug("Getting arthur items for %s.", tag)
+
+        if tag in self.arthur_items:
+            logger.debug("Found items for %s.", tag)
+            while self.arthur_items[tag]:
+                yield self.arthur_items[tag].pop()
+
+    def __create_arthur_json(self, repo, backend_args):
+        """ Create the JSON for configuring arthur to collect data
+
+        https://github.com/grimoirelab/arthur#adding-tasks
+        Sample for git:
+
+        {
+        "tasks": [
+            {
+                "task_id": "arthur.git",
+                "backend": "git",
+                "backend_args": {
+                    "gitpath": "/tmp/arthur_git/",
+                    "uri": "https://github.com/grimoirelab/arthur.git"
+                },
+                "cache": {
+                    "cache": true,
+                    "fetch_from_cache": false
+                },
+                "scheduler": {
+                    "delay": 10
+                }
+            }
+        ]
+        }
+        """
+
+        backend_args = self._compose_arthur_params(self.backend_section, repo)
+        if self.backend_section == 'git':
+            backend_args['gitpath'] = os.path.join(self.REPOSITORY_DIR, repo)
+        backend_args['tag'] = self.backend_tag(repo)
+
+        ajson = {"tasks": [{}]}
+        # This is the perceval tag
+        ajson["tasks"][0]['task_id'] = self.backend_tag(repo)
+        ajson["tasks"][0]['backend'] = self.backend_section
+        ajson["tasks"][0]['backend_args'] = backend_args
+        ajson["tasks"][0]['cache'] = {"cache": True,
+                                      "fetch_from_cache": False,
+                                      "cache_path": None}
+        ajson["tasks"][0]['scheduler'] = {"delay": self.ARTHUR_TASK_DELAY}
+        # from-date or offset param must be added
+        es_col_url = self._get_collection_url()
+        es_index = self.conf[self.backend_section]['raw_index']
+        # Get the last activity for the data source
+        es = ElasticSearch(es_col_url, es_index)
+        connector = get_connector_from_name(self.backend_section)
+        klass = connector[0]  # Backend for the connector
+        signature = inspect.signature(klass.fetch)
+
+        last_activity = None
+        filter_ = {"name": "tag", "value": backend_args['tag']}
+        if 'from_date' in signature.parameters:
+            last_activity = es.get_last_item_field('metadata__updated_on', [filter_])
+            if last_activity:
+                ajson["tasks"][0]['backend_args']['from_date'] = last_activity.isoformat()
+        elif 'offset' in signature.parameters:
+            last_activity = es.get_last_item_field('offset', [filter_])
+            if last_activity:
+                ajson["tasks"][0]['backend_args']['offset'] = last_activity
+
+        if last_activity:
+            logging.info("Getting raw item with arthur since %s", last_activity)
+
+        return(ajson)
+
+    def execute(self):
+        cfg = self.config.get_conf()
+
+        if ('collect' in cfg[self.backend_section] and
+            not cfg[self.backend_section]['collect']):
+            logging.info('%s collect disabled', self.backend_section)
+            return
+
+        logger.info('Programming arthur for [%s] raw data collection', self.backend_section)
+        clean = False
+
+        fetch_cache = False
+        if ('fetch-cache' in self.conf[self.backend_section] and
+            self.conf[self.backend_section]['fetch-cache']):
+            fetch_cache = True
+
+        # repos could change between executions because changes in projects
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
+
+        if not repos:
+            logger.warning("No collect repositories for %s", self.backend_section)
+
+        for repo in repos:
+            p2o_args = self._compose_p2o_params(self.backend_section, repo)
+            filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+            if filter_raw:
+                # If filter-raw exists the goal is to enrich already collected
+                # data, so don't collect anything
+                logging.warning("Not collecting filter raw repository: %s", repo)
+                continue
+            url = p2o_args['url']
+            backend_args = self._compose_perceval_params(self.backend_section, repo)
+            logger.debug(backend_args)
+            arthur_repo_json = self.__create_arthur_json(repo, backend_args)
+            logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json, indent=True))
+
+            # First check is the task already exists
+            try:
+                r = requests.post(self.arthur_url + "/tasks")
+            except requests.exceptions.ConnectionError as ex:
+                logging.error("Can not connect to %s", self.arthur_url)
+                return
+                # raise RuntimeError("Can not connect to " + self.arthur_url)
+
+            task_ids = [task['task_id'] for task in r.json()['tasks']]
+            new_task_ids = [task['task_id'] for task in arthur_repo_json['tasks']]
+            # TODO: if a tasks already exists maybe we should delete and readd it
+            already_tasks = list(set(task_ids).intersection(set(new_task_ids)))
+            if len(already_tasks) > 0:
+                logger.warning("Tasks not added to arthur because there are already existing tasks %s", already_tasks)
+            else:
+                r = requests.post(self.arthur_url + "/add", json=arthur_repo_json)
+                r.raise_for_status()
+                logger.info('[%s] collection configured in arthur for %s', self.backend_section, repo)
+
+            # Try to collect existing items from REDIS
+            aitems = self.__feed_backend_arthur(repo)
+            connector = get_connector_from_name(self.backend_section)
+            klass = connector[1]  # Ocean backend for the connector
+            ocean_backend = klass(None)
+            es_col_url = self._get_collection_url()
+            es_index = self.conf[self.backend_section]['raw_index']
+            clean = False
+            elastic_ocean = get_elastic(es_col_url, es_index, clean, ocean_backend)
+            ocean_backend.set_elastic(elastic_ocean)
+            ocean_backend.feed(arthur_items=aitems)

@@ -219,7 +219,10 @@ class Config():
                     "optional": False,
                     "default": "http://172.17.0.1:9200",
                     "type": str
-                }
+                },
+                "arthur": optional_false,
+                "arthur_url": optional_string_none,
+                "redis_url": optional_string_none
             }
         }
 
