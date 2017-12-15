@@ -75,7 +75,9 @@ setup(name="grimoire-mordred",
           'grimoire-reports>=0.1.0',
           'sortinghat>=0.4.2',
           'PyMySQL',
-          'pyyaml'
+          'pyyaml',
+          'redis',
+          'kingarthur'
       ],
       scripts=[
           'bin/mordred'
