@@ -397,7 +397,9 @@ class TaskPanelsMenu(Task):
 
         if self.conf['general']['extra_dash_menu_items']:
             for item in self.conf['general']['extra_dash_menu_items']:
-                menu_name, menu_link = item.lsplit(",", 1)
+                menu_name, menu_link = item.strip().lsplit(",", 1)
+                menu_name = menu_name.strip()
+                menu_link = menu_link.strip()
                 omenu[menu_name] = menu_link
 
         logger.debug("Menu for panels: %s", json.dumps(ds_menu, indent=4))
