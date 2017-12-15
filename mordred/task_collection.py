@@ -27,6 +27,7 @@ import json
 import logging
 import os
 import pickle
+import sys
 import time
 import traceback
 
@@ -141,6 +142,28 @@ class TaskRawDataArthurCollection(Task):
 
         self.backend_section = backend_section
 
+    # https://goshippo.com/blog/measure-real-size-any-python-object/
+    @classmethod
+    def measure_memory(cls, obj, seen=None):
+        """Recursively finds size of objects"""
+        size = sys.getsizeof(obj)
+        if seen is None:
+            seen = set()
+        obj_id = id(obj)
+        if obj_id in seen:
+            return 0
+        # Important mark as seen *before* entering recursion to gracefully handle
+        # self-referential objects
+        seen.add(obj_id)
+        if isinstance(obj, dict):
+            size += sum([cls.measure_memory(v, seen) for v in obj.values()])
+            size += sum([cls.measure_memory(k, seen) for k in obj.keys()])
+        elif hasattr(obj, '__dict__'):
+            size += cls.measure_memory(obj.__dict__, seen)
+        elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
+            size += sum([cls.measure_memory(i, seen) for i in obj])
+        return size
+
     def __feed_arthur(self):
         """ Feed Ocean with backend data collected from arthur redis queue"""
 
@@ -167,6 +190,10 @@ class TaskRawDataArthurCollection(Task):
 
             for tag in self.arthur_items:
                 logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
+
+            logger.debug("Measuring the memory used by the raw items dict ...")
+            logger.debug("Arthur items memory size: %0.2f MB",
+                         self.measure_memory(self.arthur_items) / (1024 * 1024))
 
     def backend_tag(self, repo):
         tag = repo  # the default tag in general
