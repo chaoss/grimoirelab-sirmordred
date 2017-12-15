@@ -402,7 +402,7 @@ class TaskPanelsMenu(Task):
                 menu_link = menu_link.strip()
                 omenu[menu_name] = menu_link
 
-        logger.debug("Menu for panels: %s", json.dumps(ds_menu, indent=4))
+        logger.debug("Menu for panels: %s", json.dumps(omenu, indent=4))
 
         return omenu
 
