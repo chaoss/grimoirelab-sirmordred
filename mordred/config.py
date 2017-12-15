@@ -190,8 +190,8 @@ class Config():
                     "optional": True,
                     "default": 100,
                     "type": int
-                }
-
+                },
+                "extra_dash_menu_items": optional_empty_list
             }
         }
         params_projects = {
