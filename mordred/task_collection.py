@@ -132,7 +132,6 @@ class TaskRawDataArthurCollection(Task):
     REPOSITORY_DIR = "/tmp"
     ARTHUR_FEED_LOCK = Lock()
 
-
     arthur_items = {}  # Hash with tag list with all items collected from arthur queue
 
     def __init__(self, config, backend_section=None):
@@ -203,7 +202,6 @@ class TaskRawDataArthurCollection(Task):
             # The same repo could appear in git and github data sources
             # Two tasks in arthur can not have the same tag
             tag = repo + "_" + self.backend_section
-
 
         return tag
 

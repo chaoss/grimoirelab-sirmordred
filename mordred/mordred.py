@@ -82,7 +82,7 @@ class Mordred:
 
         arthur_url = self.conf['es_collection']['arthur_url']
         try:
-            res = requests.post( arthur_url + "/tasks")
+            res = requests.post(arthur_url + "/tasks")
             res.raise_for_status()
             arthur_access = True
         except requests.exceptions.ConnectionError as ex:
