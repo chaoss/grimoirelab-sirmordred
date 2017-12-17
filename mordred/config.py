@@ -52,14 +52,6 @@ class Config():
         # Build self.conf
         self.__read_conf_files()
 
-        # If projects are not already loaded do it
-        from .task_projects import TaskProjects
-        if not TaskProjects.get_projects():
-            # logging is not yet ready
-            print("Loading projects")
-            TaskProjects(self).execute()
-            print("Done")
-
     @classmethod
     def backend_section_params(self):
         # Params that must exists in all backends
@@ -160,11 +152,6 @@ class Config():
                     "optional": False,
                     "default": "logs",
                     "type": str
-                },
-                "skip_initial_load": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool
                 },
                 "bulk_size": {
                     "optional": True,

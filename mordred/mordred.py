@@ -281,6 +281,12 @@ class Mordred:
         if self.conf['phases']['identities']:
             tasks_cls = [TaskInitSortingHat]
             self.execute_tasks(tasks_cls)
+
+        logger.info("Loading projects")
+        tasks_cls = [TaskProjects]
+        self.execute_tasks(tasks_cls)
+        logger.info("Done")
+
         return
 
     def start(self):
@@ -313,15 +319,12 @@ class Mordred:
                 print('Can not access arthur service. Exiting mordred ...')
                 sys.exit(1)
 
-        # Initial round: panels loading
-        if not self.conf['general']['skip_initial_load']:
-            self.__execute_initial_load()
-        else:
-            logging.warning("Skipping the initial load")
+        # Initial round: panels and projects loading
+        self.__execute_initial_load()
 
         # Tasks to be executed during updating process
         all_tasks_cls = []
-        all_tasks_cls.append(TaskProjects)  # projects is always needed
+        all_tasks_cls.append(TaskProjects)  # projects update is always needed
         if self.conf['phases']['collection']:
             if not self.conf['es_collection']['arthur']:
                 all_tasks_cls.append(TaskRawDataCollection)
