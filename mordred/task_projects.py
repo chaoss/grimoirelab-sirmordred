@@ -24,6 +24,7 @@
 import json
 import logging
 import shutil
+import subprocess
 
 from threading import Lock
 from os import path
@@ -97,10 +98,23 @@ class TaskProjects(Task):
         if config['projects']['load_eclipse']:
             self.__get_eclipse_projects()
 
+        if config['projects']['bestiary']:
+            self.__export_bestiary_projects(projects_file)
+
         logger.info("Reading projects data from  %s ", projects_file)
         with open(projects_file, 'r') as fprojects:
             projects = json.load(fprojects)
         TaskProjects.set_projects(projects)
+
+    def __export_bestiary_projects(self, projects_file):
+        BESTIARY_HOME = '.'
+        logger.info("Exporting projects from Beastiary to %s", projects_file)
+        cmd = 'PYTHONPATH=%s/django_bestiary' % BESTIARY_HOME
+        cmd += ' %s/django_bestiary/projects/bestiary_export.py -f %s' % (BESTIARY_HOME, projects_file)
+        cmd += ' -o ' + self.conf['general']['short_name']
+        logger.debug('Exporting bestiary with command %s', cmd)
+        ret = subprocess.call(cmd, shell=True)
+        logger.debug('Resulto from %s: %i', cmd, ret)
 
     def __get_eclipse_projects(self):
         config = self.conf

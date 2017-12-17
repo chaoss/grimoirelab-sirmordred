@@ -169,14 +169,22 @@ class Config():
         params_projects = {
             "projects": {
                 "projects_file": {
-                    "optional": False,
+                    "optional": True,
                     "default": "projects.json",
-                    "type": str
+                    "type": str,
+                    "desc": "load projects data from a JSON file"
                 },
                 "load_eclipse": {
                     "optional": True,
                     "default": False,
-                    "type": bool
+                    "type": bool,
+                    "desc": "load projects data from Eclipse projects file"
+                },
+                "bestiary": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "desc": "load projects data from Bestiary"
                 }
             }
         }
