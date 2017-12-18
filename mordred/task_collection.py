@@ -131,6 +131,8 @@ class TaskRawDataArthurCollection(Task):
     ARTHUR_TASK_DELAY = 60  # sec, it should be configured per kind of backend
     REPOSITORY_DIR = "/tmp"
     ARTHUR_FEED_LOCK = Lock()
+    ARTHUR_LAST_MEMORY_CHECK = time.time()
+    ARTHUR_LAST_MEMORY_CHECK_TIME = 0  # seconds needed to check the memory
 
     arthur_items = {}  # Hash with tag list with all items collected from arthur queue
 
@@ -190,9 +192,14 @@ class TaskRawDataArthurCollection(Task):
             for tag in self.arthur_items:
                 logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
 
-            logger.debug("Measuring the memory used by the raw items dict ...")
-            logger.debug("Arthur items memory size: %0.2f MB",
-                         self.measure_memory(self.arthur_items) / (1024 * 1024))
+            # This is a expensive operation so don't do it always
+            if (time.time() - self.ARTHUR_LAST_MEMORY_CHECK) > 5 * self.ARTHUR_LAST_MEMORY_CHECK_TIME:
+                self.ARTHUR_LAST_MEMORY_CHECK = time.time()
+                logger.debug("Measuring the memory used by the raw items dict ...")
+                memory_size = self.measure_memory(self.arthur_items) / (1024 * 1024)
+                self.ARTHUR_LAST_MEMORY_CHECK_TIME = time.time() - self.ARTHUR_LAST_MEMORY_CHECK
+                logger.debug("Arthur items memory size: %0.2f MB (%is to check)",
+                             memory_size, self.ARTHUR_LAST_MEMORY_CHECK_TIME)
 
     def backend_tag(self, repo):
         tag = repo  # the default tag in general
