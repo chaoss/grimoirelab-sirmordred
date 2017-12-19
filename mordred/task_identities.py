@@ -292,21 +292,15 @@ class TaskIdentitiesLoad(Task):
         # Identities loading from files. It could be in several formats.
         # Right now GrimoireLab and SortingHat formats are supported
         if 'identities_file' in cfg['sortinghat']:
-            if cfg['sortinghat']['identities_format'] == 'sortinghat':
-                try:
+            try:
+                if cfg['sortinghat']['identities_format'] == 'sortinghat':
                     load_sortinghat_identities(self.config)
-                except Exception:
-                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
-                        TasksManager.IDENTITIES_TASKS_ON = False
-                    raise
-
-            elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
-                try:
+                elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
                     load_grimoirelab_identities(self.config)
-                except Exception:
-                    with TasksManager.IDENTITIES_TASKS_ON_LOCK:
-                        TasksManager.IDENTITIES_TASKS_ON = False
-                    raise
+            except Exception:
+                with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                    TasksManager.IDENTITIES_TASKS_ON = False
+                raise
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
