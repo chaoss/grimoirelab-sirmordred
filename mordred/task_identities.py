@@ -246,7 +246,7 @@ class TaskIdentitiesLoad(Task):
         # ** START SYNC LOGIC **
         # Check that enrichment tasks are not active before loading identities
         while True:
-            time.sleep(10)  # check each second if the identities load could start
+            time.sleep(10)  # check each 10s if the identities load could start
             with TasksManager.IDENTITIES_TASKS_ON_LOCK:
                 with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
                     enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
