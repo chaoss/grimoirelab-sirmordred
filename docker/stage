@@ -116,7 +116,7 @@ ln -s /home/bitergia/reports /home/bitergia/mordred/reports
 REDIS="redis"
 
 # arthur on
-arthurd -g -d redis://$REDIS/8 --es-index $ARTHUR_ELASTICSEARCH_INDEX --log-path /home/bitergia/logs/arthurd --no-cache
+arthurd -g -d redis://$REDIS/8 --log-path /home/bitergia/logs/arthurd --no-cache
 # Give time to arthur to create the raw index
 echo "Waiting for arthur startup completion ..."
 sleep 5
