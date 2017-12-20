@@ -190,7 +190,8 @@ class TaskRawDataArthurCollection(Task):
                 self.arthur_items[arthur_item['tag']].append(arthur_item)
 
             for tag in self.arthur_items:
-                logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
+                if self.arthur_items[tag]:
+                    logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
 
             # This is a expensive operation so don't do it always
             if (time.time() - self.ARTHUR_LAST_MEMORY_CHECK) > 5 * self.ARTHUR_LAST_MEMORY_CHECK_TIME:
@@ -296,6 +297,44 @@ class TaskRawDataArthurCollection(Task):
         return(ajson)
 
     def execute(self):
+
+        def check_arthur_task(repo, backend_args):
+            """ Check if a task exists in arthur and if not, create it """
+            arthur_repo_json = self.__create_arthur_json(repo, backend_args)
+            logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json, indent=True))
+
+            # First check is the task already exists
+            try:
+                r = requests.post(self.arthur_url + "/tasks")
+            except requests.exceptions.ConnectionError as ex:
+                logging.error("Can not connect to %s", self.arthur_url)
+                raise RuntimeError("Can not connect to " + self.arthur_url)
+
+            task_ids = [task['task_id'] for task in r.json()['tasks']]
+            new_task_ids = [task['task_id'] for task in arthur_repo_json['tasks']]
+            # TODO: if a tasks already exists maybe we should delete and readd it
+            already_tasks = list(set(task_ids).intersection(set(new_task_ids)))
+            if len(already_tasks) > 0:
+                logger.warning("Tasks not added to arthur because there are already existing tasks %s", already_tasks)
+            else:
+                r = requests.post(self.arthur_url + "/add", json=arthur_repo_json)
+                r.raise_for_status()
+                logger.info('[%s] collection configured in arthur for %s', self.backend_section, repo)
+
+        def collect_arthur_items(repo):
+            aitems = self.__feed_backend_arthur(repo)
+            if not aitems:
+                return
+            connector = get_connector_from_name(self.backend_section)
+            klass = connector[1]  # Ocean backend for the connector
+            ocean_backend = klass(None)
+            es_col_url = self._get_collection_url()
+            es_index = self.conf[self.backend_section]['raw_index']
+            clean = False
+            elastic_ocean = get_elastic(es_col_url, es_index, clean, ocean_backend)
+            ocean_backend.set_elastic(elastic_ocean)
+            ocean_backend.feed(arthur_items=aitems)
+
         cfg = self.config.get_conf()
 
         if ('collect' in cfg[self.backend_section] and
@@ -318,46 +357,20 @@ class TaskRawDataArthurCollection(Task):
             logger.warning("No collect repositories for %s", self.backend_section)
 
         for repo in repos:
-            p2o_args = self._compose_p2o_params(self.backend_section, repo)
-            filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
-            if filter_raw:
-                # If filter-raw exists the goal is to enrich already collected
-                # data, so don't collect anything
-                logging.warning("Not collecting filter raw repository: %s", repo)
-                continue
-            url = p2o_args['url']
-            backend_args = self._compose_perceval_params(self.backend_section, repo)
-            logger.debug(backend_args)
-            arthur_repo_json = self.__create_arthur_json(repo, backend_args)
-            logger.debug('JSON config for arthur %s', json.dumps(arthur_repo_json, indent=True))
+            # If the repo already exists don't try to add it to arthur
+            tag = self.backend_tag(repo)
+            if tag not in self.arthur_items:
+                self.arthur_items[tag] = []
+                p2o_args = self._compose_p2o_params(self.backend_section, repo)
+                filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+                if filter_raw:
+                    # If filter-raw exists the goal is to enrich already collected
+                    # data, so don't collect anything
+                    logging.warning("Not collecting filter raw repository: %s", repo)
+                    continue
+                backend_args = self._compose_perceval_params(self.backend_section, repo)
+                logger.debug(backend_args)
 
-            # First check is the task already exists
-            try:
-                r = requests.post(self.arthur_url + "/tasks")
-            except requests.exceptions.ConnectionError as ex:
-                logging.error("Can not connect to %s", self.arthur_url)
-                return
-                # raise RuntimeError("Can not connect to " + self.arthur_url)
+                check_arthur_task(repo, backend_args)
 
-            task_ids = [task['task_id'] for task in r.json()['tasks']]
-            new_task_ids = [task['task_id'] for task in arthur_repo_json['tasks']]
-            # TODO: if a tasks already exists maybe we should delete and readd it
-            already_tasks = list(set(task_ids).intersection(set(new_task_ids)))
-            if len(already_tasks) > 0:
-                logger.warning("Tasks not added to arthur because there are already existing tasks %s", already_tasks)
-            else:
-                r = requests.post(self.arthur_url + "/add", json=arthur_repo_json)
-                r.raise_for_status()
-                logger.info('[%s] collection configured in arthur for %s', self.backend_section, repo)
-
-            # Try to collect existing items from REDIS
-            aitems = self.__feed_backend_arthur(repo)
-            connector = get_connector_from_name(self.backend_section)
-            klass = connector[1]  # Ocean backend for the connector
-            ocean_backend = klass(None)
-            es_col_url = self._get_collection_url()
-            es_index = self.conf[self.backend_section]['raw_index']
-            clean = False
-            elastic_ocean = get_elastic(es_col_url, es_index, clean, ocean_backend)
-            ocean_backend.set_elastic(elastic_ocean)
-            ocean_backend.feed(arthur_items=aitems)
+            collect_arthur_items(repo)
