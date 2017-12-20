@@ -120,7 +120,7 @@ class TaskEnrich(Task):
                 logger.error("Something went wrong producing enriched data for %s . "
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
                 logger.error("Exception: %s", ex)
-                raise DataEnrichmentError('Failed to produce enriched data for %s', self.backend_section)
+                raise DataEnrichmentError('Failed to produce enriched data for ' + self.backend_section)
 
             # Let's try to create the aliases for the enriched index
             if not self.enrich_aliases:
@@ -204,6 +204,7 @@ class TaskEnrich(Task):
         #  ** END SYNC LOGIC **
 
         self.__enrich_items()
+
         if cfg['es_enrichment']['autorefresh']:
             # Check it we should do the autorefresh
             autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
