@@ -28,8 +28,7 @@ fi
 
 # get Arthur repository
 cd /home/bitergia && \
-# git clone https://github.com/grimoirelab/arthur.git && \
-git clone https://github.com/acs/arthur.git && \
+git clone https://github.com/grimoirelab/arthur.git && \
     cd arthur && \
     git checkout $ARTHUR && \
     sudo python3 setup.py install
