@@ -226,6 +226,8 @@ class TaskIdentitiesLoad(Task):
             cmd = ['grimoirelab2sh', '-i', identities_filename,
                    '-s', cfg['general']['short_name'] + ':manual',
                    '-o', json_identities]
+            if not cfg['sortinghat']['strict_mapping']:
+                cmd += ['--no-email-validation']
             if self.__execute_command(cmd) != 0:
                 logger.error('Can not generate the SH JSON file from ' +
                              'GrimoireLab yaml file. Do the files exists? ' +
