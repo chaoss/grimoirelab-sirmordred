@@ -342,6 +342,12 @@ class TaskRawDataArthurCollection(Task):
             logging.info('%s collect disabled', self.backend_section)
             return
 
+        if 'scroll_size' in cfg['general']:
+            ElasticItems.scroll_size = cfg['general']['scroll_size']
+
+        if 'bulk_size' in cfg['general']:
+            ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
+
         logger.info('Programming arthur for [%s] raw data collection', self.backend_section)
         clean = False
 
