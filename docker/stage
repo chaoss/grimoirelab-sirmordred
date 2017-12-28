@@ -18,7 +18,7 @@ if [ $RELEASE ];
     unset REPORTS
     unset VIZGRIMOIREUTILS
     TMPFILE=`mktemp`
-    wget https://raw.githubusercontent.com/grimoirelab/grimoirelab/master/releases/$RELEASE -O $TMPFILE
+    wget https://raw.githubusercontent.com/chaoss/grimoirelab/master/releases/$RELEASE -O $TMPFILE
     source $TMPFILE
     rm $TMPFILE
     echo $RELEASE > /home/bitergia/release
