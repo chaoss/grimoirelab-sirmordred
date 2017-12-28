@@ -34,6 +34,7 @@ sys.path.insert(0, '..')
 
 from mordred.config import Config
 from mordred.task_collection import TaskRawDataCollection
+from mordred.task_projects import TaskProjects
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
@@ -100,6 +101,8 @@ class TestTaskRawDataCollection(unittest.TestCase):
         config = Config(CONF_FILE)
         backend_section = GIT_BACKEND_SECTION
         task = TaskRawDataCollection(config, backend_section=backend_section)
+        # We need to load the projects
+        TaskProjects(config).execute()
         self.assertEqual(task.execute(), None)
 
 
