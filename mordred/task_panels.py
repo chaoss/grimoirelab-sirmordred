@@ -30,7 +30,7 @@ import yaml
 from collections import OrderedDict
 from urllib.parse import urljoin
 
-from grimoire_elk.panels import import_dashboard, get_dashboard_name, exists_dashboard
+from kidash.kidash import import_dashboard, get_dashboard_name, exists_dashboard
 from mordred.task import Task
 
 logger = logging.getLogger(__name__)
