@@ -41,7 +41,12 @@ PROJ_FILE = 'test-projects.json'
 PERCEVAL_CACHE_FILE = './cache-test.tgz'
 HOME_USER = expanduser("~")
 PERCEVAL_CACHE = join(HOME_USER, '.perceval')
+
 GIT_BACKEND_SECTION = 'git'
+
+GITHUB_BACKEND_SECTION = 'github'
+GITHUB_REPO = "https://github.com/grimoirelab/perceval"
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -89,6 +94,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
+
         config = Config(CONF_FILE)
         backend_section = GIT_BACKEND_SECTION
         task = TaskRawDataCollection(config, backend_section=backend_section)
@@ -96,8 +102,33 @@ class TestTaskRawDataCollection(unittest.TestCase):
         self.assertEqual(task.config, config)
         self.assertEqual(task.backend_section, backend_section)
 
+    def test_backend_params(self):
+        """Test whether the backend parameters are initializated"""
+
+        config = Config(CONF_FILE)
+        backend_section = GITHUB_BACKEND_SECTION
+        task = TaskRawDataCollection(config, backend_section=backend_section)
+        params = task._compose_perceval_params(GITHUB_BACKEND_SECTION, GITHUB_REPO)
+
+        expected_params = [
+            'grimoirelab',
+            'perceval',
+            '--api-token',
+            'XXXXX',
+            '--sleep-time',
+            '300',
+            '--sleep-for-rate',
+            '--fetch-cache'
+        ]
+
+        self.assertEqual(len(params), len(expected_params))
+
+        for p in params:
+            self.assertTrue(p in expected_params)
+
     def test_run(self):
         """Test whether the Task could be run"""
+
         config = Config(CONF_FILE)
         backend_section = GIT_BACKEND_SECTION
         task = TaskRawDataCollection(config, backend_section=backend_section)
