@@ -133,6 +133,8 @@ class TaskRawDataArthurCollection(Task):
     ARTHUR_FEED_LOCK = Lock()
     ARTHUR_LAST_MEMORY_CHECK = time.time()
     ARTHUR_LAST_MEMORY_CHECK_TIME = 0  # seconds needed to check the memory
+    ARTHUR_LAST_MEMORY_SIZE = 0  # size in MB of the python dict
+    ARTHUR_MAX_MEMORY_SIZE = 500  # max size in MB of the python dict
 
     arthur_items = {}  # Hash with tag list with all items collected from arthur queue
 
@@ -170,6 +172,23 @@ class TaskRawDataArthurCollection(Task):
 
         with self.ARTHUR_FEED_LOCK:
 
+            # This is a expensive operation so don't do it always
+            if (time.time() - self.ARTHUR_LAST_MEMORY_CHECK) > 5 * self.ARTHUR_LAST_MEMORY_CHECK_TIME:
+                self.ARTHUR_LAST_MEMORY_CHECK = time.time()
+                logger.debug("Measuring the memory used by the raw items dict ...")
+                memory_size = self.measure_memory(self.arthur_items) / (1024 * 1024)
+                self.ARTHUR_LAST_MEMORY_CHECK_TIME = time.time() - self.ARTHUR_LAST_MEMORY_CHECK
+                logger.debug("Arthur items memory size: %0.2f MB (%is to check)",
+                             memory_size, self.ARTHUR_LAST_MEMORY_CHECK_TIME)
+                self.ARTHUR_LAST_MEMORY_SIZE = memory_size
+
+            # Don't feed items from redis if the current python dict is
+            # larger than ARTHUR_MAX_MEMORY_SIZE
+
+            if self.ARTHUR_LAST_MEMORY_SIZE > self.ARTHUR_MAX_MEMORY_SIZE:
+                logger.debug("Python dict full. Not collecting items from redis queue.")
+                return
+
             logger.info("Collecting items from redis queue")
 
             db_url = self.config.get_conf()['es_collection']['redis_url']
@@ -192,15 +211,6 @@ class TaskRawDataArthurCollection(Task):
             for tag in self.arthur_items:
                 if self.arthur_items[tag]:
                     logger.debug("Arthur items for %s: %i", tag, len(self.arthur_items[tag]))
-
-            # This is a expensive operation so don't do it always
-            if (time.time() - self.ARTHUR_LAST_MEMORY_CHECK) > 5 * self.ARTHUR_LAST_MEMORY_CHECK_TIME:
-                self.ARTHUR_LAST_MEMORY_CHECK = time.time()
-                logger.debug("Measuring the memory used by the raw items dict ...")
-                memory_size = self.measure_memory(self.arthur_items) / (1024 * 1024)
-                self.ARTHUR_LAST_MEMORY_CHECK_TIME = time.time() - self.ARTHUR_LAST_MEMORY_CHECK
-                logger.debug("Arthur items memory size: %0.2f MB (%is to check)",
-                             memory_size, self.ARTHUR_LAST_MEMORY_CHECK_TIME)
 
     def backend_tag(self, repo):
         tag = repo  # the default tag in general
