@@ -134,7 +134,7 @@ class TaskRawDataArthurCollection(Task):
     ARTHUR_LAST_MEMORY_CHECK = time.time()
     ARTHUR_LAST_MEMORY_CHECK_TIME = 0  # seconds needed to check the memory
     ARTHUR_LAST_MEMORY_SIZE = 0  # size in MB of the python dict
-    ARTHUR_MAX_MEMORY_SIZE = 500  # max size in MB of the python dict
+    ARTHUR_MAX_MEMORY_SIZE = 200  # max size in MB of the python dict
 
     arthur_items = {}  # Hash with tag list with all items collected from arthur queue
 
