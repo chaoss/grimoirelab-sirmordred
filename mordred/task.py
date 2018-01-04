@@ -133,7 +133,7 @@ class Task():
                         list_params = self.conf[backend_section][p]
                         params += list_params
                     else:
-                        params.append(self.conf[backend_section][p])
+                        params.append(str(self.conf[backend_section][p]))
         return params
 
     def _get_collection_url(self):

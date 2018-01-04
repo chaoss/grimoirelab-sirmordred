@@ -72,7 +72,7 @@ class TaskRawDataCollection(Task):
             ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
 
         if ('collect' in cfg[self.backend_section] and
-            not cfg[self.backend_section]['collect']):
+                not cfg[self.backend_section]['collect']):
             logging.info('%s collect disabled', self.backend_section)
             return
 
