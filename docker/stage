@@ -18,7 +18,7 @@ if [ $RELEASE ];
     unset REPORTS
     unset VIZGRIMOIREUTILS
     TMPFILE=`mktemp`
-    wget https://raw.githubusercontent.com/grimoirelab/grimoirelab/master/releases/$RELEASE -O $TMPFILE
+    wget https://raw.githubusercontent.com/chaoss/grimoirelab/master/releases/$RELEASE -O $TMPFILE
     source $TMPFILE
     rm $TMPFILE
     echo $RELEASE > /home/bitergia/release
@@ -28,8 +28,7 @@ fi
 
 # get Arthur repository
 cd /home/bitergia && \
-# git clone https://github.com/grimoirelab/arthur.git && \
-git clone https://github.com/acs/arthur.git && \
+git clone https://github.com/grimoirelab/arthur.git && \
     cd arthur && \
     git checkout $ARTHUR && \
     sudo python3 setup.py install
@@ -106,16 +105,17 @@ cd /home/bitergia && \
 
 
 # some links we need until GrimoireELK and panels can be installed
+ln -s /home/bitergia/arthur/arthur /home/bitergia/mordred/arthur
 ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
 ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
 ln -s /home/bitergia/panels /home/bitergia/mordred/panels
-ln -s /home/bitergia/panels/dashboards5 /home/bitergia/panels/dashboards
+ln -s /home/bitergia/reports /home/bitergia/mordred/reports
 
 # This could be an ENV var probably
 REDIS="redis"
 
 # arthur on
-arthurd -g -d redis://$REDIS/8 --es-index $ARTHUR_ELASTICSEARCH_INDEX --log-path /home/bitergia/logs/arthurd --no-cache
+arthurd -g -d redis://$REDIS/8 --log-path /home/bitergia/logs/arthurd --no-cache
 # Give time to arthur to create the raw index
 echo "Waiting for arthur startup completion ..."
 sleep 5
@@ -123,11 +123,6 @@ echo "Starting two workers: collect and update tasks"
 # Two workers
 (arthurw -g -d redis://$REDIS/8 > /home/bitergia/logs/worker-collect.log 2>&1) &
 (arthurw -g -d redis://$REDIS/8 update > /home/bitergia/logs/worker-update.log 2>&1) &
-# some links we need until GrimoireELK and panels and reports can be installed
-ln -s /home/bitergia/GrimoireELK/grimoire /home/bitergia/mordred/grimoire
-ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
-ln -s /home/bitergia/panels /home/bitergia/mordred/panels
-ln -s /home/bitergia/reports /home/bitergia/mordred/reports
 
 cd /home/bitergia/mordred && \
 bin/mordred -c /home/bitergia/conf/setup.cfg

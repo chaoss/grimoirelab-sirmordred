@@ -24,20 +24,24 @@
 
 import logging
 import queue
+import sys
 import threading
 import time
 import traceback
 
 from datetime import datetime, timedelta
 
+import redis
 import requests
 
+from arthur.common import Q_STORAGE_ITEMS
+
+
 from mordred.config import Config
-from mordred.error import ElasticSearchError
 from mordred.error import DataCollectionError
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
-from mordred.task_collection import TaskRawDataCollection
+from mordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from mordred.task_enrich import TaskEnrich
 from mordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
 from mordred.task_manager import TasksManager
@@ -45,10 +49,6 @@ from mordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
 from mordred.task_projects import TaskProjects
 from mordred.task_report import TaskReport
 from mordred.task_track import TaskTrackItems
-
-ES_ERROR = "Before starting to seek the Holy Grail, make sure your ElasticSearch " + \
-           "at '%(uri)s' is available!!\n - Mordred said."
-
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +60,42 @@ class Mordred:
         self.config = config
         self.conf = config.get_conf()
 
+    def check_redis_access(self):
+        redis_access = False
+
+        redis_url = self.conf['es_collection']['redis_url']
+        try:
+            # Try to access REDIS items to check it is working
+            conn = redis.StrictRedis.from_url(redis_url)
+            pipe = conn.pipeline()
+            pipe.lrange(Q_STORAGE_ITEMS, 0, 0)
+            pipe.execute()[0]
+            redis_access = True
+        except redis.exceptions.ConnectionError:
+            logging.error("Can not connect to raw items in redis %s", redis_url)
+
+        return redis_access
+
+    def check_arthur_access(self):
+
+        arthur_access = False
+
+        arthur_url = self.conf['es_collection']['arthur_url']
+        try:
+            res = requests.post(arthur_url + "/tasks")
+            res.raise_for_status()
+            arthur_access = True
+        except requests.exceptions.ConnectionError as ex:
+            logging.error("Can not connect to arthur %s", arthur_url)
+
+        return arthur_access
+
     def check_es_access(self):
 
         # So far there is no way to distinguish between read and write permission
+
+        es_access = True
+        es_error = None
 
         def _ofuscate_server_uri(uri):
             if uri.rfind('@') > 0:
@@ -76,20 +109,25 @@ class Mordred:
         es = self.conf['es_collection']['url']
         try:
             r = requests.get(es, verify=False)
-            if r.status_code != 200:
-                raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+            r.raise_for_status()
         except Exception:
-            raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+            es_access = False
+            es_error = _ofuscate_server_uri(es)
 
         if (self.conf['phases']['enrichment'] or
            self.conf['es_enrichment']['studies']):
             es = self.conf['es_enrichment']['url']
             try:
                 r = requests.get(es, verify=False)
-                if r.status_code != 200:
-                    raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+                r.raise_for_status()
             except Exception:
-                raise ElasticSearchError(ES_ERROR % {'uri': _ofuscate_server_uri(es)})
+                es_access = False
+                es_error = _ofuscate_server_uri(es)
+
+        if not es_access:
+            logger.error('Can not connect to Elasticsearch: %s', es_error)
+
+        return es_access
 
     def _get_repos_by_backend(self):
         #
@@ -243,9 +281,15 @@ class Mordred:
         if self.conf['phases']['identities']:
             tasks_cls = [TaskInitSortingHat]
             self.execute_tasks(tasks_cls)
+
+        logger.info("Loading projects")
+        tasks_cls = [TaskProjects]
+        self.execute_tasks(tasks_cls)
+        logger.info("Done")
+
         return
 
-    def run(self):
+    def start(self):
         """
         This method defines the workflow of Mordred. So it calls to:
         - initialize the databases
@@ -262,21 +306,30 @@ class Mordred:
         logger.info("- - - - - - - - - - - - - - ")
 
         # check we have access to the needed ES
-        self.check_es_access()
+        if not self.check_es_access():
+            print('Can not access Elasticsearch service. Exiting mordred ...')
+            sys.exit(1)
 
-        # do we need ad-hoc scripts?
+        # If arthur is configured check that it is working
+        if self.conf['es_collection']['arthur']:
+            if not self.check_redis_access():
+                print('Can not access redis service. Exiting mordred ...')
+                sys.exit(1)
+            if not self.check_arthur_access():
+                print('Can not access arthur service. Exiting mordred ...')
+                sys.exit(1)
 
-        # Initial round: panels loading
-        if not self.conf['general']['skip_initial_load']:
-            self.__execute_initial_load()
-        else:
-            logging.warning("Skipping the initial load")
+        # Initial round: panels and projects loading
+        self.__execute_initial_load()
 
         # Tasks to be executed during updating process
         all_tasks_cls = []
-        all_tasks_cls.append(TaskProjects)  # projects is always needed
+        all_tasks_cls.append(TaskProjects)  # projects update is always needed
         if self.conf['phases']['collection']:
-            all_tasks_cls.append(TaskRawDataCollection)
+            if not self.conf['es_collection']['arthur']:
+                all_tasks_cls.append(TaskRawDataCollection)
+            else:
+                all_tasks_cls.append(TaskRawDataArthurCollection)
         if self.conf['phases']['identities']:
             # load identities and orgs periodically for updates
             all_tasks_cls.append(TaskIdentitiesLoad)

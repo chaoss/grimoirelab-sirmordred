@@ -30,7 +30,7 @@ import yaml
 from collections import OrderedDict
 from urllib.parse import urljoin
 
-from grimoire_elk.panels import import_dashboard, get_dashboard_name, exists_dashboard
+from kidash.kidash import import_dashboard, get_dashboard_name, exists_dashboard
 from mordred.task import Task
 
 logger = logging.getLogger(__name__)
@@ -109,7 +109,15 @@ class TaskPanels(Task):
         r = requests.post(url, data=json.dumps(kibiter_config))
         r.raise_for_status()
 
-    def __create_dashboard(self, panel_file):
+    def __create_dashboard(self, panel_file, data_sources=None):
+        """Upload a panel to Elasticsearch if it does not exist yet.
+
+        If a list of data sources is specified, upload only those
+        elements (visualizations, searches) that match that data source.
+
+        :param panel_file: file name of panel (dashobard) to upload
+        :param data_sources: list of data sources
+        """
         es_enrich = self.conf['es_enrichment']['url']
         # If the panel (dashboard) already exists, don't load it
         dash_id = get_dashboard_name(panel_file)
@@ -117,7 +125,7 @@ class TaskPanels(Task):
             logger.info("Not creating a panel that exists already: %s", dash_id)
         else:
             logger.info("Creating the panel: %s", dash_id)
-            import_dashboard(es_enrich, panel_file)
+            import_dashboard(es_enrich, panel_file, data_sources=data_sources)
 
     def execute(self):
         # Configure kibiter
@@ -125,7 +133,7 @@ class TaskPanels(Task):
 
         # Create the commons panels
         for panel_file in self.panels_common:
-            self.__create_dashboard(panel_file)
+            self.__create_dashboard(panel_file, data_sources=self.panels.keys())
 
         # Upload all the Kibana dashboards/GrimoireLab panels based on
         # enabled data sources AND the menu file

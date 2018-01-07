@@ -70,12 +70,14 @@ setup(name="grimoire-mordred",
           'mordred'
       ],
       install_requires=[
-          'grimoire-elk>=0.30.7',
-          'grimoire-kidash>=0.30.4',
+          'grimoire-elk>=0.30.18',
+          'kidash>=0.4.0',
           'grimoire-reports>=0.1.0',
           'sortinghat>=0.4.2',
           'PyMySQL',
-          'pyyaml'
+          'pyyaml',
+          'redis',
+          'kingarthur'
       ],
       scripts=[
           'bin/mordred'

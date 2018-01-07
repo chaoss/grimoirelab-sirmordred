@@ -33,6 +33,7 @@ from sortinghat.db.database import Database
 sys.path.insert(0, '..')
 
 from mordred.config import Config
+from mordred.task_projects import TaskProjects
 from mordred.task_enrich import TaskEnrich
 
 CONF_FILE = 'test.cfg'
@@ -74,6 +75,8 @@ class TestTaskEnrich(unittest.TestCase):
         """Test whether the Task could be run"""
         config = Config(CONF_FILE)
         cfg = config.get_conf()
+        # We need to load the projects
+        TaskProjects(config).execute()
         backend_section = GIT_BACKEND_SECTION
         task = TaskEnrich(config, backend_section=backend_section)
         self.assertEqual(task.execute(), None)

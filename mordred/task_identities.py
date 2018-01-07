@@ -226,6 +226,8 @@ class TaskIdentitiesLoad(Task):
             cmd = ['grimoirelab2sh', '-i', identities_filename,
                    '-s', cfg['general']['short_name'] + ':manual',
                    '-o', json_identities]
+            if not cfg['sortinghat']['strict_mapping']:
+                cmd += ['--no-email-validation']
             if self.__execute_command(cmd) != 0:
                 logger.error('Can not generate the SH JSON file from ' +
                              'GrimoireLab yaml file. Do the files exists? ' +
@@ -244,7 +246,7 @@ class TaskIdentitiesLoad(Task):
         # ** START SYNC LOGIC **
         # Check that enrichment tasks are not active before loading identities
         while True:
-            time.sleep(1)  # check each second if the identities load could start
+            time.sleep(10)  # check each 10s if the identities load could start
             with TasksManager.IDENTITIES_TASKS_ON_LOCK:
                 with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
                     enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
@@ -254,6 +256,24 @@ class TaskIdentitiesLoad(Task):
                         TasksManager.IDENTITIES_TASKS_ON = True
                         break
         #  ** END SYNC LOGIC **
+
+        # Load of identities must not be done if there are pending autorefresh
+        # identities
+        autorefresh_pending = False
+
+        try:
+            autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get(timeout=5)
+            for backend_section in autorefresh_backends:
+                if autorefresh_backends[backend_section]:
+                    logger.debug("Pending autorefresh for %s. Identities load cancelled.", backend_section)
+                    autorefresh_pending = True
+                    break
+            TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+        except Empty:
+            logger.debug("Autorefresh queue empty")
+
+        if autorefresh_pending:
+            return
 
         cfg = self.config.get_conf()
 
@@ -274,13 +294,16 @@ class TaskIdentitiesLoad(Task):
         # Identities loading from files. It could be in several formats.
         # Right now GrimoireLab and SortingHat formats are supported
         if 'identities_file' in cfg['sortinghat']:
-            if cfg['sortinghat']['identities_format'] == 'sortinghat':
-                load_sortinghat_identities(self.config)
-            elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
-                load_grimoirelab_identities(self.config)
+            try:
+                if cfg['sortinghat']['identities_format'] == 'sortinghat':
+                    load_sortinghat_identities(self.config)
+                elif cfg['sortinghat']['identities_format'] == 'grimoirelab':
+                    load_grimoirelab_identities(self.config)
+            except Exception:
+                with TasksManager.IDENTITIES_TASKS_ON_LOCK:
+                    TasksManager.IDENTITIES_TASKS_ON = False
+                raise
 
-        # FIXME: If there are exceptions in the above code the
-        # TasksManager.IDENTITIES_TASKS_ON won't be deactivated
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
 

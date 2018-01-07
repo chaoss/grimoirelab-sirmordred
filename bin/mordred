@@ -155,17 +155,4 @@ if __name__ == '__main__':
         for phase in config_dict['phases']:
             config_dict['phases'][phase] = True if phase in args.phases else False
 
-    obj = Mordred(config)
-
-    try:
-        obj.run()
-    except ElasticSearchError as e:
-        s = 'Error: %s\n' % str(e)
-        sys.stderr.write(s)
-        sys.exit(1)
-    except:
-        logger.info("OTHER EXCEPTION") #FIXME
-        var = traceback.format_exc()
-        logger.error("Unexpected error. See the traceback below")
-        logger.error(var)
-        sys.exit(1)
+    Mordred(config).start()
