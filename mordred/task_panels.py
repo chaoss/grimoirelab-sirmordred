@@ -403,7 +403,14 @@ class TaskPanelsMenu(Task):
             omenu["Data Status"] = self.menu_panels_common['Data Status']
             omenu["About"] = self.menu_panels_common['About']
 
-        logger.debug("Menu for panels: %s", json.dumps(ds_menu, indent=4))
+        if self.conf['general']['extra_dash_menu_items']:
+            for item in self.conf['general']['extra_dash_menu_items']:
+                menu_name, menu_link = item.strip().split(":", 1)
+                menu_name = menu_name.strip()
+                menu_link = menu_link.strip()
+                omenu[menu_name] = menu_link
+
+        logger.debug("Menu for panels: %s", json.dumps(omenu, indent=4))
 
         return omenu
 
