@@ -1,130 +1,39 @@
 #!/bin/bash
 
-source /home/bitergia/conf/requirements.cfg
+HOME_DIR='/home/grimoirelab'
+CONF_DIR="$HOME_DIR/conf"
 
-# if RELEASE param is set, we download the info from
-# https://github.com/Bitergia/mordred/tree/master/docker/unified_releases/
-if [ $RELEASE ];
-    then
-    unset ARTHUR
-    unset GRIMOIREELK
-    unset GRIMOIRELAB_TOOLKIT
-    unset MORDRED
-    unset PANELS
-    unset PERCEVAL
-    unset PERCEVAL_MOZILLA
-    unset PERCEVAL_OPNFV
-    unset SORTINGHAT
-    unset REPORTS
-    unset VIZGRIMOIREUTILS
-    TMPFILE=`mktemp`
-    wget https://raw.githubusercontent.com/chaoss/grimoirelab/master/releases/$RELEASE -O $TMPFILE
-    source $TMPFILE
-    rm $TMPFILE
-    echo $RELEASE > /home/bitergia/release
+cd $HOMEDIR
+
+source $CONF_DIR/requirements.cfg
+
+if [ $RELEASE ]; then
+    wget https://raw.githubusercontent.com/chaoss/grimoirelab/master/releases/$RELEASE -O $CONF_DIR/requirements.cfg
+    echo $RELEASE > $HOME_DIR/release
 else
-    echo "customized release, see requirements.cfg file" > /home/bitergia/release
+    echo "customized release, see $CONF_DIR/requirements.cfg file" > $HOME_DIR/release
 fi
 
-# get Arthur repository
-cd /home/bitergia && \
-git clone https://github.com/grimoirelab/arthur.git && \
-    cd arthur && \
-    git checkout $ARTHUR && \
-    sudo python3 setup.py install
+# get grimoirelab repo for the build_grimoirelab script
+git clone https://github.com/grimoirelab/grimoirelab.git --depth 1
 
-# get SortingHat repository
-cd /home/bitergia && \
-git clone https://github.com/grimoirelab/sortinghat.git && \
-    cd sortinghat && \
-    git checkout $SORTINGHAT && \
-    sudo python3 setup.py install
+echo "Installing and checking GrimoireLab Release"
+sudo grimoirelab/utils/build_grimoirelab --build --install --check --install_system --relfile $CONF_DIR/requirements.cfg -l debug
 
-# get GrimoireELK repository
-cd /home/bitergia && \
-git clone https://github.com/grimoirelab/GrimoireELK && \
-    cd GrimoireELK && \
-    git checkout $GRIMOIREELK
-
-# get VizGrimoireUtils repository needed by mordred (eclipse projects)
-cd /home/bitergia && \
-git clone https://github.com/VizGrimoire/VizGrimoireUtils && \
-    cd VizGrimoireUtils && \
-    git checkout $VIZGRIMOIREUTILS
-
-# get Mordred repository
-cd /home/bitergia && \
-git clone https://github.com/Bitergia/mordred.git mordred && \
-    cd mordred && \
-    git checkout $MORDRED
-
-# panels for the dashboard
-cd /home/bitergia && \
-git clone https://github.com/grimoirelab/panels.git panels && \
-    cd panels && \
-    git checkout $PANELS
-
-# reports repository
-cd /home/bitergia && \
-git clone https://github.com/grimoirelab/reports.git reports && \
-    cd reports && \
-    git checkout $REPORTS
-
-# get GrimoireLab Toolkit repository
-cd /home/bitergia && \
-git clone https://github.com/grimoirelab/grimoirelab-toolkit.git && \
-    cd grimoirelab-toolkit && \
-    git checkout $GRIMOIRELAB_TOOLKIT && \
-    sudo python3 setup.py install
-
-# get Perceval repository
-cd /home/bitergia && \
-    git clone https://github.com/grimoirelab/perceval.git && \
-    cd perceval && \
-    git checkout $PERCEVAL && \
-    sudo python3 setup.py install
-
-# perceval extras
-cd /home/bitergia && \
-    git clone https://github.com/grimoirelab/perceval-mozilla && \
-    cd perceval-mozilla && \
-    git checkout $PERCEVAL_MOZILLA && \
-    sudo python3 setup.py install
-
-cd /home/bitergia && \
-    git clone https://github.com/grimoirelab/perceval-puppet && \
-    cd perceval-puppet && \
-    git checkout $PERCEVAL_PUPPET && \
-    sudo python3 setup.py install
-
-cd /home/bitergia && \
-    git clone https://github.com/grimoirelab/perceval-opnfv && \
-    cd perceval-opnfv && \
-    git checkout $PERCEVAL_OPNFV && \
-    sudo python3 setup.py install
-
-
-# some links we need until GrimoireELK and panels can be installed
-ln -s /home/bitergia/arthur/arthur /home/bitergia/mordred/arthur
-ln -s /home/bitergia/GrimoireELK/grimoire_elk /home/bitergia/mordred/grimoire_elk
-ln -s /home/bitergia/panels /home/bitergia/mordred/panels
-ln -s /home/bitergia/reports /home/bitergia/mordred/reports
-
-# Start the transition to packages
-sudo pip3 install kidash
-
-# This could be an ENV var probably
+# This could be an ENV var probably (it is defined in mordred conf)
 REDIS="redis"
 
 # arthur on
-arthurd -g -d redis://$REDIS/8 --log-path /home/bitergia/logs/arthurd --no-cache
+arthurd -g -d redis://$REDIS/8 --log-path $HOME_DIR/logs/arthurd --no-cache
 # Give time to arthur to create the raw index
 echo "Waiting for arthur startup completion ..."
 sleep 5
 echo "Starting two workers: collect and update tasks"
 # Two workers
-(arthurw -g -d redis://$REDIS/8 > /home/bitergia/logs/worker-collect.log 2>&1) &
-(arthurw -g -d redis://$REDIS/8 update > /home/bitergia/logs/worker-update.log 2>&1) &
+(arthurw -g -d redis://$REDIS/8 > $HOME_DIR/logs/worker-collect.log 2>&1) &
+(arthurw -g -d redis://$REDIS/8 update > $HOME_DIR/logs/worker-update.log 2>&1) &
 
-cd /home/bitergia/mordred && \
-bin/mordred -c /home/bitergia/conf/setup.cfg
+# Hack to get the panels menu file
+wget https://raw.githubusercontent.com/grimoirelab/mordred/master/menu.yaml
+
+mordred -c $HOME_DIR/conf/setup.cfg
