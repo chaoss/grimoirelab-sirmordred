@@ -47,6 +47,7 @@ from sortinghat.db.database import Database
 from sortinghat.db.model import Profile
 
 from grimoire_elk.arthur import load_identities
+from grimoire_elk.elk.elastic import ElasticSearch
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +247,7 @@ class TaskIdentitiesLoad(Task):
         # ** START SYNC LOGIC **
         # Check that enrichment tasks are not active before loading identities
         while True:
-            time.sleep(10)  # check each 10s if the identities load could start
+            time.sleep(1)  # check each second if the identities load could start
             with TasksManager.IDENTITIES_TASKS_ON_LOCK:
                 with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
                     enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
@@ -515,12 +516,38 @@ class TaskIdentitiesMerge(Task):
         uuids = self.__execute_sh_command(cmd)
         return uuids
 
+    def __find_last_enrich_date(self):
+        """ Find the last enriched date for all data sources and
+            returns the older one """
+
+        last_date = None
+        enrich_timestamp_field = 'metadata__enriched_on'
+        # The last enrich data is for all data sources
+        cfg = self.config.get_conf()
+        es_url = cfg['es_enrichment']['url']
+        logger.debug("URL for enrich %s", es_url)
+        for backend_section in self.config.get_backend_sections():
+            if backend_section in cfg:
+                enriched_index = cfg[backend_section]['enriched_index']
+                logger.debug("Getting last date for %s", enriched_index)
+                elastic = ElasticSearch(es_url, enriched_index)
+                last_date_ds = elastic.get_last_item_field(enrich_timestamp_field)
+                logger.debug("Last date for %s: %s", enriched_index, last_date_ds)
+
+                if not last_date:
+                    last_date = last_date_ds
+
+                if last_date > last_date_ds:
+                    last_date = last_date_ds
+
+        return last_date
+
     def execute(self):
 
         # ** START SYNC LOGIC **
         # Check that enrichment tasks are not active before loading identities
         while True:
-            time.sleep(10)  # check each 10 seconds if the identities load could start
+            time.sleep(1)  # check each second if the task could start
             with TasksManager.IDENTITIES_TASKS_ON_LOCK:
                 with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
                     enrich_tasks = TasksManager.NUMBER_ENRICH_TASKS_ON
@@ -571,11 +598,20 @@ class TaskIdentitiesMerge(Task):
                 self.do_autoprofile(sources)
 
         # The uuids must be refreshed in all backends (data sources)
+
+        # The uuids to be refreshed are now found using the last_modified_date
+        after = self.__find_last_enrich_date()
+        logger.debug('Getting last modified identities from SH since %s', after)
+        (uids, ids) = api.search_last_modified_identities(self.db, after)
+        uuids_refresh = ids
+        logger.debug('Last modified identities from SH %s', uuids_refresh)
+
         # Give 5s so the queue is filled and if not, continue without it
         try:
             autorefresh_backends_uuids = TasksManager.UPDATED_UUIDS_QUEUE.get(timeout=5)
             for backend_section in autorefresh_backends_uuids:
                 autorefresh_backends_uuids[backend_section] += uuids_refresh
+                autorefresh_backends_uuids[backend_section] = list(set(autorefresh_backends_uuids[backend_section]))
             TasksManager.UPDATED_UUIDS_QUEUE.put(autorefresh_backends_uuids)
             logger.debug("Autorefresh uuids queue after processing identities: %s", autorefresh_backends_uuids)
         except Empty:
