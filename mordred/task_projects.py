@@ -108,11 +108,14 @@ class TaskProjects(Task):
     def __get_projects_from_url(self):
         config = self.conf
         projects_url = config['projects']['projects_url']
+        projects_file = config['projects']['projects_file']
 
         logger.info("Getting projects file from URL: %s ", projects_url)
         res = requests.get(projects_url)
         res.raise_for_status()
         projects = res.json()
+        with open(projects_file, "w") as fprojects:
+            json.dump(projects, fprojects, indent=True)
 
         return projects
 
