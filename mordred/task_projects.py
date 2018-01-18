@@ -92,15 +92,29 @@ class TaskProjects(Task):
 
     def execute(self):
         config = self.conf
-        projects_file = config['projects']['projects_file']
 
         if config['projects']['load_eclipse']:
             self.__get_eclipse_projects()
+        if config['projects']['projects_url']:
+            projects = self.__get_projects_from_url()
+        else:
+            projects_file = config['projects']['projects_file']
+            logger.info("Reading projects data from  %s ", projects_file)
+            with open(projects_file, 'r') as fprojects:
+                projects = json.load(fprojects)
 
-        logger.info("Reading projects data from  %s ", projects_file)
-        with open(projects_file, 'r') as fprojects:
-            projects = json.load(fprojects)
         TaskProjects.set_projects(projects)
+
+    def __get_projects_from_url(self):
+        config = self.conf
+        projects_url = config['projects']['projects_url']
+
+        logger.info("Getting projects file from URL: %s ", projects_url)
+        res = requests.get(projects_url)
+        res.raise_for_status()
+        projects = res.json()
+
+        return projects
 
     def __get_eclipse_projects(self):
         config = self.conf
@@ -176,3 +190,4 @@ class TaskProjects(Task):
             pdata["gerrit"] = get_repos_list_project(project, eclipse_projects, "scr", 'git.eclipse.org')
             # pdata["irc"] = get_repos_list_project(project, eclipse_projects, "irc")
 
+        return projects
