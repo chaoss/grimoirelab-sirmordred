@@ -169,8 +169,13 @@ class Config():
         params_projects = {
             "projects": {
                 "projects_file": {
-                    "optional": False,
+                    "optional": True,
                     "default": "projects.json",
+                    "type": str
+                },
+                "projects_url": {
+                    "optional": True,
+                    "default": None,
                     "type": str
                 },
                 "load_eclipse": {
