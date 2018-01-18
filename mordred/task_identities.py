@@ -537,7 +537,7 @@ class TaskIdentitiesMerge(Task):
                 if not last_date:
                     last_date = last_date_ds
 
-                if last_date > last_date_ds:
+                if last_date and last_date > last_date_ds:
                     last_date = last_date_ds
 
         return last_date
@@ -600,11 +600,15 @@ class TaskIdentitiesMerge(Task):
         # The uuids must be refreshed in all backends (data sources)
 
         # The uuids to be refreshed are now found using the last_modified_date
+        uuids_refresh = []
         after = self.__find_last_enrich_date()
-        logger.debug('Getting last modified identities from SH since %s', after)
-        (uids, ids) = api.search_last_modified_identities(self.db, after)
-        uuids_refresh = ids
-        logger.debug('Last modified identities from SH %s', uuids_refresh)
+        if after:
+            logger.debug('Getting last modified identities from SH since %s', after)
+            (uids, ids) = api.search_last_modified_identities(self.db, after)
+            uuids_refresh = ids
+            logger.debug('Last modified identities from SH %s', uuids_refresh)
+        else:
+            logger.warning('Last enrichment date is None')
 
         # Give 5s so the queue is filled and if not, continue without it
         try:
