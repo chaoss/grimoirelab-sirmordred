@@ -32,6 +32,7 @@ import subprocess
 import tempfile
 import time
 
+from datetime import datetime
 from queue import Empty
 
 import requests
@@ -47,7 +48,6 @@ from sortinghat.db.database import Database
 from sortinghat.db.model import Profile
 
 from grimoire_elk.arthur import load_identities
-from grimoire_elk.elk.elastic import ElasticSearch
 
 logger = logging.getLogger(__name__)
 
@@ -431,6 +431,7 @@ class TaskIdentitiesMerge(Task):
                           'database': self.db_sh, 'host': self.db_host,
                           'port': None}
         self.db = Database(**self.sh_kwargs)
+        self.last_autorefresh = datetime.utcnow()  # Last autorefresh date
 
     def is_backend_task(self):
         return False
@@ -516,32 +517,6 @@ class TaskIdentitiesMerge(Task):
         uuids = self.__execute_sh_command(cmd)
         return uuids
 
-    def __find_last_enrich_date(self):
-        """ Find the last enriched date for all data sources and
-            returns the older one """
-
-        last_date = None
-        enrich_timestamp_field = 'metadata__enriched_on'
-        # The last enrich data is for all data sources
-        cfg = self.config.get_conf()
-        es_url = cfg['es_enrichment']['url']
-        logger.debug("URL for enrich %s", es_url)
-        for backend_section in self.config.get_backend_sections():
-            if backend_section in cfg:
-                enriched_index = cfg[backend_section]['enriched_index']
-                logger.debug("Getting last date for %s", enriched_index)
-                elastic = ElasticSearch(es_url, enriched_index)
-                last_date_ds = elastic.get_last_item_field(enrich_timestamp_field)
-                logger.debug("Last date for %s: %s", enriched_index, last_date_ds)
-
-                if not last_date:
-                    last_date = last_date_ds
-
-                if last_date and last_date > last_date_ds:
-                    last_date = last_date_ds
-
-        return last_date
-
     def execute(self):
 
         # ** START SYNC LOGIC **
@@ -601,14 +576,14 @@ class TaskIdentitiesMerge(Task):
 
         # The uuids to be refreshed are now found using the last_modified_date
         uuids_refresh = []
-        after = self.__find_last_enrich_date()
-        if after:
-            logger.debug('Getting last modified identities from SH since %s', after)
-            (uids, ids) = api.search_last_modified_identities(self.db, after)
-            uuids_refresh = ids + uids
-            logger.debug('Last modified identities from SH %s', uuids_refresh)
-        else:
-            logger.warning('Last enrichment date is None')
+        after = self.last_autorefresh
+        logger.debug('Getting last modified identities from SH since %s', after)
+        (uids, ids) = api.search_last_modified_identities(self.db, after)
+        self.last_autorefresh = datetime.utcnow()
+        # Track only unique identities for identities refreshing because
+        # it covers all cases
+        uuids_refresh = uids
+        logger.debug('Last modified identities from SH %s', uuids_refresh)
 
         # Give 5s so the queue is filled and if not, continue without it
         try:
