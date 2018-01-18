@@ -605,7 +605,7 @@ class TaskIdentitiesMerge(Task):
         if after:
             logger.debug('Getting last modified identities from SH since %s', after)
             (uids, ids) = api.search_last_modified_identities(self.db, after)
-            uuids_refresh = ids
+            uuids_refresh = ids + uids
             logger.debug('Last modified identities from SH %s', uuids_refresh)
         else:
             logger.warning('Last enrichment date is None')
