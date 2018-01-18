@@ -114,7 +114,7 @@ class TaskProjects(Task):
         cmd += ' -o ' + self.conf['general']['short_name']
         logger.debug('Exporting bestiary with command %s', cmd)
         ret = subprocess.call(cmd, shell=True)
-        logger.debug('Resulto from %s: %i', cmd, ret)
+        logger.debug('Result from %s: %i', cmd, ret)
 
     def __get_eclipse_projects(self):
         config = self.conf
