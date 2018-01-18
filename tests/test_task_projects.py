@@ -39,6 +39,9 @@ from mordred.task_projects import TaskProjects
 CONF_FILE = 'test.cfg'
 ECLIPSE_PROJECTS_URL = 'http://projects.eclipse.org/json/projects/all'
 ECLIPSE_PROJECTS_FILE = 'data/eclipse-projects.json'
+PROJECTS_URL = 'http://localhost/projects.json'
+URL_PROJECTS_FILE = 'data/url-projects.json'
+URL_PROJECTS_MAIN = 'grimoire'
 
 
 def read_file(filename, mode='r'):
@@ -49,6 +52,7 @@ def read_file(filename, mode='r'):
 
 def setup_http_server():
     eclipse_projects = read_file(ECLIPSE_PROJECTS_FILE)
+    url_projects = read_file(URL_PROJECTS_FILE)
 
     http_requests = []
 
@@ -57,12 +61,19 @@ def setup_http_server():
 
         if uri.startswith(ECLIPSE_PROJECTS_URL):
             body = eclipse_projects
+        elif uri.startswith(PROJECTS_URL):
+            body = url_projects
         http_requests.append(last_request)
 
         return (200, headers, body)
 
     httpretty.register_uri(httpretty.GET,
                            ECLIPSE_PROJECTS_URL,
+                           responses=[
+                               httpretty.Response(body=request_callback)
+                           ])
+    httpretty.register_uri(httpretty.GET,
+                           PROJECTS_URL,
                            responses=[
                                httpretty.Response(body=request_callback)
                            ])
@@ -133,6 +144,20 @@ class TestTaskProjects(unittest.TestCase):
         self.assertTrue(TaskProjects.GLOBAL_PROJECT in projects)
 
         remove(projects_file)
+
+    @httpretty.activate
+    def test__get_projects_from_url(self):
+        """Test downloading projects from an URL """
+        setup_http_server()
+
+        projects_url = 'http://localhost/projects.json'
+        config = Config(CONF_FILE)
+        config.set_param('projects', 'projects_url', projects_url)
+        task = TaskProjects(config)
+        self.assertEqual(task.execute(), None)
+
+        projects = task.get_projects()
+        self.assertTrue(URL_PROJECTS_MAIN in projects)
 
 
 if __name__ == "__main__":
