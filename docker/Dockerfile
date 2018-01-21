@@ -10,7 +10,7 @@ ENV DEPLOY_USER_DIR /home/${DEPLOY_USER}
 ENV CONF_DIR ${DEPLOY_USER_DIR}/conf
 ENV SCRIPTS_DIR ${DEPLOY_USER_DIR}/scripts
 # The last release for elasticgirl.28
-ENV GRIMOIRELAB_RELEASE "elasticgirl.28.2"
+ENV GRIMOIRELAB_RELEASE "elasticgirl.28.3"
 
 # Initial user
 RUN useradd ${DEPLOY_USER} --create-home --shell /bin/bash
