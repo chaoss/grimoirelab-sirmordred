@@ -177,7 +177,7 @@ class TaskPanels(Task):
         if kibiter_major == "6":
             config_resource = '.kibana/doc/config:' + kibiter_version
         else:
-            config_resource = '.kibana/doc/config:' + kibiter_major
+            config_resource = '.kibana/config/' + kibiter_version
         kibiter_config = {
             "defaultIndex": kibiter_default_index,
             "timepicker:timeDefaults": time_picker
