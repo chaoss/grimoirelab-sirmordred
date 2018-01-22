@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOME_DIR='/home/grimoirelab'
+HOME_DIR='/home/bitergia'
 CONF_DIR="$HOME_DIR/conf"
 
 cd $HOMEDIR

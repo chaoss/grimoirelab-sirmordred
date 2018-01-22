@@ -5,7 +5,7 @@ FROM debian:stretch-slim
 MAINTAINER Jesus M. Gonzalez-Barahona <jgb@bitergia.com>
 
 ENV DEBIAN_FRONTEND noninteractive
-ENV DEPLOY_USER grimoirelab
+ENV DEPLOY_USER bitergia
 ENV DEPLOY_USER_DIR /home/${DEPLOY_USER}
 ENV SCRIPTS_DIR ${DEPLOY_USER_DIR}/scripts
 
