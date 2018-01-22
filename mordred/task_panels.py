@@ -30,10 +30,30 @@ import yaml
 from collections import OrderedDict
 from urllib.parse import urljoin
 
-from kidash.kidash import import_dashboard, get_dashboard_name, exists_dashboard
+from kidash.kidash import import_dashboard, get_dashboard_name, \
+    exists_dashboard
 from mordred.task import Task
 
 logger = logging.getLogger(__name__)
+
+# Header mandatory in Ellasticsearc 6 (optional in earlier versions)
+ES6_HEADER = {"Content-Type": "application/json"}
+
+
+def es_version(url):
+    """Get Elasticsearch version.
+
+    Get the version of Elasticsearch. This is useful because
+    Elasticsearch and Kibiter are paired (same major version for 5, 6).
+
+    :param url: Elasticseearch url hosting Kibiter indices
+    :returns:   major version, as string
+    """
+
+    res = requests.get(url)
+    res.raise_for_status()
+    major = res.json()['version']['number'].split(".")[0]
+    return major
 
 
 class TaskPanels(Task):
@@ -76,38 +96,101 @@ class TaskPanels(Task):
     def is_backend_task(self):
         return False
 
-    def __kibiter_version(self):
-        """ Get the kibiter vesion """
-        config_url = '.kibana/config/_search'
+    def __kibiter_version(self, major):
+        """ Get the kibiter vesion.
+
+        :param major: major Elasticsearch version
+        """
+
         es_url = self.conf['es_enrichment']['url']
-        url = urljoin(es_url + "/", config_url)
-        r = requests.get(url)
+        if major == "6":
+            config_url = '.kibana/_search'
+            url = urljoin(es_url + "/", config_url)
+            query = {
+                "stored_fields": ["_id"],
+                "query": {
+                    "term": {
+                        "type": "config"
+                    }
+                }
+            }
+            r = requests.get(url, data=json.dumps(query), headers=ES6_HEADER)
+            r.raise_for_status()
+            version = r.json()['hits']['hits'][0]['_id'].split(':', 1)[1]
+        else:
+            config_url = '.kibana/config/_search'
+            url = urljoin(es_url + "/", config_url)
+            r = requests.get(url)
+            r.raise_for_status()
+            version = r.json()['hits']['hits'][0]['_id']
+        logger.debug("Kibiter version: %s", version)
+        return version
+
+    @staticmethod
+    def __kb6_update_config(url, data):
+        """Update config in Kibana6.
+
+        Up to Kibana 6, you just updated properties in a dictionary,
+        but now the whole config data is a dictionary itself: we
+        need to read it, update the dictionary, and upload it again.
+
+        :param url: url to read and update
+        :param data: data to update
+        """
+
+        query = {
+            "query": {
+                "term": {
+                    "type": "config"
+                }
+            }
+        }
+        r = requests.get(url, data=json.dumps(query),
+                         headers=ES6_HEADER)
         r.raise_for_status()
-        return r.json()['hits']['hits'][0]['_id']
+        item = r.json()['_source']
+        for field, value in data.items():
+            item['config'][field] = value
+        r = requests.post(url, data=json.dumps(item),
+                          headers=ES6_HEADER)
+        r.raise_for_status()
 
     def __configure_kibiter(self):
+
         if 'panels' not in self.conf:
             logger.warning("Panels config not availble. Not configuring Kibiter.")
             return
 
-        kibiter_version = self.__kibiter_version()
+        kibiter_major = es_version(self.conf['es_enrichment']['url'])
+
         kibiter_time_from = self.conf['panels']['kibiter_time_from']
         kibiter_default_index = self.conf['panels']['kibiter_default_index']
 
         logger.info("Configuring Kibiter %s for default index %s and time frame %s",
-                    kibiter_version, kibiter_default_index, kibiter_time_from)
+                    kibiter_major, kibiter_default_index, kibiter_time_from)
 
-        config_url = '.kibana/config/' + kibiter_version
+        kibiter_version = self.__kibiter_version(kibiter_major)
+        print("Kibiter/Kibana: version found is %s" % kibiter_version)
+        time_picker = "{\n  \"from\": \"" + kibiter_time_from \
+            + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
+
+        if kibiter_major == "6":
+            config_resource = '.kibana/doc/config:' + kibiter_version
+        else:
+            config_resource = '.kibana/doc/config:' + kibiter_major
         kibiter_config = {
             "defaultIndex": kibiter_default_index,
-            "timepicker:timeDefaults":
-                "{\n  \"from\": \"" + kibiter_time_from + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
+            "timepicker:timeDefaults": time_picker
         }
 
         es_url = self.conf['es_enrichment']['url']
-        url = urljoin(es_url + "/", config_url)
-        r = requests.post(url, data=json.dumps(kibiter_config))
-        r.raise_for_status()
+        url = urljoin(es_url + "/", config_resource)
+        if kibiter_major == "6":
+            self.__kb6_update_config(url, data=kibiter_config)
+        else:
+            r = requests.post(url, data=json.dumps(kibiter_config),
+                              headers=ES6_HEADER)
+            r.raise_for_status()
 
     def __create_dashboard(self, panel_file, data_sources=None):
         """Upload a panel to Elasticsearch if it does not exist yet.
@@ -130,7 +213,9 @@ class TaskPanels(Task):
     def execute(self):
         # Configure kibiter
         self.__configure_kibiter()
+        print("Kibiter/Kibana: configured!")
 
+        print("Panels, visualizations: uploading...")
         # Create the commons panels
         for panel_file in self.panels_common:
             self.__create_dashboard(panel_file, data_sources=self.panels.keys())
@@ -143,6 +228,7 @@ class TaskPanels(Task):
                     self.__create_dashboard(panel_file)
                 except Exception as ex:
                     logger.error("%s not correctly uploaded (%s)", panel_file, ex)
+        print("Panels, visualziations: uploaded!")
 
 
 class TaskPanelsAliases(Task):
@@ -236,7 +322,7 @@ class TaskPanelsAliases(Task):
                ]
              }
             """ % (real_index, alias)
-            r = requests.post(aliases_url, data=action)
+            r = requests.post(aliases_url, data=action, headers=ES6_HEADER)
             r.raise_for_status()
 
     def __create_alias(self, es_url, es_index, alias):
@@ -255,7 +341,7 @@ class TaskPanelsAliases(Task):
         """ % (es_index, alias)
 
         logger.debug("%s %s", alias_url, action)
-        r = requests.post(alias_url, data=action)
+        r = requests.post(alias_url, data=action, headers=ES6_HEADER)
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError:
@@ -293,7 +379,9 @@ class TaskPanelsAliases(Task):
 
     def execute(self):
         # Create the aliases
+        print("Elasticsearch aliases: creating...")
         self.__create_aliases()
+        print("Elasticsearch aliases: created!")
 
 
 class TaskPanelsMenu(Task):
@@ -331,29 +419,57 @@ class TaskPanelsMenu(Task):
         logger.debug("Active data sources for menu: %s", active_ds)
         return active_ds
 
-    def __create_dashboard_menu(self, dash_menu):
-        """ Create the menu definition to access the panels in a dashboard """
-        logger.info("Adding dashboard menu definition")
-        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
+    def __create_dashboard_menu(self, dash_menu, kibiter_major):
+        """ Create the menu definition to access the panels in a dashboard.
+
+        :param          menu: dashboard menu to upload
+        :param kibiter_major: major version of kibiter
+        """
+        logger.info("Adding dashboard menu")
+        if kibiter_major == "6":
+            menu_resource = ".kibana/doc/metadashboard"
+            mapping_resource = ".kibana/_mapping/doc"
+            mapping = {"dynamic": "true"}
+            menu = {'metadashboard': dash_menu}
+        else:
+            menu_resource = ".kibana/metadashboard/main"
+            mapping_resource = ".kibana/_mapping/metadashboard"
+            mapping = {"dynamic": "true"}
+            menu = dash_menu
+        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+                           menu_resource)
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
-        metadashboard_mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
-                                            ".kibana/_mapping/metadashboard")
-        r = requests.put(metadashboard_mapping_url, data=json.dumps({"dynamic": "true"}))
+        mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+                              mapping_resource)
+        logger.debug("Adding mapping for metadashbaord")
+        r = requests.put(mapping_url, data=json.dumps(mapping),
+                         headers=ES6_HEADER)
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError:
-            logger.error("Cannot create mapping for Kibiter menu.")
-        r = requests.post(menu_url, data=json.dumps(dash_menu))
+            logger.error("Couldn't create mapping for Kibiter menu.")
+        r = requests.post(menu_url, data=json.dumps(menu),
+                          headers=ES6_HEADER)
         try:
             r.raise_for_status()
         except requests.exceptions.HTTPError:
-            logger.error("Cannot create Kibiter menu. Probably it already exists for a different kibiter version.")
+            logger.error("Couldn't create Kibiter menu.")
+            logger.error(r.json())
             raise
 
-    def __remove_dashboard_menu(self):
-        """ The dashboard must be removed before creating a new one """
-        logger.info("Remove dashboard menu definition")
-        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", ".kibana/metadashboard/main")
+    def __remove_dashboard_menu(self, kibiter_major):
+        """ Remove existing menu for dashboard, if any.
+
+        Usually, we remove the menu before creating a new one.
+
+        :param kibiter_major: major version of kibiter
+        """
+        logger.info("Removing old dashboard menu, if any")
+        if kibiter_major == "6":
+            metadashboard = ".kibana/doc/metadashboard"
+        else:
+            metadashboard = ".kibana/metadashboard/main"
+        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", metadashboard)
         requests.delete(menu_url)
 
     def __get_menu_entries(self):
@@ -408,8 +524,11 @@ class TaskPanelsMenu(Task):
         return omenu
 
     def execute(self):
+        print("Kibiter/Kibana: uploading dashboard menu...")
         # Create the panels menu
         menu = self.__get_dash_menu()
         # Remove the current menu and create the new one
-        self.__remove_dashboard_menu()
-        self.__create_dashboard_menu(menu)
+        kibiter_major = es_version(self.conf['es_enrichment']['url'])
+        self.__remove_dashboard_menu(kibiter_major)
+        self.__create_dashboard_menu(menu, kibiter_major)
+        print("Kibiter/Kibana: uploaded dashboard menu!")
