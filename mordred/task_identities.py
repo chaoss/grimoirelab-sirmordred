@@ -33,7 +33,6 @@ import tempfile
 import time
 
 from datetime import datetime
-from queue import Empty
 
 import requests
 
@@ -257,24 +256,6 @@ class TaskIdentitiesLoad(Task):
                         TasksManager.IDENTITIES_TASKS_ON = True
                         break
         #  ** END SYNC LOGIC **
-
-        # Load of identities must not be done if there are pending autorefresh
-        # identities
-        autorefresh_pending = False
-
-        try:
-            autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get(timeout=5)
-            for backend_section in autorefresh_backends:
-                if autorefresh_backends[backend_section]:
-                    logger.debug("Pending autorefresh for %s. Identities load cancelled.", backend_section)
-                    autorefresh_pending = True
-                    break
-            TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
-        except Empty:
-            logger.debug("Autorefresh queue empty")
-
-        if autorefresh_pending:
-            return
 
         cfg = self.config.get_conf()
 
@@ -541,30 +522,6 @@ class TaskIdentitiesMerge(Task):
                 sources = cfg['sortinghat']['autoprofile']
                 self.do_autoprofile(sources)
 
-        # The uuids must be refreshed in all backends (data sources)
-
-        # The uuids to be refreshed are now found using the last_modified_date
-        uuids_refresh = []
-        after = self.last_autorefresh
-        logger.debug('Getting last modified identities from SH since %s', after)
-        (uids, ids) = api.search_last_modified_identities(self.db, after)
-        self.last_autorefresh = datetime.utcnow()
-        # Track only unique identities for identities refreshing because
-        # it covers all cases
-        uuids_refresh = uids
-        logger.debug('Last modified identities from SH %s', uuids_refresh)
-
-        # Give 5s so the queue is filled and if not, continue without it
-        try:
-            autorefresh_backends_uuids = TasksManager.UPDATED_UUIDS_QUEUE.get(timeout=5)
-            for backend_section in autorefresh_backends_uuids:
-                autorefresh_backends_uuids[backend_section] += uuids_refresh
-                autorefresh_backends_uuids[backend_section] = list(set(autorefresh_backends_uuids[backend_section]))
-            TasksManager.UPDATED_UUIDS_QUEUE.put(autorefresh_backends_uuids)
-            logger.debug("Autorefresh uuids queue after processing identities: %s", autorefresh_backends_uuids)
-        except Empty:
-            logger.warning("Autorefresh uuids not active because the queue for it is empty.")
-
         if self.bots:
             if 'bots_names' not in cfg['sortinghat']:
                 logger.info("[sortinghat] Bots name list not configured. Skipping.")
@@ -587,17 +544,6 @@ class TaskIdentitiesMerge(Task):
                         profile = {"is_bot": False}
                         for uuid in uuids:
                             api.edit_profile(self.db, uuid, **profile)
-
-        # Autorefresh must be done once identities processing has finished
-        # Give 5s so the queue is filled and if not, continue without it
-        try:
-            autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get(timeout=5)
-            for backend_section in autorefresh_backends:
-                autorefresh_backends[backend_section] = True
-            TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
-            logger.debug("Autorefresh queue after processing identities: %s", autorefresh_backends)
-        except Empty:
-            logger.warning("Autorefresh not active because the queue for it is empty.")
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False

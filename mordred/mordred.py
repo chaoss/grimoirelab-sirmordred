@@ -207,14 +207,6 @@ class Mordred:
         # launching threads for tasks by backend
         if len(backend_tasks) > 0:
             repos_backend = self._get_repos_by_backend()
-            # Init the shared dict to control if autorefresh must be done
-            backends_autorefresh = {backend: False for backend in repos_backend}
-            TasksManager.AUTOREFRESH_QUEUE.put(backends_autorefresh)
-            logger.debug("Initial Autorefresh queue: %s", backends_autorefresh)
-            # Init the shared dict to control the uuids to be autorefreshed in
-            # each backend
-            backends_autorefresh_uuids = {backend: [] for backend in repos_backend}
-            TasksManager.UPDATED_UUIDS_QUEUE.put(backends_autorefresh_uuids)
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
                 t = TasksManager(backend_tasks, backend, stopper, self.config, small_delay)
@@ -244,18 +236,6 @@ class Mordred:
 
         # Checking for exceptions in threads to log them
         self.__check_queue_for_errors()
-
-        # Empty the shared queues. They must have just one item.
-        if TasksManager.AUTOREFRESH_QUEUE.qsize() != 1:
-            logger.warning("AUTOREFRESH_QUEUE final size: %i",
-                           TasksManager.AUTOREFRESH_QUEUE.qsize())
-        if TasksManager.UPDATED_UUIDS_QUEUE.qsize() != 1:
-            logger.warning("UPDATED_UUIDS_QUEUE final size: %i",
-                           TasksManager.UPDATED_UUIDS_QUEUE.qsize())
-        while not TasksManager.AUTOREFRESH_QUEUE.empty():
-            TasksManager.AUTOREFRESH_QUEUE.get()
-        while not TasksManager.UPDATED_UUIDS_QUEUE.empty():
-            TasksManager.UPDATED_UUIDS_QUEUE.get()
 
         logger.debug(" Task manager and all its tasks (threads) finished!")
 

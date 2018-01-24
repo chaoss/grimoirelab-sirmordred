@@ -25,6 +25,8 @@
 import logging
 import time
 
+from datetime import datetime
+
 from grimoire_elk.arthur import (do_studies, enrich_backend, refresh_projects,
                                  refresh_identities)
 from grimoire_elk.elastic_items import ElasticItems
@@ -35,6 +37,9 @@ from mordred.task import Task
 from mordred.task_manager import TasksManager
 from mordred.task_panels import TaskPanelsAliases
 from mordred.task_projects import TaskProjects
+
+from sortinghat import api
+from sortinghat.db.database import Database
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +55,11 @@ class TaskEnrich(Task):
         self.clean = False
         # check whether the aliases has beed already created
         self.enrich_aliases = False
+        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
+                          'database': self.db_sh, 'host': self.db_host,
+                          'port': None}
+        self.db = Database(**self.sh_kwargs)
+        self.last_autorefresh = datetime.utcnow()  # Last autorefresh date
 
     def __enrich_items(self):
 
@@ -135,41 +145,32 @@ class TaskEnrich(Task):
         logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
 
     def __autorefresh(self):
-        logger.info("[%s] Refreshing project and identities " +
-                    "fields for updated uuids ", self.backend_section)
         # Refresh projects
+        enrich_backend = self._get_enrich_backend()
+        field_id = enrich_backend.get_field_unique_id()
+
         if False:
             # TODO: Waiting that the project info is loaded from yaml files
             logger.info("Refreshing project field in enriched index")
-            enrich_backend = self._get_enrich_backend()
             field_id = enrich_backend.get_field_unique_id()
             eitems = refresh_projects(enrich_backend)
             enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
 
         # Refresh identities
-        logger.info("Refreshing identities fields in enriched index")
-        enrich_backend = self._get_enrich_backend()
-        field_id = enrich_backend.get_field_unique_id()
-        # Now we need to get the uuids to be refreshed
-        logger.debug("Checking if there are uuids to refresh in %s", self.backend_section)
-        backends_uuids = TasksManager.UPDATED_UUIDS_QUEUE.get()
-        if backends_uuids:
-            logger.debug("Doing autorefresh for %s (%s uuids)", self.backend_section, backends_uuids)
-            if backends_uuids[self.backend_section]:
-                uuids_refresh = backends_uuids[self.backend_section]
-                backends_uuids[self.backend_section] = []
-                logger.debug("New uuids data: %s", backends_uuids)
-                TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
-                logger.debug("Refreshing uuids %s", uuids_refresh)
-                eitems = refresh_identities(enrich_backend,
-                                            {"name": "author_uuid",
-                                             "value": uuids_refresh})
-                enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
-            else:
-                TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
+        logger.info("Refreshing identities fields in enriched index %s", self.backend_section)
+        uuids_refresh = []
+        after = self.last_autorefresh
+        logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
+        (uuids_refresh, ids) = api.search_last_modified_identities(self.db, after)
+        self.last_autorefresh = datetime.utcnow()
+        if uuids_refresh:
+            logger.debug("Refreshing for %s uuids %s", self.backend_section, uuids_refresh)
+            eitems = refresh_identities(enrich_backend,
+                                        {"name": "author_uuid",
+                                         "value": uuids_refresh})
+            enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
         else:
-            TasksManager.UPDATED_UUIDS_QUEUE.put(backends_uuids)
-            logger.warning("No dict with uuids per backend to be refreshed")
+            logger.debug("No uuids to be refreshed found")
 
     def __studies(self):
         logger.info("Executing %s studies ...", self.backend_section)
@@ -206,17 +207,10 @@ class TaskEnrich(Task):
         self.__enrich_items()
 
         if cfg['es_enrichment']['autorefresh']:
-            # Check it we should do the autorefresh
-            autorefresh_backends = TasksManager.AUTOREFRESH_QUEUE.get()
-            logger.debug("Checking autorefresh for %s %s", self.backend_section, autorefresh_backends)
-            if autorefresh_backends[self.backend_section]:
-                logger.debug("Doing autorefresh for %s", self.backend_section)
-                autorefresh_backends[self.backend_section] = False
-                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
-                self.__autorefresh()
-            else:
-                logger.debug("Not doing autorefresh for %s", self.backend_section)
-                TasksManager.AUTOREFRESH_QUEUE.put(autorefresh_backends)
+            logger.debug("Doing autorefresh for %s", self.backend_section)
+            self.__autorefresh()
+        else:
+            logger.debug("Not doing autorefresh for %s", self.backend_section)
 
         if cfg['es_enrichment']['studies']:
             self.__studies()
