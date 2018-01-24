@@ -465,43 +465,16 @@ class TaskIdentitiesMerge(Task):
         logger.debug("Executing %s", cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         outs, errs = proc.communicate()
-        uuids = self.__get_uuids_to_refresh(outs.decode("utf8"))
         return_code = proc.returncode
         if return_code != 0:
             logger.error("[sortinghat] Error in command %s", cmd)
-            uuids = []
-        return uuids
-
-    def __get_uuids_to_refresh(self, data):
-        """
-        Return the Sortinggat unique identifiers that must be refreshed
-        after a unify and affiliate command
-
-        Formats:
-        Unique identity ab882b9c6f29837b263448aeb6eab1ec373d7688 merged on 75fc28ef4643de5323e89fb26e4e67c97b24f507
-        Unique identity 12deb94aa946193e28c2a933cbee4b338a928042 (acs_at_bitergia.com) affiliated to Bitergia
-        """
-
-        if data is None:
-            return None
-
-        lines = data.split("\n")
-        uuids = []
-        for line in lines:
-            fields = line.split()
-            if 'merged' in line:
-                uuids.append(fields[2])
-                if fields[5] not in uuids:
-                    uuids.append(fields[5])
-            elif 'affiliated' in line:
-                uuids.append(fields[2])
-        return uuids
+        return return_code
 
     def do_affiliate(self):
         cmd = self.__build_sh_command()
         cmd += ['affiliate']
-        uuids = self.__execute_sh_command(cmd)
-        return uuids
+        self.__execute_sh_command(cmd)
+        return
 
     def do_autoprofile(self, sources):
         cmd = self.__build_sh_command()
@@ -514,8 +487,8 @@ class TaskIdentitiesMerge(Task):
         cmd += ['unify', '--fast-matching', '-m', kwargs['matching']]
         if not kwargs['strict_mapping']:
             cmd += ['--no-strict-matching']
-        uuids = self.__execute_sh_command(cmd)
-        return uuids
+        self.__execute_sh_command(cmd)
+        return
 
     def execute(self):
 
@@ -547,9 +520,7 @@ class TaskIdentitiesMerge(Task):
                           'strict_mapping': cfg['sortinghat']['strict_mapping']}
                 logger.info("[sortinghat] Unifying identities using algorithm %s",
                             kwargs['matching'])
-                uuids = self.do_unify(kwargs)
-                uuids_refresh += uuids
-                logger.debug("uuids to refresh from unify: %s", uuids)
+                self.do_unify(kwargs)
 
         if self.affiliate:
             if not cfg['sortinghat']['affiliate']:
@@ -557,9 +528,7 @@ class TaskIdentitiesMerge(Task):
             else:
                 # Global enrollments using domains
                 logger.info("[sortinghat] Executing affiliate")
-                uuids = self.do_affiliate()
-                uuids_refresh += uuids
-                logger.debug("uuids to refresh from affiliate: %s", uuids)
+                self.do_affiliate()
 
         if self.autoprofile:
             # autoprofile = [] -> cfg['sortinghat']['autoprofile'][0] = ['']
