@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 ES6_HEADER = {"Content-Type": "application/json"}
 
 # We don't have this data so it just works for this value
-ES6_KIBANA_INIT_URL = "http://localhost:5601"
+ES6_KIBANA_INIT_URL = "http://kibiter:5601"
 ES6_KIBANA_INIT_URL += "/api/kibana/settings/indexPattern:placeholder"
 ES6_KIBANA_INIT_DATA = '{"value": "*"}'
 # We need the version before the .kibana exists so we can not find it
