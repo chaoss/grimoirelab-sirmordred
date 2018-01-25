@@ -161,7 +161,7 @@ class TaskEnrich(Task):
         uuids_refresh = []
         after = self.last_autorefresh
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
-        (uuids_refresh, ids) = api.search_last_modified_identities(self.db, after)
+        (uuids_refresh, ids_refresh) = api.search_last_modified_identities(self.db, after)
         self.last_autorefresh = datetime.utcnow()
         if uuids_refresh:
             logger.debug("Refreshing for %s uuids %s", self.backend_section, uuids_refresh)
@@ -171,6 +171,14 @@ class TaskEnrich(Task):
             enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
         else:
             logger.debug("No uuids to be refreshed found")
+        if ids_refresh:
+            logger.debug("Refreshing for %s ids %s", self.backend_section, ids_refresh)
+            eitems = refresh_identities(enrich_backend,
+                                        {"name": "author_id",
+                                         "value": ids_refresh})
+            enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+        else:
+            logger.debug("No ids to be refreshed found")
 
     def __studies(self):
         logger.info("Executing %s studies ...", self.backend_section)
