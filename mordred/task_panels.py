@@ -39,18 +39,6 @@ logger = logging.getLogger(__name__)
 # Header mandatory in Ellasticsearc 6 (optional in earlier versions)
 ES6_HEADER = {"Content-Type": "application/json"}
 
-# We don't have this data so it just works for this value
-ES6_KIBANA_INIT_URL = "http://kibiter:5601"
-ES6_KIBANA_INIT_URL += "/api/kibana/settings/indexPattern:placeholder"
-ES6_KIBANA_INIT_DATA = '{"value": "*"}'
-# We need the version before the .kibana exists so we can not find it
-ES6_KIBANA_VERSION = "6.1.0-1"
-ES6_KIBANA_INIT_HEADERS = {
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-    "kbn-version": ES6_KIBANA_VERSION
-}
-
 
 def es_version(url):
     """Get Elasticsearch version.
@@ -113,6 +101,7 @@ class TaskPanels(Task):
 
         :param major: major Elasticsearch version
         """
+        version = None
 
         es_url = self.conf['es_enrichment']['url']
         if major == "6":
@@ -126,9 +115,12 @@ class TaskPanels(Task):
                     }
                 }
             }
-            res = self.grimoire_con.get(url, data=json.dumps(query), headers=ES6_HEADER)
-            res.raise_for_status()
-            version = res.json()['hits']['hits'][0]['_id'].split(':', 1)[1]
+            try:
+                res = self.grimoire_con.get(url, data=json.dumps(query), headers=ES6_HEADER)
+                res.raise_for_status()
+                version = res.json()['hits']['hits'][0]['_id'].split(':', 1)[1]
+            except Exception:
+                logger.error("Can not find kibiter version")
         else:
             config_url = '.kibana/config/_search'
             url = urljoin(es_url + "/", config_url)
@@ -170,19 +162,28 @@ class TaskPanels(Task):
 
         if 'panels' not in self.conf:
             logger.warning("Panels config not availble. Not configuring Kibiter.")
-            return
+            return False
 
         kibiter_major = es_version(self.conf['es_enrichment']['url'])
         if kibiter_major == "6":
-            # Force the creation of the .kibana index
-            res = self.grimoire_con.post(ES6_KIBANA_INIT_URL, headers=ES6_KIBANA_INIT_HEADERS,
-                                         data=ES6_KIBANA_INIT_DATA)
-            try:
-                res.raise_for_status()
-            except Exception as ex:
-                print(ES6_KIBANA_INIT_HEADERS)
-                print(ES6_KIBANA_INIT_DATA)
-                logger.error("Can not create the .kibana in ES6 %s", ex)
+            if self.conf['panels']["kibiter_url"] and self.conf['panels']["kibiter_version"]:
+                # Force the creation of the .kibana index
+                # We don't have this data so it just works for this value
+                k6_init_url = self.conf['panels']["kibiter_url"]
+                k6_init_url += "/api/kibana/settings/indexPattern:placeholder"
+                k6_init_data = '{"value": "*"}'
+                k6_init_headers = {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "kbn-version": self.conf['panels']['kibiter_version']
+                }
+
+                res = self.grimoire_con.requests.post(k6_init_url, headers=k6_init_headers,
+                                                      data=k6_init_data)
+                try:
+                    res.raise_for_status()
+                except Exception as ex:
+                    logger.error("Can not create the .kibana in ES6 %s", ex)
 
         kibiter_time_from = self.conf['panels']['kibiter_time_from']
         kibiter_default_index = self.conf['panels']['kibiter_default_index']
@@ -191,6 +192,8 @@ class TaskPanels(Task):
                     kibiter_major, kibiter_default_index, kibiter_time_from)
 
         kibiter_version = self.__kibiter_version(kibiter_major)
+        if not kibiter_version:
+            return False
         print("Kibiter/Kibana: version found is %s" % kibiter_version)
         time_picker = "{\n  \"from\": \"" + kibiter_time_from \
             + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
@@ -212,6 +215,8 @@ class TaskPanels(Task):
             res = self.grimoire_con.post(url, data=json.dumps(kibiter_config),
                                          headers=ES6_HEADER)
             res.raise_for_status()
+
+        return True
 
     def __create_dashboard(self, panel_file, data_sources=None):
         """Upload a panel to Elasticsearch if it does not exist yet.
@@ -237,8 +242,10 @@ class TaskPanels(Task):
 
     def execute(self):
         # Configure kibiter
-        self.__configure_kibiter()
-        print("Kibiter/Kibana: configured!")
+        if self.__configure_kibiter():
+            print("Kibiter/Kibana: configured!")
+        else:
+            logger.error("Can not configure kibiter")
 
         print("Panels, visualizations: uploading...")
         # Create the commons panels
