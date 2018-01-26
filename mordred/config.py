@@ -247,6 +247,16 @@ class Config():
                     "optional": True,
                     "default": "git",
                     "type": str
+                },
+                "kibiter_url": {
+                    "optional": True,
+                    "default": None,
+                    "type": str
+                },
+                "kibiter_version": {
+                    "optional": True,
+                    "default": None,
+                    "type": str
                 }
             }
         }
