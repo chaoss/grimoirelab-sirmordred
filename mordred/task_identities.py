@@ -218,6 +218,7 @@ class TaskIdentitiesLoad(Task):
                 res.raise_for_status()
                 identities = tempfile.NamedTemporaryFile()
                 identities.write(res.content)
+                identities.flush()
                 identities_filename = identities.name
 
             # Convert to a JSON file in SH format
@@ -233,7 +234,6 @@ class TaskIdentitiesLoad(Task):
                              'GrimoireLab yaml file. Do the files exists? ' +
                              'Is the API token right?')
             else:
-
                 # Load the JSON file in SH format
                 load_identities_file(json_identities, cfg['sortinghat']['reset_on_load'])
 
@@ -285,6 +285,17 @@ class TaskIdentitiesLoad(Task):
                 with TasksManager.IDENTITIES_TASKS_ON_LOCK:
                     TasksManager.IDENTITIES_TASKS_ON = False
                 raise
+            # After loading the identities we need to unify in order
+            # to mix the identites loaded with then ones from data sources
+            cmd = ['sortinghat', '-u', self.db_user, '-p', self.db_password,
+                   '--host', self.db_host, '-d', self.db_sh]
+            cmd += ['unify', '--fast-matching']
+            for algo in cfg['sortinghat']['matching']:
+                ucmd = cmd + ['-m', algo]
+                if not cfg['sortinghat']['strict_mapping']:
+                    ucmd += ['--no-strict-matching']
+                logger.debug("Doing unify after identities load")
+                self.__execute_command(ucmd)
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
