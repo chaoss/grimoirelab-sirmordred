@@ -38,6 +38,8 @@ logger = logging.getLogger(__name__)
 
 # Header mandatory in Ellasticsearc 6 (optional in earlier versions)
 ES6_HEADER = {"Content-Type": "application/json"}
+ES6_KIBANA_INIT_DATA = '{"value": "*"}'
+ES6_KIBANA_INIT_URL_PATH = "/api/kibana/settings/indexPattern:placeholder"
 
 
 def es_version(url):
@@ -170,17 +172,16 @@ class TaskPanels(Task):
                 # Force the creation of the .kibana index
                 # We don't have this data so it just works for this value
                 k6_init_url = self.conf['panels']["kibiter_url"]
-                k6_init_url += "/api/kibana/settings/indexPattern:placeholder"
-                k6_init_data = '{"value": "*"}'
+                k6_init_url += ES6_KIBANA_INIT_URL_PATH
                 k6_init_headers = {
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                     "kbn-version": self.conf['panels']['kibiter_version']
                 }
 
-                res = self.grimoire_con.requests.post(k6_init_url, headers=k6_init_headers,
-                                                      data=k6_init_data)
                 try:
+                    res = self.grimoire_con.requests.post(k6_init_url, headers=k6_init_headers,
+                                                          data=ES6_KIBANA_INIT_DATA)
                     res.raise_for_status()
                 except Exception as ex:
                     logger.error("Can not create the .kibana in ES6 %s", ex)
