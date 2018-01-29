@@ -36,6 +36,7 @@ import requests
 
 from arthur.common import Q_STORAGE_ITEMS
 
+from grimoire_elk.elk.utils import grimoire_con
 
 from mordred.config import Config
 from mordred.error import DataCollectionError
@@ -59,6 +60,7 @@ class Mordred:
         """ config is a Config object """
         self.config = config
         self.conf = config.get_conf()
+        self.grimoire_con = grimoire_con(conn_retries=8)  # 1m retry
 
     def check_redis_access(self):
         redis_access = False
@@ -108,8 +110,8 @@ class Mordred:
 
         es = self.conf['es_collection']['url']
         try:
-            r = requests.get(es, verify=False)
-            r.raise_for_status()
+            res = self.grimoire_con.get(es)
+            res.raise_for_status()
         except Exception:
             es_access = False
             es_error = _ofuscate_server_uri(es)
@@ -118,8 +120,8 @@ class Mordred:
            self.conf['es_enrichment']['studies']):
             es = self.conf['es_enrichment']['url']
             try:
-                r = requests.get(es, verify=False)
-                r.raise_for_status()
+                res = self.grimoire_con.get(es)
+                res.raise_for_status()
             except Exception:
                 es_access = False
                 es_error = _ofuscate_server_uri(es)
