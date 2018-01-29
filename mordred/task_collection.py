@@ -177,7 +177,12 @@ class TaskRawDataArthurCollection(Task):
             if (time.time() - self.ARTHUR_LAST_MEMORY_CHECK) > 5 * self.ARTHUR_LAST_MEMORY_CHECK_TIME:
                 self.ARTHUR_LAST_MEMORY_CHECK = time.time()
                 logger.debug("Measuring the memory used by the raw items dict ...")
-                memory_size = self.measure_memory(self.arthur_items) / (1024 * 1024)
+                try:
+                    memory_size = self.measure_memory(self.arthur_items) / (1024 * 1024)
+                except RuntimeError as ex:
+                    # During memory usage measure, other thread could change the dict
+                    logger.warning("Can't get the memory used by the raw items dict: %s", ex)
+                    memory_size = self.ARTHUR_LAST_MEMORY_SIZE
                 self.ARTHUR_LAST_MEMORY_CHECK_TIME = time.time() - self.ARTHUR_LAST_MEMORY_CHECK
                 logger.debug("Arthur items memory size: %0.2f MB (%is to check)",
                              memory_size, self.ARTHUR_LAST_MEMORY_CHECK_TIME)
