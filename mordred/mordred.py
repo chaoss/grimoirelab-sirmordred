@@ -60,7 +60,7 @@ class Mordred:
         """ config is a Config object """
         self.config = config
         self.conf = config.get_conf()
-        self.grimoire_con = grimoire_con(conn_retries=8)  # 1m retry
+        self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
 
     def check_redis_access(self):
         redis_access = False

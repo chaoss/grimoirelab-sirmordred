@@ -45,7 +45,7 @@ class Task():
         self.db_user = self.conf['sortinghat']['user']
         self.db_password = self.conf['sortinghat']['password']
         self.db_host = self.conf['sortinghat']['host']
-        self.grimoire_con = grimoire_con(conn_retries=9)  # 5m retry
+        self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
 
     def is_backend_task(self):
         """
