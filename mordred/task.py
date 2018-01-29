@@ -26,6 +26,7 @@ import logging
 
 from grimoire_elk.arthur import get_ocean_backend
 from grimoire_elk.utils import get_connector_from_name, get_elastic
+from grimoire_elk.elk.utils import grimoire_con
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,7 @@ class Task():
         self.db_user = self.conf['sortinghat']['user']
         self.db_password = self.conf['sortinghat']['password']
         self.db_host = self.conf['sortinghat']['host']
+        self.grimoire_con = grimoire_con(conn_retries=9)  # 5m retry
 
     def is_backend_task(self):
         """
