@@ -126,20 +126,19 @@ class TaskPanels(Task):
                     }
                 }
             }
-            r = requests.get(url, data=json.dumps(query), headers=ES6_HEADER)
-            r.raise_for_status()
-            version = r.json()['hits']['hits'][0]['_id'].split(':', 1)[1]
+            res = self.grimoire_con.get(url, data=json.dumps(query), headers=ES6_HEADER)
+            res.raise_for_status()
+            version = res.json()['hits']['hits'][0]['_id'].split(':', 1)[1]
         else:
             config_url = '.kibana/config/_search'
             url = urljoin(es_url + "/", config_url)
-            r = requests.get(url)
-            r.raise_for_status()
-            version = r.json()['hits']['hits'][0]['_id']
+            res = self.grimoire_con.get(url)
+            res.raise_for_status()
+            version = res.json()['hits']['hits'][0]['_id']
         logger.debug("Kibiter version: %s", version)
         return version
 
-    @staticmethod
-    def __kb6_update_config(url, data):
+    def __kb6_update_config(self, url, data):
         """Update config in Kibana6.
 
         Up to Kibana 6, you just updated properties in a dictionary,
@@ -157,15 +156,15 @@ class TaskPanels(Task):
                 }
             }
         }
-        r = requests.get(url, data=json.dumps(query),
-                         headers=ES6_HEADER)
-        r.raise_for_status()
-        item = r.json()['_source']
+        res = self.grimoire_con.get(url, data=json.dumps(query),
+                                    headers=ES6_HEADER)
+        res.raise_for_status()
+        item = res.json()['_source']
         for field, value in data.items():
             item['config'][field] = value
-        r = requests.post(url, data=json.dumps(item),
-                          headers=ES6_HEADER)
-        r.raise_for_status()
+        res = self.grimoire_con.post(url, data=json.dumps(item),
+                                     headers=ES6_HEADER)
+        res.raise_for_status()
 
     def __configure_kibiter(self):
 
@@ -176,8 +175,8 @@ class TaskPanels(Task):
         kibiter_major = es_version(self.conf['es_enrichment']['url'])
         if kibiter_major == "6":
             # Force the creation of the .kibana index
-            res = requests.post(ES6_KIBANA_INIT_URL, headers=ES6_KIBANA_INIT_HEADERS,
-                                data=ES6_KIBANA_INIT_DATA)
+            res = self.grimoire_con.post(ES6_KIBANA_INIT_URL, headers=ES6_KIBANA_INIT_HEADERS,
+                                         data=ES6_KIBANA_INIT_DATA)
             try:
                 res.raise_for_status()
             except Exception as ex:
@@ -210,9 +209,9 @@ class TaskPanels(Task):
         if kibiter_major == "6":
             self.__kb6_update_config(url, data=kibiter_config)
         else:
-            r = requests.post(url, data=json.dumps(kibiter_config),
-                              headers=ES6_HEADER)
-            r.raise_for_status()
+            res = self.grimoire_con.post(url, data=json.dumps(kibiter_config),
+                                         headers=ES6_HEADER)
+            res.raise_for_status()
 
     def __create_dashboard(self, panel_file, data_sources=None):
         """Upload a panel to Elasticsearch if it does not exist yet.
@@ -327,17 +326,17 @@ class TaskPanelsAliases(Task):
         exists = False
 
         alias_url = urljoin(es_url + "/", "_alias/" + alias)
-        r = requests.get(alias_url)
-        if r.status_code == 200:
+        res = self.grimoire_con.get(alias_url)
+        if res.status_code == 200:
             # The alias exists
             exists = True
         return exists
 
     def __remove_alias(self, es_url, alias):
         alias_url = urljoin(es_url + "/", "_alias/" + alias)
-        r = requests.get(alias_url)
-        if r.status_code == 200:
-            real_index = list(r.json())[0]
+        res = self.grimoire_con.get(alias_url)
+        if res.status_code == 200:
+            real_index = list(res.json())[0]
             logger.debug("Removing alias %s to %s", alias, real_index)
             aliases_url = urljoin(es_url + "/", "_aliases")
             action = """
@@ -348,8 +347,8 @@ class TaskPanelsAliases(Task):
                ]
              }
             """ % (real_index, alias)
-            r = requests.post(aliases_url, data=action, headers=ES6_HEADER)
-            r.raise_for_status()
+            res = self.grimoire_con.post(aliases_url, data=action, headers=ES6_HEADER)
+            res.raise_for_status()
 
     def __create_alias(self, es_url, es_index, alias):
         if self.__exists_alias(es_url, alias):
@@ -367,12 +366,12 @@ class TaskPanelsAliases(Task):
         """ % (es_index, alias)
 
         logger.debug("%s %s", alias_url, action)
-        r = requests.post(alias_url, data=action, headers=ES6_HEADER)
+        res = self.grimoire_con.post(alias_url, data=action, headers=ES6_HEADER)
         try:
-            r.raise_for_status()
+            res.raise_for_status()
         except requests.exceptions.HTTPError:
             logger.warning("Can't create in %s %s", alias_url, action)
-            if r.status_code == 404:
+            if res.status_code == 404:
                 # Enrich index not found
                 logger.warning("The enriched index does not exists: %s", es_index)
             else:
@@ -468,19 +467,19 @@ class TaskPanelsMenu(Task):
         mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
                               mapping_resource)
         logger.debug("Adding mapping for metadashbaord")
-        r = requests.put(mapping_url, data=json.dumps(mapping),
-                         headers=ES6_HEADER)
+        res = self.grimoire_con.put(mapping_url, data=json.dumps(mapping),
+                                    headers=ES6_HEADER)
         try:
-            r.raise_for_status()
+            res.raise_for_status()
         except requests.exceptions.HTTPError:
             logger.error("Couldn't create mapping for Kibiter menu.")
-        r = requests.post(menu_url, data=json.dumps(menu),
-                          headers=ES6_HEADER)
+        res = self.grimoire_con.post(menu_url, data=json.dumps(menu),
+                                     headers=ES6_HEADER)
         try:
-            r.raise_for_status()
+            res.raise_for_status()
         except requests.exceptions.HTTPError:
             logger.error("Couldn't create Kibiter menu.")
-            logger.error(r.json())
+            logger.error(res.json())
             raise
 
     def __remove_dashboard_menu(self, kibiter_major):
@@ -496,7 +495,7 @@ class TaskPanelsMenu(Task):
         else:
             metadashboard = ".kibana/metadashboard/main"
         menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", metadashboard)
-        requests.delete(menu_url)
+        self.grimoire_con.delete(menu_url)
 
     def __get_menu_entries(self):
         """ Get the menu entries from the panel definition """
