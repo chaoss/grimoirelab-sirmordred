@@ -180,8 +180,8 @@ class TaskPanels(Task):
                 }
 
                 try:
-                    res = self.grimoire_con.requests.post(k6_init_url, headers=k6_init_headers,
-                                                          data=ES6_KIBANA_INIT_DATA)
+                    res = self.grimoire_con.post(k6_init_url, headers=k6_init_headers,
+                                                 data=ES6_KIBANA_INIT_DATA)
                     res.raise_for_status()
                 except Exception as ex:
                     logger.error("Can not create the .kibana in ES6 %s", ex)
