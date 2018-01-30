@@ -22,6 +22,7 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 #
 
+import json
 import logging
 import queue
 import sys
@@ -91,6 +92,26 @@ class Mordred:
             logging.error("Can not connect to arthur %s", arthur_url)
 
         return arthur_access
+
+    def check_bestiary_access(self):
+
+        bestiary_access = False
+
+        bestiary_url = self.conf['projects']['projects_url']
+        try:
+            res = requests.get(bestiary_url)
+            res.raise_for_status()
+            res.json()
+            bestiary_access = True
+        except requests.exceptions.ConnectionError as ex:
+            logging.error("Can not connect to bestiary %s", bestiary_url)
+        except requests.exceptions.HTTPError as ex:
+            logging.error("Can not get projects for %s", bestiary_url)
+        except json.decoder.JSONDecodeError:
+            res_line = res.text.split('\n', 1)[0]
+            logging.error("Can not parse JSON projects for %s: %s", bestiary_url, res_line)
+
+        return bestiary_access
 
     def check_es_access(self):
 
@@ -299,6 +320,12 @@ class Mordred:
                 sys.exit(1)
             if not self.check_arthur_access():
                 print('Can not access arthur service. Exiting mordred ...')
+                sys.exit(1)
+
+        # If bestiary is configured check that it is working
+        if self.conf['projects']['projects_url']:
+            if not self.check_bestiary_access():
+                print('Can not access bestiary service. Exiting mordred ...')
                 sys.exit(1)
 
         # Initial round: panels and projects loading
