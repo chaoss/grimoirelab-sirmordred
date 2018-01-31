@@ -65,7 +65,7 @@ class TaskInitSortingHat(Task):
         return False
 
     def execute(self):
-        code = Init(**self.sh_kwargs).run(self.db_sh)
+        code = Init(**self.sh_kwargs).run(self.db_sh, '--reuse')
 
         if code != 0:
             logger.warning("Can not create the SortingHat database")
@@ -88,7 +88,7 @@ class TaskIdentitiesCollection(Task):
 
         # FIXME this should be called just once
         # code = 0 when command success
-        code = Init(**self.sh_kwargs).run(self.db_sh)
+        code = Init(**self.sh_kwargs).run(self.db_sh, '--reuse')
 
         if not self.backend_section:
             logger.error("Backend not configured in TaskIdentitiesCollection %s", self.backend_section)
@@ -260,7 +260,7 @@ class TaskIdentitiesLoad(Task):
         cfg = self.config.get_conf()
 
         # code = 0 when command success
-        code = Init(**self.sh_kwargs).run(self.db_sh)
+        code = Init(**self.sh_kwargs).run(self.db_sh, '--reuse')
 
         # Basic loading of organizations from a SH JSON file. Legacy stuff.
         if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:

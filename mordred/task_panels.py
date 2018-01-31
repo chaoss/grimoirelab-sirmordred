@@ -439,6 +439,10 @@ class TaskPanelsMenu(Task):
                 raise
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
+        if 'shortname' in self.conf['general']:
+            self.project_name = self.conf['general']['short_name']
+        else:
+            self.project_name = 'GrimoireLab'
 
     def is_backend_task(self):
         return False
@@ -451,6 +455,44 @@ class TaskPanelsMenu(Task):
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
         return active_ds
+
+    def __upload_title(self, kibiter_major):
+        """Upload to Kibiter the title for the dashboard.
+
+        The title is shown on top of the dashboard menu, and is Usually
+        the name of the project being dashboarded.
+        This is done only for Kibiter 6.x.
+
+        :param kibiter_major: major version of kibiter
+        """
+
+        if kibiter_major == "6":
+            resource = ".kibana/doc/projectname"
+            data = {"projectname": {"name": self.project_name}}
+            mapping_resource = ".kibana/_mapping/doc"
+            mapping = {"dynamic": "true"}
+
+            url = urljoin(self.conf['es_enrichment']['url'] + "/", resource)
+            mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+                                  mapping_resource)
+
+            logger.debug("Adding mapping for dashboard title")
+            res = self.grimoire_con.put(mapping_url, data=json.dumps(mapping),
+                                        headers=ES6_HEADER)
+            try:
+                res.raise_for_status()
+            except requests.exceptions.HTTPError:
+                logger.error("Couldn't create mapping for dashboard title.")
+                logger.error(res.json())
+
+            logger.debug("Uploading dashboard title")
+            res = self.grimoire_con.post(url, data=json.dumps(data),
+                                         headers=ES6_HEADER)
+            try:
+                res.raise_for_status()
+            except requests.exceptions.HTTPError:
+                logger.error("Couldn't create dashboard title.")
+                logger.error(res.json())
 
     def __create_dashboard_menu(self, dash_menu, kibiter_major):
         """ Create the menu definition to access the panels in a dashboard.
@@ -562,6 +604,7 @@ class TaskPanelsMenu(Task):
         menu = self.__get_dash_menu()
         # Remove the current menu and create the new one
         kibiter_major = es_version(self.conf['es_enrichment']['url'])
+        self.__upload_title(kibiter_major)
         self.__remove_dashboard_menu(kibiter_major)
         self.__create_dashboard_menu(menu, kibiter_major)
         print("Kibiter/Kibana: uploaded dashboard menu!")
