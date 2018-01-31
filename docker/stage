@@ -3,23 +3,6 @@
 HOME_DIR='/home/bitergia'
 CONF_DIR="$HOME_DIR/conf"
 
-cd $HOMEDIR
-
-source $CONF_DIR/requirements.cfg
-
-if [ $RELEASE ]; then
-    wget https://raw.githubusercontent.com/chaoss/grimoirelab/master/releases/$RELEASE -O $CONF_DIR/requirements.cfg
-    echo $RELEASE > $HOME_DIR/release
-else
-    echo "customized release, see $CONF_DIR/requirements.cfg file" > $HOME_DIR/release
-fi
-
-# get grimoirelab repo for the build_grimoirelab script
-git clone https://github.com/grimoirelab/grimoirelab.git --depth 1
-
-echo "Installing and checking GrimoireLab Release"
-sudo grimoirelab/utils/build_grimoirelab --build --install --check --install_system --relfile $CONF_DIR/requirements.cfg -l debug
-
 # This could be an ENV var probably (it is defined in mordred conf)
 REDIS="redis"
 
