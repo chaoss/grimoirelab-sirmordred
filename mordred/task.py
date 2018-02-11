@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 class Task():
     """ Basic class shared by all tasks """
 
-    ES_INDEX_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url', 'collect']
+    NO_BACKEND_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url', 'collect', 'pair-programming']
     PARAMS_WITH_SPACES = ['blacklist-jobs']
 
     def __init__(self, config):
@@ -96,7 +96,7 @@ class Task():
 
         # Now add the backend params included in the config file
         for p in self.conf[backend_section]:
-            if p in self.ES_INDEX_FIELDS:
+            if p in self.NO_BACKEND_FIELDS:
                 # These params are not for the perceval backend
                 continue
             if self.conf[backend_section][p]:
@@ -122,7 +122,7 @@ class Task():
 
         # Now add the backend params included in the config file
         for p in self.conf[backend_section]:
-            if p in self.ES_INDEX_FIELDS:
+            if p in self.NO_BACKEND_FIELDS:
                 # These params are not for the perceval backend
                 continue
             params.append("--" + p)
