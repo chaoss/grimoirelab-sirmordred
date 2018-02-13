@@ -42,22 +42,6 @@ ES6_KIBANA_INIT_DATA = '{"value": "*"}'
 ES6_KIBANA_INIT_URL_PATH = "/api/kibana/settings/indexPattern:placeholder"
 
 
-def es_version(url):
-    """Get Elasticsearch version.
-
-    Get the version of Elasticsearch. This is useful because
-    Elasticsearch and Kibiter are paired (same major version for 5, 6).
-
-    :param url: Elasticseearch url hosting Kibiter indices
-    :returns:   major version, as string
-    """
-
-    res = requests.get(url)
-    res.raise_for_status()
-    major = res.json()['version']['number'].split(".")[0]
-    return major
-
-
 class TaskPanels(Task):
     """ Upload all the Kibana dashboards/GrimoireLab panels based on
     enabled data sources AND the menu file. Before uploading the panels
@@ -166,7 +150,7 @@ class TaskPanels(Task):
             logger.warning("Panels config not availble. Not configuring Kibiter.")
             return False
 
-        kibiter_major = es_version(self.conf['es_enrichment']['url'])
+        kibiter_major = self.es_version(self.conf['es_enrichment']['url'])
         if kibiter_major == "6":
             if self.conf['panels']["kibiter_url"] and self.conf['panels']["kibiter_version"]:
                 # Force the creation of the .kibana index
@@ -603,7 +587,7 @@ class TaskPanelsMenu(Task):
         # Create the panels menu
         menu = self.__get_dash_menu()
         # Remove the current menu and create the new one
-        kibiter_major = es_version(self.conf['es_enrichment']['url'])
+        kibiter_major = self.es_version(self.conf['es_enrichment']['url'])
         self.__upload_title(kibiter_major)
         self.__remove_dashboard_menu(kibiter_major)
         self.__create_dashboard_menu(menu, kibiter_major)
