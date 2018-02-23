@@ -537,8 +537,8 @@ class TaskPanelsMenu(Task):
         for entry in self.panels_menu:
             if entry['source'] not in self.data_sources:
                 continue
-            if self.conf['general']['kibana'] == '5':
-                menu_entries[entry['name']] = {}
+            if self.conf['general']['kibana'] != '4':
+                menu_entries[entry['name']] = OrderedDict()
             for subentry in entry['menu']:
                 try:
                     dash_name = get_dashboard_name(subentry['panel'])
@@ -546,40 +546,36 @@ class TaskPanelsMenu(Task):
                     logging.error("Can't open dashboard file %s", subentry['panel'])
                     continue
                 # The name for the entry is in self.panels_menu
-                if self.conf['general']['kibana'] == '5':
-                    menu_entries[entry['name']][subentry['name']] = dash_name
-                else:
+                if self.conf['general']['kibana'] == '4':
                     menu_entries[dash_name] = dash_name
+                else:
+                    menu_entries[entry['name']][subentry['name']] = dash_name
 
         return menu_entries
 
     def __get_dash_menu(self):
         """ Order the dashboard menu """
-        # We need to get the current entries and add the new one
-        current_menu = {}
 
         omenu = OrderedDict()
-        if self.conf['general']['kibana'] == '5':
-            # Kibana5 menu version
-            omenu["Overview"] = self.menu_panels_common['Overview']
-            ds_menu = self.__get_menu_entries()
-            omenu.update(ds_menu)
-            omenu["Data Status"] = self.menu_panels_common['Data Status']
-            omenu["About"] = self.menu_panels_common['About']
-        else:
-            # First the Overview
-            omenu["Overview"] = self.menu_panels_common['Overview']
-            ds_menu = self.__get_menu_entries()
+        # Start with Overview
+        omenu["Overview"] = self.menu_panels_common['Overview']
+
+        # Now the data _getsources
+        ds_menu = self.__get_menu_entries()
+        if self.conf['general']['kibana'] == '4':
+            # Convert the menu to one level
             for entry in ds_menu:
                 name = entry.replace("-", " ")
                 omenu[name] = ds_menu[entry]
-            omenu.update(current_menu)
-            # At the end Data Status, About
-            omenu["Data Status"] = self.menu_panels_common['Data Status']
-            omenu["About"] = self.menu_panels_common['About']
+        else:
+            # Keep the menu as it is (usually, two levels)
+            omenu.update(ds_menu)
+
+        # At the end Data Status, About
+        omenu["Data Status"] = self.menu_panels_common['Data Status']
+        omenu["About"] = self.menu_panels_common['About']
 
         logger.debug("Menu for panels: %s", json.dumps(ds_menu, indent=4))
-
         return omenu
 
     def execute(self):
