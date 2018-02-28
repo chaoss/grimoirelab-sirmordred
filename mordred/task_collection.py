@@ -80,10 +80,10 @@ class TaskRawDataCollection(Task):
         logger.info('[%s] raw data collection starts', self.backend_section)
         clean = False
 
-        fetch_cache = False
-        if ('fetch-cache' in cfg[self.backend_section] and
-            cfg[self.backend_section]['fetch-cache']):
-            fetch_cache = True
+        fetch_archive = False
+        if ('fetch-archive' in cfg[self.backend_section] and
+            cfg[self.backend_section]['fetch-archive']):
+            fetch_archive = True
 
         # repos could change between executions because changes in projects
         repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
@@ -110,7 +110,7 @@ class TaskRawDataCollection(Task):
             backend = self.get_backend(self.backend_section)
             project = None  # just used for github in cauldron
             try:
-                feed_backend(es_col_url, clean, fetch_cache, backend, backend_args,
+                feed_backend(es_col_url, clean, fetch_archive, backend, backend_args,
                              cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project)
             except Exception:
                 logger.error("Something went wrong collecting data from this %s repo: %s . "
@@ -262,11 +262,13 @@ class TaskRawDataArthurCollection(Task):
                     "gitpath": "/tmp/arthur_git/",
                     "uri": "https://github.com/grimoirelab/arthur.git"
                 },
-                "cache": {
-                    "cache": true,
-                    "fetch_from_cache": false
+                "category": "commit",
+                "archive_args": {
+                    "archive_path": '/tmp/test_archives',
+                    "fetch_from_archive": false,
+                    "archive_after": None
                 },
-                "scheduler": {
+                "scheduler_args": {
                     "delay": 10
                 }
             }
@@ -284,9 +286,8 @@ class TaskRawDataArthurCollection(Task):
         ajson["tasks"][0]['task_id'] = self.backend_tag(repo)
         ajson["tasks"][0]['backend'] = self.backend_section
         ajson["tasks"][0]['backend_args'] = backend_args
-        ajson["tasks"][0]['cache'] = {"cache": True,
-                                      "fetch_from_cache": False,
-                                      "cache_path": None}
+        ajson["tasks"][0]['category'] = backend_args['category']
+        ajson["tasks"][0]['archive'] = {}
         ajson["tasks"][0]['scheduler'] = {"delay": self.ARTHUR_TASK_DELAY}
         # from-date or offset param must be added
         es_col_url = self._get_collection_url()
@@ -368,10 +369,10 @@ class TaskRawDataArthurCollection(Task):
         logger.info('Programming arthur for [%s] raw data collection', self.backend_section)
         clean = False
 
-        fetch_cache = False
-        if ('fetch-cache' in self.conf[self.backend_section] and
-            self.conf[self.backend_section]['fetch-cache']):
-            fetch_cache = True
+        fetch_archive = False
+        if ('fetch-archive' in self.conf[self.backend_section] and
+            self.conf[self.backend_section]['fetch-archive']):
+            fetch_archive = True
 
         # repos could change between executions because changes in projects
         repos = TaskProjects.get_repos_by_backend_section(self.backend_section)

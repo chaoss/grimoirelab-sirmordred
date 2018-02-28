@@ -86,11 +86,16 @@ class TestTaskEnrich(unittest.TestCase):
         es_enrichment = cfg['es_enrichment']['url']
         raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
         enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
+
         r = requests.get(raw_index + "/_search?size=0")
         raw_items = r.json()['hits']['total']
         r = requests.get(enrich_index + "/_search?size=0")
         enriched_items = r.json()['hits']['total']
-        self.assertEqual(raw_items, enriched_items)
+
+        # the number of raw items is bigger since the enriched items are generated based on:
+        # https://github.com/VizGrimoire/GrimoireLib --filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md
+        # see [git] section in tests/test-projects.json
+        self.assertGreater(raw_items, enriched_items)
 
 
 if __name__ == "__main__":

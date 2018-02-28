@@ -38,9 +38,9 @@ from mordred.task_projects import TaskProjects
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
-PERCEVAL_CACHE_FILE = './cache-test.tgz'
+PERCEVAL_ARCHIVE_FILE = './archive-test.tgz'
 HOME_USER = expanduser("~")
-PERCEVAL_CACHE = join(HOME_USER, '.perceval')
+PERCEVAL_ARCHIVE = join(HOME_USER, '.perceval')
 
 GIT_BACKEND_SECTION = 'git'
 
@@ -56,41 +56,41 @@ class TestTaskRawDataCollection(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.__install_perceval_cache()
+        cls.__install_perceval_archive()
 
     @classmethod
     def tearDownClass(cls):
-        cls.__restore_perceval_cache()
+        cls.__restore_perceval_archive()
 
     @classmethod
-    def __install_perceval_cache(cls):
-        logging.info("Installing the perceval cache")
-        # First backup the current cache
-        if isdir(PERCEVAL_CACHE + ".orig"):
-            logging.error("Test cache backup exists in %s", PERCEVAL_CACHE + ".orig")
+    def __install_perceval_archive(cls):
+        logging.info("Installing the perceval archive")
+        # First backup the current archive
+        if isdir(PERCEVAL_ARCHIVE + ".orig"):
+            logging.error("Test archive backup exists in %s", PERCEVAL_ARCHIVE + ".orig")
             raise RuntimeError("Environment not clean. Can't continue")
 
         try:
-            shutil.move(PERCEVAL_CACHE, PERCEVAL_CACHE + ".orig")
+            shutil.move(PERCEVAL_ARCHIVE, PERCEVAL_ARCHIVE + ".orig")
         except FileNotFoundError:
-            logging.warning("Perceval cache does not exists")
+            logging.warning("Perceval archive does not exists")
 
-        tfile = tarfile.open(PERCEVAL_CACHE_FILE, 'r:gz')
-        # The cache is extracted in the default place perceval uses
+        tfile = tarfile.open(PERCEVAL_ARCHIVE_FILE, 'r:gz')
+        # The archive is extracted in the default place perceval uses
         # We must use a different place but it is not easy to change that
         # because it is not configurable now in TaskRawDataCollection
         tfile.extractall("/tmp")
-        shutil.move("/tmp/perceval-cache", PERCEVAL_CACHE)
-        logging.info("Installed the perceval cache in %s", PERCEVAL_CACHE)
+        shutil.move("/tmp/perceval-archive", PERCEVAL_ARCHIVE)
+        logging.info("Installed the perceval archive in %s", PERCEVAL_ARCHIVE)
 
     @classmethod
-    def __restore_perceval_cache(self):
-        logging.info("Restoring the perceval cache")
-        shutil.rmtree(PERCEVAL_CACHE)
+    def __restore_perceval_archive(self):
+        logging.info("Restoring the perceval archive")
+        shutil.rmtree(PERCEVAL_ARCHIVE)
         try:
-            shutil.move(PERCEVAL_CACHE + ".orig", PERCEVAL_CACHE)
+            shutil.move(PERCEVAL_ARCHIVE + ".orig", PERCEVAL_ARCHIVE)
         except FileNotFoundError:
-            logging.warning("Perceval cache did not exists")
+            logging.warning("Perceval archive did not exists")
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
@@ -118,7 +118,10 @@ class TestTaskRawDataCollection(unittest.TestCase):
             '--sleep-time',
             '300',
             '--sleep-for-rate',
-            '--fetch-cache'
+            '--category',
+            'issue',
+            '--archive-path',
+            '/tmp/test_github_archive'
         ]
 
         self.assertEqual(len(params), len(expected_params))
