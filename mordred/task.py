@@ -34,7 +34,8 @@ logger = logging.getLogger(__name__)
 class Task():
     """ Basic class shared by all tasks """
 
-    NO_BACKEND_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url', 'collect', 'pair-programming']
+    NO_BACKEND_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url',
+                         'collect', 'pair-programming', 'fetch-archive']
     PARAMS_WITH_SPACES = ['blacklist-jobs']
 
     def __init__(self, config):
