@@ -78,6 +78,7 @@ class TaskRawDataCollection(Task):
 
         t2 = time.time()
         logger.info('[%s] raw data collection starts', self.backend_section)
+        print("Collection for {}: starting...".format(self.backend_section))
         clean = False
 
         fetch_cache = False
@@ -123,6 +124,8 @@ class TaskRawDataCollection(Task):
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3 - t2))
         logger.info('[%s] Data collection finished in %s',
                     self.backend_section, spent_time)
+        print("Collection for {}: finished after {} hours" \
+            .format(self.backend_section, spent_time))
 
 
 class TaskRawDataArthurCollection(Task):

@@ -232,7 +232,7 @@ class TaskPanels(Task):
         else:
             logger.error("Can not configure kibiter")
 
-        print("Panels, visualizations: uploading...")
+        print("Dashboard panels, visualizations: uploading...")
         # Create the commons panels
         for panel_file in self.panels_common:
             self.__create_dashboard(panel_file, data_sources=self.panels.keys())
@@ -245,7 +245,7 @@ class TaskPanels(Task):
                     self.__create_dashboard(panel_file)
                 except Exception as ex:
                     logger.error("%s not correctly uploaded (%s)", panel_file, ex)
-        print("Panels, visualziations: uploaded!")
+        print("Dashboard panels, visualizations: uploaded!")
 
 
 class TaskPanelsAliases(Task):
@@ -396,9 +396,11 @@ class TaskPanelsAliases(Task):
 
     def execute(self):
         # Create the aliases
-        print("Elasticsearch aliases: creating...")
+        print("Elasticsearch aliases for {}: creating..." \
+              .format(self.backend_section))
         self.__create_aliases()
-        print("Elasticsearch aliases: created!")
+        print("Elasticsearch aliases for {}: created!" \
+              .format(self.backend_section))
 
 
 class TaskPanelsMenu(Task):
@@ -579,7 +581,7 @@ class TaskPanelsMenu(Task):
         return omenu
 
     def execute(self):
-        print("Kibiter/Kibana: uploading dashboard menu...")
+        print("Dashboard menu: uploading...")
         # Create the panels menu
         menu = self.__get_dash_menu()
         # Remove the current menu and create the new one
@@ -587,4 +589,4 @@ class TaskPanelsMenu(Task):
         self.__upload_title(kibiter_major)
         self.__remove_dashboard_menu(kibiter_major)
         self.__create_dashboard_menu(menu, kibiter_major)
-        print("Kibiter/Kibana: uploaded dashboard menu!")
+        print("Dashboard menu: uploaded!")
