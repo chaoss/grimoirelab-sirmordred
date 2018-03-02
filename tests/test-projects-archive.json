@@ -1,0 +1,64 @@
+{
+ "grimoire": {
+      "askbot": [
+          "http://example.com"
+      ],
+      "bugzilla": [
+          "http://example.com"
+      ],
+      "bugzillarest": [
+          "http://example.com"
+      ],
+      "confluence": [
+          "http://example.com"
+      ],
+      "discourse": [
+          "http://example.com"
+      ],
+      "dockerhub": [
+          "grimoirelab perceval"
+      ],
+      "github": [
+          "https://github.com/zhquan_example/repo"
+      ],
+      "gitlab": [
+          "https://gitlab.com/fdroid/fdroiddata"
+      ],
+      "jenkins": [
+          "http://example.com/ci"
+      ],
+      "jira": [
+          "http://example.com"
+      ],
+      "launchpad": [
+          "https://launchpad.net/"
+      ],
+      "mediawiki": [
+          "http://example.com"
+      ],
+      "meetup": [
+          "sqlpass-es"
+      ],
+      "nntp": [
+          "nntp.example.com example.dev.project-link"
+      ],
+      "phabricator": [
+          "http://example.com"
+      ],
+      "redmine": [
+          "http://example.com"
+      ],
+      "rss": [
+          "http://example.com/rss"
+      ],
+      "slack": [
+          "C011DUKE8"
+      ],
+      "stackexchange": [
+          "https://stackoverflow.com/questions/tagged/python"
+      ],
+      "telegram": [
+          "mybot"
+      ]
+ }
+}
