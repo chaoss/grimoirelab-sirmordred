@@ -36,8 +36,8 @@ from mordred.config import Config
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_projects import TaskProjects
 
-CONF_FILE = 'test.cfg'
-PROJ_FILE = 'test-projects.json'
+CONF_FILE = 'test-archive.cfg'
+PROJ_FILE = 'test-projects-archive.json'
 PERCEVAL_ARCHIVE_FILE = './archive-test.tgz'
 HOME_USER = expanduser("~")
 PERCEVAL_ARCHIVE = join(HOME_USER, '.perceval')
@@ -133,11 +133,29 @@ class TestTaskRawDataCollection(unittest.TestCase):
         """Test whether the Task could be run"""
 
         config = Config(CONF_FILE)
-        backend_section = GIT_BACKEND_SECTION
+        backend_section = "telegram"
         task = TaskRawDataCollection(config, backend_section=backend_section)
         # We need to load the projects
         TaskProjects(config).execute()
         self.assertEqual(task.execute(), None)
+
+    def test_run_from_archive(self):
+        """Test whether the Task could be run"""
+
+        # proj_file -> 'test-projects-archive.json' stored within the conf file
+        conf_file = 'test-archive.cfg'
+        config = Config(conf_file)
+
+        backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
+                            'discourse', 'dockerhub', 'github', 'jenkins', 'jira',
+                            'mediawiki', 'meetup', 'nntp', 'phabricator', 'redmine',
+                            'rss', 'stackexchange', 'slack', 'telegram']
+
+        for backend_section in backend_sections:
+            task = TaskRawDataCollection(config, backend_section=backend_section)
+            # We need to load the projects
+            TaskProjects(config).execute()
+            self.assertEqual(task.execute(), None)
 
 
 if __name__ == "__main__":
