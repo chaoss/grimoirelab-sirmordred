@@ -1,85 +1,10 @@
 {
  "grimoire": {
-  "jenkins": [
-   "https://build.opnfv.org/ci"
-  ],
-  "git": [
-   "https://github.com/VizGrimoire/GrimoireLib --filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
-   "https://github.com/MetricsGrimoire/CMetrics"
-  ],
-  "google_hits": [
-   ""
-  ],
-  "rss": [
-   "https://blog.bitergia.com/feed/"
-  ],
-  "mbox": [
-   "metrics-grimoire ~/.perceval/mbox"
-  ],
-  "remo": [
-   "https://reps.mozilla.org"
-  ],
-  "functest": [
-   "http://testresults.opnfv.org/test/"
-  ],
-  "askbot": [
-   "https://ask.puppet.com"
-  ],
-  "puppetforge": [
-   ""
-  ],
-  "mediawiki": [
-   "https://wiki.mozilla.org"
-  ],
-  "twitter": [
-   ""
-  ],
-  "gerrit": [
-   "review.openstack.org"
-  ],
-  "bugzilla": [
-   "https://bugs.eclipse.org/bugs/"
-  ],
-  "redmine": [
-   "http://tracker.ceph.com/"
-  ],
-  "discourse": [
-   "https://foro.mozilla-hispano.org/"
-  ],
-  "dockerhub": [
-   "bitergia kibiter"
-  ],
-  "bugzillarest": [
-   "https://bugzilla.mozilla.org"
-  ],
-  "stackexchange": [
-   "https://stackoverflow.com/questions/tagged/ovirt",
-   "https://stackoverflow.com/questions/tagged/rdo",
-   "https://stackoverflow.com/questions/tagged/kibana"
-  ],
-  "nntp": [
-   "news.mozilla.org mozilla.dev.project-link"
-  ],
-  "phabricator": [
-   "https://phabricator.wikimedia.org"
-  ],
-  "jira": [
-   "https://jira.opnfv.org"
-  ],
-  "pipermail": [
-   "https://mail.gnome.org/archives/libart-hackers/"
-  ],
-  "meetup": [
-   "South-East-Puppet-User-Group"
-  ],
-  "mozillaclub": [
-   "https://spreadsheets.google.com/feeds/cells/1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json"
+  "telegram": [
+   "Mozilla_analytics"
   ],
   "slack": [
    "C7LSGB0AU"
-  ],
-  "supybot": [
-   "openshift ~/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift/"
   ],
   "github": [
    "https://github.com/grimoirelab/perceval"
@@ -87,11 +12,86 @@
   "confluence": [
    "https://wiki.open-o.org/"
   ],
-  "telegram": [
-   "Mozilla_analytics"
+  "git": [
+   "https://github.com/VizGrimoire/GrimoireLib --filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
+   "https://github.com/MetricsGrimoire/CMetrics"
+  ],
+  "gerrit": [
+   "review.openstack.org"
+  ],
+  "meetup": [
+   "South-East-Puppet-User-Group"
+  ],
+  "functest": [
+   "http://testresults.opnfv.org/test/"
+  ],
+  "bugzillarest": [
+   "https://bugzilla.mozilla.org"
+  ],
+  "mediawiki": [
+   "https://wiki.mozilla.org"
+  ],
+  "remo": [
+   "https://reps.mozilla.org"
+  ],
+  "dockerhub": [
+   "bitergia kibiter"
+  ],
+  "stackexchange": [
+   "https://stackoverflow.com/questions/tagged/ovirt",
+   "https://stackoverflow.com/questions/tagged/rdo",
+   "https://stackoverflow.com/questions/tagged/kibana"
+  ],
+  "rss": [
+   "https://blog.bitergia.com/feed/"
+  ],
+  "puppetforge": [
+   ""
+  ],
+  "redmine": [
+   "http://tracker.ceph.com/"
+  ],
+  "askbot": [
+   "https://ask.puppet.com"
+  ],
+  "mbox": [
+   "metrics-grimoire ~/.perceval/mbox"
+  ],
+  "pipermail": [
+   "https://mail.gnome.org/archives/libart-hackers/"
+  ],
+  "mozillaclub": [
+   "https://spreadsheets.google.com/feeds/cells/1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json"
+  ],
+  "google_hits": [
+   ""
+  ],
+  "jenkins": [
+   "https://build.opnfv.org/ci"
+  ],
+  "bugzilla": [
+   "https://bugs.eclipse.org/bugs/"
+  ],
+  "twitter": [
+   ""
   ],
   "hyperkitty": [
    "https://lists.mailman3.org/archives/list/mailman-users@mailman3.org"
+  ],
+  "phabricator": [
+   "https://phabricator.wikimedia.org"
+  ],
+  "supybot": [
+   "openshift ~/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift/"
+  ],
+  "nntp": [
+   "news.mozilla.org mozilla.dev.project-link"
+  ],
+  "jira": [
+   "https://jira.opnfv.org"
+  ],
+  "discourse": [
+   "https://foro.mozilla-hispano.org/"
   ]
  }
 }

@@ -148,8 +148,8 @@ class TaskEnrich(Task):
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start))
         logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
-        print("Enrichment for {}: finished after {} hours" \
-            .format(self.backend_section, spent_time))
+        print("Enrichment for {}: finished after {} hours".format(self.backend_section,
+                                                                  spent_time))
 
     def __autorefresh(self):
         # Refresh projects

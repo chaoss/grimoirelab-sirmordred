@@ -124,8 +124,8 @@ class TaskRawDataCollection(Task):
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3 - t2))
         logger.info('[%s] Data collection finished in %s',
                     self.backend_section, spent_time)
-        print("Collection for {}: finished after {} hours" \
-            .format(self.backend_section, spent_time))
+        print("Collection for {}: finished after {} hours".format(self.backend_section,
+                                                                  spent_time))
 
 
 class TaskRawDataArthurCollection(Task):

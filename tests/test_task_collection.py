@@ -36,8 +36,8 @@ from mordred.config import Config
 from mordred.task_collection import TaskRawDataCollection
 from mordred.task_projects import TaskProjects
 
-CONF_FILE = 'test-archive.cfg'
-PROJ_FILE = 'test-projects-archive.json'
+CONF_FILE = 'test.cfg'
+PROJ_FILE = 'test-projects.json'
 PERCEVAL_ARCHIVE_FILE = './archive-test.tgz'
 HOME_USER = expanduser("~")
 PERCEVAL_ARCHIVE = join(HOME_USER, '.perceval')
@@ -129,27 +129,27 @@ class TestTaskRawDataCollection(unittest.TestCase):
         for p in params:
             self.assertTrue(p in expected_params)
 
-    def test_run(self):
+    def test_execute(self):
         """Test whether the Task could be run"""
 
         config = Config(CONF_FILE)
-        backend_section = "telegram"
+        backend_section = GIT_BACKEND_SECTION
         task = TaskRawDataCollection(config, backend_section=backend_section)
         # We need to load the projects
         TaskProjects(config).execute()
         self.assertEqual(task.execute(), None)
 
-    def test_run_from_archive(self):
-        """Test whether the Task could be run"""
+    def test_execute_from_archive(self):
+        """Test fetching data from archives"""
 
         # proj_file -> 'test-projects-archive.json' stored within the conf file
-        conf_file = 'test-archive.cfg'
+        conf_file = 'archive-test.cfg'
         config = Config(conf_file)
 
         backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
-                            'discourse', 'dockerhub', 'github', 'jenkins', 'jira',
-                            'mediawiki', 'meetup', 'nntp', 'phabricator', 'redmine',
-                            'rss', 'stackexchange', 'slack', 'telegram']
+                            'discourse', 'dockerhub', 'gerrit', 'github', 'jenkins',
+                            'jira', 'mediawiki', 'meetup', 'nntp', 'phabricator',
+                            'redmine', 'rss', 'stackexchange', 'slack', 'telegram']
 
         for backend_section in backend_sections:
             task = TaskRawDataCollection(config, backend_section=backend_section)

@@ -396,11 +396,9 @@ class TaskPanelsAliases(Task):
 
     def execute(self):
         # Create the aliases
-        print("Elasticsearch aliases for {}: creating..." \
-              .format(self.backend_section))
+        print("Elasticsearch aliases for {}: creating...".format(self.backend_section))
         self.__create_aliases()
-        print("Elasticsearch aliases for {}: created!" \
-              .format(self.backend_section))
+        print("Elasticsearch aliases for {}: created!".format(self.backend_section))
 
 
 class TaskPanelsMenu(Task):
