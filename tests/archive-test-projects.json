@@ -18,6 +18,9 @@
       "dockerhub": [
           "grimoirelab perceval"
       ],
+      "gerrit": [
+          "gerrit.wikimedia.org"
+      ],
       "github": [
           "https://github.com/zhquan_example/repo"
       ],
