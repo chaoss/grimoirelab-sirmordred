@@ -41,7 +41,7 @@ from arthur.common import Q_STORAGE_ITEMS
 
 from grimoire_elk.arthur import feed_backend
 from grimoire_elk.elastic_items import ElasticItems
-from grimoire_elk.elk.elastic import ElasticSearch
+from grimoire_elk.elastic import ElasticSearch
 from grimoire_elk.utils import get_connector_from_name, get_elastic
 
 from mordred.error import DataCollectionError
