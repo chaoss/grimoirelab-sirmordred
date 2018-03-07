@@ -30,7 +30,7 @@ from datetime import datetime
 from grimoire_elk.arthur import (do_studies, enrich_backend, refresh_projects,
                                  refresh_identities)
 from grimoire_elk.elastic_items import ElasticItems
-from grimoire_elk.elk.elastic import ElasticSearch
+from grimoire_elk.elastic import ElasticSearch
 
 from mordred.error import DataEnrichmentError
 from mordred.task import Task
