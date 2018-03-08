@@ -20,11 +20,14 @@
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
 
+import datetime
+import dateutil
 import logging
 import sys
 import shutil
 import tarfile
 import unittest
+import unittest.mock
 
 from os.path import expanduser, isdir, join
 
@@ -139,8 +142,12 @@ class TestTaskRawDataCollection(unittest.TestCase):
         TaskProjects(config).execute()
         self.assertEqual(task.execute(), None)
 
-    def test_execute_from_archive(self):
+    @unittest.mock.patch('perceval.backends.core.mediawiki.datetime_utcnow')
+    def test_execute_from_archive(self, mock_utcnow):
         """Test fetching data from archives"""
+
+        mock_utcnow.return_value = datetime.datetime(2016, 6, 10,
+                                                     tzinfo=dateutil.tz.tzutc())
 
         # proj_file -> 'test-projects-archive.json' stored within the conf file
         conf_file = 'archive-test.cfg'
