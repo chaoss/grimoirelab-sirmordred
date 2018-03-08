@@ -21,6 +21,8 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 
 
+import os
+import json
 import sys
 import unittest
 
@@ -32,12 +34,17 @@ sys.path.insert(0, '..')
 from mordred.config import Config
 from mordred.task import Task
 
-
 CONF_FILE = 'test.cfg'
 BACKEND_NAME = 'stackexchange'
 COLLECTION_URL = 'http://bitergia:bitergia@localhost:9200'
 COLLECTION_URL_STACKEXCHANGE = 'http://127.0.0.1:9200'
 REPO_NAME = 'https://stackoverflow.com/questions/tagged/ovirt'
+
+
+def read_file(filename, mode='r'):
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename), mode) as f:
+        content = f.read()
+    return content
 
 
 class TestTask(unittest.TestCase):
@@ -47,7 +54,6 @@ class TestTask(unittest.TestCase):
         """Test whether attributes are initializated"""
 
         config = Config(CONF_FILE)
-        cfg = config.get_conf()
         task = Task(config)
 
         self.assertEqual(task.config, config)
@@ -58,6 +64,7 @@ class TestTask(unittest.TestCase):
 
     def test_run(self):
         """Test whether the Task could be run"""
+
         config = Config(CONF_FILE)
         task = Task(config)
         self.assertEqual(task.execute(), None)
@@ -67,25 +74,31 @@ class TestTask(unittest.TestCase):
 
         config = Config(CONF_FILE)
         task = Task(config)
-        params = task._compose_p2o_params(BACKEND_NAME, REPO_NAME)
-        self.assertEqual(params, {'url': REPO_NAME})
+        params = task._compose_p2o_params("stackexchange", "https://stackoverflow.com/questions/tagged/example")
+        self.assertEqual(params, {'url': "https://stackoverflow.com/questions/tagged/example"})
 
     def test_compose_perceval_params(self):
         """Test whether perceval params are built correctly for a backend and a repository"""
 
+        expected_repo_params = json.loads(read_file('data/task-params-expected'))
+
         config = Config(CONF_FILE)
         task = Task(config)
-        params = ['--site', 'stackoverflow.com', '--tagged', 'ovirt',
-                  '--tag', 'https://stackoverflow.com/questions/tagged/ovirt',
-                  '--api-token', 'token', '--fetch-cache']
-        perceval_params = task._compose_perceval_params(BACKEND_NAME, REPO_NAME)
-        self.assertEqual(params.sort(), perceval_params.sort())
+
+        for backend in expected_repo_params.keys():
+            repo = expected_repo_params.get(backend)['repo']
+            perceval_params = task._compose_perceval_params(backend, repo)
+            expected_params = expected_repo_params.get(backend)['params']
+
+            self.assertEqual(expected_params.sort(), perceval_params.sort())
 
     def test_get_collection_url(self):
-        """Test whether the collection url could be overried in a backend"""
+        """Test whether the collection url could be overwritten in a backend"""
+
         config = Config(CONF_FILE)
         task = Task(config)
-        task.backend_section = BACKEND_NAME
+        task.backend_section = "stackexchange"
+
         self.assertEqual(task.conf['es_collection']['url'], COLLECTION_URL)
         self.assertEqual(task._get_collection_url(), COLLECTION_URL_STACKEXCHANGE)
 

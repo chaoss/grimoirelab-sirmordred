@@ -1,0 +1,85 @@
+{
+ "grimoire": {
+      "askbot": [
+          "http://example.com"
+      ],
+      "bugzilla": [
+          "http://example.com"
+      ],
+      "bugzillarest": [
+          "http://example.com"
+      ],
+      "confluence": [
+          "http://example.com"
+      ],
+      "discourse": [
+          "http://example.com"
+      ],
+      "dockerhub": [
+          "organization repository"
+      ],
+      "functest": [
+          "http://example.com"
+      ],
+      "gerrit": [
+          "http://example.com"
+      ],
+      "git": [
+          "https://github.com/organization/repo"
+      ],
+      "github": [
+          "https://github.com/organization/repo"
+      ],
+      "hyperkitty": [
+          "https://example.com"
+      ],
+      "jenkins": [
+          "http://example.com/ci"
+      ],
+      "jira": [
+          "http://example.com"
+      ],
+      "mbox": [
+       "example-org ~/.perceval/mbox"
+      ],
+      "mediawiki": [
+          "http://example.com"
+      ],
+      "meetup": [
+          "example-meetup"
+      ],
+      "mozillaclub": [
+          "https://example.com"
+      ],
+      "nntp": [
+          "nntp.example.com example.dev.project-link"
+      ],
+      "phabricator": [
+          "http://example.com"
+      ],
+      "pipermail": [
+          "https://example.com"
+      ],
+      "redmine": [
+          "http://example.com"
+      ],
+      "remo": [
+          "https://example.com"
+      ],
+      "rss": [
+          "http://example.com/rss"
+      ],
+      "slack": [
+          "EXAMPLE"
+      ],
+      "stackexchange": [
+          "https://stackoverflow.com/questions/tagged/example"
+      ],
+      "supybot": [
+          "openshift ~/.example/#tag/"
+     ],
+      "telegram": [
+          "mybot"
+      ]
+ }
+}
