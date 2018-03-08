@@ -41,7 +41,6 @@ from mordred.task_projects import TaskProjects
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
-PERCEVAL_ARCHIVE_FILE = './archive-test.tgz'
 HOME_USER = expanduser("~")
 PERCEVAL_ARCHIVE = join(HOME_USER, '.perceval')
 
@@ -56,44 +55,6 @@ logging.basicConfig(level=logging.INFO)
 
 class TestTaskRawDataCollection(unittest.TestCase):
     """Task tests"""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.__install_perceval_archive()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.__restore_perceval_archive()
-
-    @classmethod
-    def __install_perceval_archive(cls):
-        logging.info("Installing the perceval archive")
-        # First backup the current archive
-        if isdir(PERCEVAL_ARCHIVE + ".orig"):
-            logging.error("Test archive backup exists in %s", PERCEVAL_ARCHIVE + ".orig")
-            raise RuntimeError("Environment not clean. Can't continue")
-
-        try:
-            shutil.move(PERCEVAL_ARCHIVE, PERCEVAL_ARCHIVE + ".orig")
-        except FileNotFoundError:
-            logging.warning("Perceval archive does not exists")
-
-        tfile = tarfile.open(PERCEVAL_ARCHIVE_FILE, 'r:gz')
-        # The archive is extracted in the default place perceval uses
-        # We must use a different place but it is not easy to change that
-        # because it is not configurable now in TaskRawDataCollection
-        tfile.extractall("/tmp")
-        shutil.move("/tmp/perceval-archive", PERCEVAL_ARCHIVE)
-        logging.info("Installed the perceval archive in %s", PERCEVAL_ARCHIVE)
-
-    @classmethod
-    def __restore_perceval_archive(self):
-        logging.info("Restoring the perceval archive")
-        shutil.rmtree(PERCEVAL_ARCHIVE)
-        try:
-            shutil.move(PERCEVAL_ARCHIVE + ".orig", PERCEVAL_ARCHIVE)
-        except FileNotFoundError:
-            logging.warning("Perceval archive did not exists")
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
