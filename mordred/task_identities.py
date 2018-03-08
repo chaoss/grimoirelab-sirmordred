@@ -46,7 +46,7 @@ from sortinghat.command import CMD_SUCCESS
 from sortinghat.db.database import Database
 from sortinghat.db.model import Profile
 
-from grimoire_elk.arthur import load_identities
+from grimoire_elk.feeder import load_identities
 
 logger = logging.getLogger(__name__)
 
