@@ -24,7 +24,7 @@
 
 import logging
 
-from grimoire_elk.arthur import get_ocean_backend
+from grimoire_elk.feeder import get_ocean_backend
 from grimoire_elk.utils import get_connector_from_name, get_elastic
 from grimoire_elk.elk.utils import grimoire_con
 

@@ -27,7 +27,7 @@ import time
 
 from datetime import datetime
 
-from grimoire_elk.arthur import (do_studies, enrich_backend, refresh_projects,
+from grimoire_elk.feeder import (do_studies, enrich_backend, refresh_projects,
                                  refresh_identities)
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elastic import ElasticSearch
