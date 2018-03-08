@@ -126,17 +126,25 @@ class Task():
             if p in self.NO_BACKEND_FIELDS:
                 # These params are not for the perceval backend
                 continue
-            params.append("--" + p)
-            if self.conf[backend_section][p]:
-                # If param is boolean, no values must be added
-                if type(self.conf[backend_section][p]) != bool:
-                    if type(self.conf[backend_section][p]) == list:
-                        # '--blacklist-jobs', 'a', 'b', 'c'
-                        # 'a', 'b', 'c' must be added as items in the list
-                        list_params = self.conf[backend_section][p]
-                        params += list_params
-                    else:
-                        params.append(str(self.conf[backend_section][p]))
+
+            section_param = self.conf[backend_section][p]
+            if not section_param:
+                logger.warning("Empty section %s", p)
+                continue
+
+            # If param is boolean, no values must be added
+            if type(section_param) == bool:
+                params.append("--" + p) if section_param else None
+            elif type(section_param) == list:
+                # '--blacklist-jobs', 'a', 'b', 'c'
+                # 'a', 'b', 'c' must be added as items in the list
+                params.append("--" + p)
+                list_params = section_param
+                params += list_params
+            else:
+                params.append("--" + p)
+                params.append(str(section_param))
+
         return params
 
     def _get_collection_url(self):
