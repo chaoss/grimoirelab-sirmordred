@@ -226,8 +226,8 @@ class TaskPanels(Task):
             logger.info("Not creating a panel that exists already: %s", dash_id)
         else:
             logger.info("Creating the panel: %s", dash_id)
-            if data_sources and 'pipermail' in data_sources:
-                # the dashboard for mbox and pipermail are the same
+            if data_sources and ('pipermail' in data_sources or 'hyperkitty' in data_sources):
+                # the dashboard for mbox and pipermail and hyperkitty are the same
                 data_sources = list(data_sources)
                 data_sources.append('mbox')
             if data_sources and 'stackexchange' in data_sources:
