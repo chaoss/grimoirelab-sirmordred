@@ -188,10 +188,41 @@ class TaskEnrich(Task):
             logger.debug("No ids to be refreshed found")
 
     def __studies(self):
-        logger.info("Executing %s studies ...", self.backend_section)
-        time.sleep(5)  # Wait so enrichment has finished in ES
+        """ Execute the studies configured for the current backend """
+
+        cfg = self.config.get_conf()
+        if 'studies' not in cfg[self.backend_section] or not
+            cfg[self.backend_section]['studies']:
+            logger.debug('No studies for %s' % self.backend_section)
+            return
+        else:
+            logger.debug("Executing studies for %s: %s" % (self.backend_section,
+                         cfg[self.backend_section]['studies']))
+        time.sleep(2)  # Wait so enrichment has finished in ES
         enrich_backend = self._get_enrich_backend()
+
+        active_studies = []
+        all_studies = enrich_backend.studies
+        all_studies_names = [study.__name__ for study in enrich_backend.studies]
+
+        # Time to check that configured studies are valid
+        logger.debug("All studies in %s: %s", self.backend_section, all_studies_names)
+        logger.debug("Configured studies %s", cfg[self.backend_section]['studies'])
+        if not set(cfg[self.backend_section]['studies']).issubset(set(all_studies_names)):
+            logger.error('Wrong studies names for %s: %s', self.backend_section,
+                         cfg[self.backend_section]['studies'])
+            raise RuntimeError('Wrong studies names ', self.backend_section,
+                               cfg[self.backend_section]['studies'])
+
+        for study in enrich_backend.studies:
+            if study.__name__ in cfg[self.backend_section]['studies']:
+                active_studies.append(study)
+        enrich_backend.studies = active_studies
+        print("Executing for %s the studies %s" % (self.backend_section,
+              [study.__name__ for study in active_studies]))
         do_studies(enrich_backend)
+        # Return studies to its original value
+        enrich_backend.studies = all_studies
 
     def execute(self):
         cfg = self.config.get_conf()
@@ -227,8 +258,7 @@ class TaskEnrich(Task):
         else:
             logger.debug("Not doing autorefresh for %s", self.backend_section)
 
-        if cfg['es_enrichment']['studies']:
-            self.__studies()
+        self.__studies()
 
         with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
             TasksManager.NUMBER_ENRICH_TASKS_ON -= 1
