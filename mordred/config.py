@@ -240,7 +240,6 @@ class Config():
                     "default": "http://172.17.0.1:9200",
                     "type": str
                 },
-                "studies": optional_bool_none,
                 "autorefresh": {
                     "optional": True,
                     "default": True,
