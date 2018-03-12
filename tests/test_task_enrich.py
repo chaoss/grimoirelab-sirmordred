@@ -98,6 +98,34 @@ class TestTaskEnrich(unittest.TestCase):
         # see [git] section in tests/test-projects.json
         self.assertGreater(raw_items, enriched_items)
 
+    def test_studies(self):
+        """Test whether the studies configuration works """
+        config = Config(CONF_FILE)
+        cfg = config.get_conf()
+        # We need to load the projects
+        TaskProjects(config).execute()
+        backend_section = GIT_BACKEND_SECTION
+        task = TaskEnrich(config, backend_section=backend_section)
+        self.assertEqual(task.execute(), None)
+
+        # Configure a wrong study
+        cfg['git']['studies'] = ['bad_study']
+        with self.assertRaises(RuntimeError):
+            self.assertEqual(task.execute(), None)
+
+        # Configure no studies
+        cfg['git']['studies'] = None
+        self.assertEqual(task.execute(), None)
+
+        # Configure several studies
+        cfg['git']['studies'] = ["enrich_demography", "enrich_areas_of_code"]
+        self.assertEqual(task.execute(), None)
+
+        # Configure several studies, one wrong
+        cfg['git']['studies'] = ["enrich_demography", "enrich_areas_of_code1"]
+        with self.assertRaises(RuntimeError):
+            self.assertEqual(task.execute(), None)
+
 
 if __name__ == "__main__":
     unittest.main(warnings='ignore')

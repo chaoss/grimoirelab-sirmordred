@@ -191,8 +191,8 @@ class TaskEnrich(Task):
         """ Execute the studies configured for the current backend """
 
         cfg = self.config.get_conf()
-        if 'studies' not in cfg[self.backend_section] or not
-            cfg[self.backend_section]['studies']:
+        if 'studies' not in cfg[self.backend_section] or not \
+           cfg[self.backend_section]['studies']:
             logger.debug('No studies for %s' % self.backend_section)
             return
         else:
