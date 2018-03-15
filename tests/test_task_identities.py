@@ -121,7 +121,7 @@ class TestTaskIdentitiesLoad(unittest.TestCase):
         task.execute()
         # Check the number of identities loaded from local and remote files
         nuids = len(api.unique_identities(self.sh_db))
-        self.assertEqual(nuids, 9)
+        self.assertEqual(nuids, 4)
 
 
 if __name__ == "__main__":
