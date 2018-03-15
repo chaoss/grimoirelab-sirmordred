@@ -203,7 +203,7 @@ class TaskPanels(Task):
 
         return True
 
-    def __create_dashboard(self, panel_file, data_sources=None):
+    def create_dashboard(self, panel_file, data_sources=None):
         """Upload a panel to Elasticsearch if it does not exist yet.
 
         If a list of data sources is specified, upload only those
@@ -223,6 +223,10 @@ class TaskPanels(Task):
                 # the dashboard for mbox and pipermail are the same
                 data_sources = list(data_sources)
                 data_sources.append('mbox')
+            if data_sources and 'stackexchange' in data_sources:
+                # stackexchange is called stackoverflow in panels
+                data_sources = list(data_sources)
+                data_sources.append('stackoverflow')
             import_dashboard(es_enrich, panel_file, data_sources=data_sources)
 
     def execute(self):
@@ -235,14 +239,14 @@ class TaskPanels(Task):
         print("Dashboard panels, visualizations: uploading...")
         # Create the commons panels
         for panel_file in self.panels_common:
-            self.__create_dashboard(panel_file, data_sources=self.panels.keys())
+            self.create_dashboard(panel_file, data_sources=self.panels.keys())
 
         # Upload all the Kibana dashboards/GrimoireLab panels based on
         # enabled data sources AND the menu file
         for ds in self.panels:
             for panel_file in self.panels[ds]:
                 try:
-                    self.__create_dashboard(panel_file)
+                    self.create_dashboard(panel_file)
                 except Exception as ex:
                     logger.error("%s not correctly uploaded (%s)", panel_file, ex)
         print("Dashboard panels, visualizations: uploaded!")
