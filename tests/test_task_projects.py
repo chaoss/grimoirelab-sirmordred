@@ -143,6 +143,8 @@ class TestTaskProjects(unittest.TestCase):
         projects = task.get_projects()
         self.assertTrue(TaskProjects.GLOBAL_PROJECT in projects)
 
+        self.assertEqual(projects['birt']['github'][0], 'https://github.com/eclipse/birt')
+
         remove(projects_file)
 
     @httpretty.activate
