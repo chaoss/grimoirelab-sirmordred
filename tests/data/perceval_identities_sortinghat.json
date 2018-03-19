@@ -22,7 +22,7 @@
                 "gender": null,
                 "gender_acc": null,
                 "is_bot": false,
-                "name": "Automator owl",
+                "name": "Elena Owl",
                 "uuid": "179b8489b58a7f0cbdcddab3c5e6521598a4c2cb"
             },
             "uuid": "179b8489b58a7f0cbdcddab3c5e6521598a4c2cb"
@@ -45,7 +45,7 @@
                 "gender": null,
                 "gender_acc": null,
                 "is_bot": false,
-                "name": "Tom",
+                "name": "Tom Smith",
                 "uuid": "3aea374ba509a0b15be3a920684554ee67f7d802"
             },
             "uuid": "3aea374ba509a0b15be3a920684554ee67f7d802"
@@ -68,7 +68,7 @@
                 "gender": null,
                 "gender_acc": null,
                 "is_bot": false,
-                "name": "Israel",
+                "name": "Israel Sanz",
                 "uuid": "dae51cbe36250c758d948c5a500317d80ff408a1"
             },
             "uuid": "dae51cbe36250c758d948c5a500317d80ff408a1"
@@ -91,7 +91,7 @@
                 "gender": null,
                 "gender_acc": null,
                 "is_bot": false,
-                "name": "Luis",
+                "name": "Luis Puig",
                 "uuid": "ea290f2c976038f18dffc6c50c7de8f43592df70"
             },
             "uuid": "ea290f2c976038f18dffc6c50c7de8f43592df70"

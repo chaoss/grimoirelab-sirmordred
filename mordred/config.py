@@ -391,7 +391,13 @@ class Config():
                 "identities_export_url": optional_string_none,
                 "identities_api_token": optional_string_none,
                 "bots_names": optional_empty_list,
-                "no_bots_names": optional_empty_list  # to clean bots in SH
+                "no_bots_names": optional_empty_list, # to clean bots in SH,
+                "gender": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "doc": "Add gender to the profiles"
+                }
             }
         }
 

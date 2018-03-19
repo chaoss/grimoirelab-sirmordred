@@ -408,17 +408,11 @@ class TaskIdentitiesExport(Task):
 
 
 class TaskIdentitiesMerge(Task):
-    """ Basic class shared by all Sorting Hat tasks """
+    """ Task for processing identities in SortingHat """
 
-    def __init__(self, conf, load_orgs=True, load_ids=True, unify=True,
-                 autoprofile=True, affiliate=True, bots=True):
+    def __init__(self, conf):
         super().__init__(conf)
 
-        self.load_ids = load_ids  # Load identities from raw index
-        self.unify = unify  # Unify identities
-        self.autoprofile = autoprofile  # Execute autoprofile
-        self.affiliate = affiliate  # Affiliate identities
-        self.bots = bots  # Mark bots in SH
         self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
                           'database': self.db_sh, 'host': self.db_host,
                           'port': None}
@@ -468,6 +462,12 @@ class TaskIdentitiesMerge(Task):
         self.__execute_sh_command(cmd)
         return
 
+    def do_autogender(self):
+        cmd = self.__build_sh_command()
+        cmd += ['autogender']
+        self.__execute_sh_command(cmd)
+        return None
+
     def do_autoprofile(self, sources):
         cmd = self.__build_sh_command()
         cmd += ['autoprofile'] + sources
@@ -502,59 +502,62 @@ class TaskIdentitiesMerge(Task):
 
         uuids_refresh = []
 
-        if self.unify:
-            for algo in cfg['sortinghat']['matching']:
-                if not algo:
-                    # cfg['sortinghat']['matching'] is an empty list
-                    logger.debug('Unify not executed because empty algorithm')
-                    continue
-                kwargs = {'matching': algo, 'fast_matching': True,
-                          'strict_mapping': cfg['sortinghat']['strict_mapping']}
-                logger.info("[sortinghat] Unifying identities using algorithm %s",
-                            kwargs['matching'])
-                self.do_unify(kwargs)
+        for algo in cfg['sortinghat']['matching']:
+            if not algo:
+                # cfg['sortinghat']['matching'] is an empty list
+                logger.debug('Unify not executed because empty algorithm')
+                continue
+            kwargs = {'matching': algo, 'fast_matching': True,
+                      'strict_mapping': cfg['sortinghat']['strict_mapping']}
+            logger.info("[sortinghat] Unifying identities using algorithm %s",
+                        kwargs['matching'])
+            self.do_unify(kwargs)
 
-        if self.affiliate:
-            if not cfg['sortinghat']['affiliate']:
-                logger.debug("Not doing affiliation")
-            else:
-                # Global enrollments using domains
-                logger.info("[sortinghat] Executing affiliate")
-                self.do_affiliate()
+        if not cfg['sortinghat']['affiliate']:
+            logger.debug("Not doing affiliation")
+        else:
+            # Global enrollments using domains
+            logger.info("[sortinghat] Executing affiliate")
+            self.do_affiliate()
 
-        if self.autoprofile:
-            # autoprofile = [] -> cfg['sortinghat']['autoprofile'][0] = ['']
-            if ('autoprofile' not in cfg['sortinghat'] or
-                not cfg['sortinghat']['autoprofile'][0]):
-                logger.info("[sortinghat] Autoprofile not configured. Skipping.")
-            else:
-                logger.info("[sortinghat] Executing autoprofile for sources: %s",
-                            cfg['sortinghat']['autoprofile'])
-                sources = cfg['sortinghat']['autoprofile']
-                self.do_autoprofile(sources)
+        if ('autoprofile' not in cfg['sortinghat'] or
+             not cfg['sortinghat']['autoprofile'][0]):
+            logger.info("[sortinghat] Autoprofile not configured. Skipping.")
+        else:
+            logger.info("[sortinghat] Executing autoprofile for sources: %s",
+                        cfg['sortinghat']['autoprofile'])
+            sources = cfg['sortinghat']['autoprofile']
+            self.do_autoprofile(sources)
 
-        if self.bots:
-            if 'bots_names' not in cfg['sortinghat']:
-                logger.info("[sortinghat] Bots name list not configured. Skipping.")
-            else:
-                logger.info("[sortinghat] Marking bots: %s",
-                            cfg['sortinghat']['bots_names'])
-                for name in cfg['sortinghat']['bots_names']:
-                    # First we need the uuids for the profile name
+        if ('autogender' not in cfg['not'] or
+             not cfg['sortinghat']['autogender']):
+            logger.info("[sortinghat] Autogender not configured. Skipping.")
+        else:
+            logger.info("[sortinghat] Executing autogender")
+            self.do_gender()
+
+
+        if 'bots_names' not in cfg['sortinghat']:
+            logger.info("[sortinghat] Bots name list not configured. Skipping.")
+        else:
+            logger.info("[sortinghat] Marking bots: %s",
+                        cfg['sortinghat']['bots_names'])
+            for name in cfg['sortinghat']['bots_names']:
+                # First we need the uuids for the profile name
+                uuids = self.__get_uuids_from_profile_name(name)
+                # Then we can modify the profile setting bot flag
+                profile = {"is_bot": True}
+                for uuid in uuids:
+                    api.edit_profile(self.db, uuid, **profile)
+            # For quitting the bot flag - debug feature
+            if 'no_bots_names' in cfg['sortinghat']:
+                logger.info("[sortinghat] Removing Marking bots: %s",
+                            cfg['sortinghat']['no_bots_names'])
+                for name in cfg['sortinghat']['no_bots_names']:
                     uuids = self.__get_uuids_from_profile_name(name)
-                    # Then we can modify the profile setting bot flag
-                    profile = {"is_bot": True}
+                    profile = {"is_bot": False}
                     for uuid in uuids:
                         api.edit_profile(self.db, uuid, **profile)
-                # For quitting the bot flag - debug feature
-                if 'no_bots_names' in cfg['sortinghat']:
-                    logger.info("[sortinghat] Removing Marking bots: %s",
-                                cfg['sortinghat']['no_bots_names'])
-                    for name in cfg['sortinghat']['no_bots_names']:
-                        uuids = self.__get_uuids_from_profile_name(name)
-                        profile = {"is_bot": False}
-                        for uuid in uuids:
-                            api.edit_profile(self.db, uuid, **profile)
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
