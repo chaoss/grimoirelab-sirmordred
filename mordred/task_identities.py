@@ -529,7 +529,7 @@ class TaskIdentitiesMerge(Task):
             sources = cfg['sortinghat']['autoprofile']
             self.do_autoprofile(sources)
 
-        if ('autogender' not in cfg['not'] or
+        if ('autogender' not in cfg['sortinghat'] or
              not cfg['sortinghat']['autogender']):
             logger.info("[sortinghat] Autogender not configured. Skipping.")
         else:
