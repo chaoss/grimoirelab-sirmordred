@@ -86,6 +86,12 @@ def get_scm_repos(project):
             repos_list.append(repo['url'].replace("/c/", "/gitroot/"))
     return repos_list
 
+def get_github_repos(project):
+    repos = project['github_repos']
+    repos_list = []
+    for repo in repos:
+        repos_list.append(repo['url'])
+    return repos_list
 
 def parse_repos(repos):
     repos_list = []
@@ -233,6 +239,8 @@ def get_repos_list_project(project, projects, data_source, url=None):
         repos = get_scr_repos(projects[project], url)
     elif data_source == "irc":
         repos = get_irc_repos(projects[project])
+    elif data_source == "github":
+        repos = get_github_repos(projects[project])
     else:
         # after the legacy data sources, we check the ones for Perceval
         repos = get_repo_from_project(projects[project], data_source)

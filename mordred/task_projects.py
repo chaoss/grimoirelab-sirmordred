@@ -186,11 +186,12 @@ class TaskProjects(Task):
             pdata["meta"] = {
                 "title": eclipse_projects[project]["title"]
             }
-            pdata["git"] = get_repos_list_project(project, eclipse_projects, "scm")
             pdata["bugzilla"] = get_repos_list_project(project, eclipse_projects, "its")
+            pdata["gerrit"] = get_repos_list_project(project, eclipse_projects, "scr", 'git.eclipse.org')
+            pdata["git"] = get_repos_list_project(project, eclipse_projects, "scm")
+            pdata["github"] = get_repos_list_project(project, eclipse_projects, "github")
             pdata["mailing_lists"] = get_mls_repos(eclipse_projects[project], True)
             pdata["mbox"] = self.__convert_eclipse_mls(pdata["mailing_lists"])
-            pdata["gerrit"] = get_repos_list_project(project, eclipse_projects, "scr", 'git.eclipse.org')
             # pdata["irc"] = get_repos_list_project(project, eclipse_projects, "irc")
 
         return projects
