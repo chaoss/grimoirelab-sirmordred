@@ -1,0 +1,17 @@
+{
+ "grimoire": {
+      "discourse": [
+          "https://foro.mozilla-hispano.org/"
+      ],
+      "github": [
+          "https://github.com/chaoss/grimoirelab-perceval",
+          "https://github.com/chaoss/grimoirelab-mordred"
+      ],
+      "askbot": [
+          "https://ask.openstack.org"
+      ],
+      "git": [
+          "https://github.com/chaoss/grimoirelab-perceval"
+      ]
+ }
+}
