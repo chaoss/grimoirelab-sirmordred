@@ -137,8 +137,7 @@ class Mordred:
             es_access = False
             es_error = _ofuscate_server_uri(es)
 
-        if (self.conf['phases']['enrichment'] or
-           self.conf['es_enrichment']['studies']):
+        if self.conf['phases']['enrichment']:
             es = self.conf['es_enrichment']['url']
             try:
                 res = self.grimoire_con.get(es)
