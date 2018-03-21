@@ -46,7 +46,7 @@ from sortinghat.command import CMD_SUCCESS
 from sortinghat.db.database import Database
 from sortinghat.db.model import Profile
 
-from grimoire_elk.feeder import load_identities
+from grimoire_elk.elk import load_identities
 
 logger = logging.getLogger(__name__)
 
@@ -520,8 +520,8 @@ class TaskIdentitiesMerge(Task):
             logger.info("[sortinghat] Executing affiliate")
             self.do_affiliate()
 
-        if ('autoprofile' not in cfg['sortinghat'] or
-             not cfg['sortinghat']['autoprofile'][0]):
+        if 'autoprofile' not in cfg['sortinghat'] or \
+                not cfg['sortinghat']['autoprofile'][0]:
             logger.info("[sortinghat] Autoprofile not configured. Skipping.")
         else:
             logger.info("[sortinghat] Executing autoprofile for sources: %s",
@@ -529,13 +529,12 @@ class TaskIdentitiesMerge(Task):
             sources = cfg['sortinghat']['autoprofile']
             self.do_autoprofile(sources)
 
-        if ('autogender' not in cfg['sortinghat'] or
-             not cfg['sortinghat']['autogender']):
+        if 'autogender' not in cfg['sortinghat'] or \
+                not cfg['sortinghat']['autogender']:
             logger.info("[sortinghat] Autogender not configured. Skipping.")
         else:
             logger.info("[sortinghat] Executing autogender")
             self.do_autogender()
-
 
         if 'bots_names' not in cfg['sortinghat']:
             logger.info("[sortinghat] Bots name list not configured. Skipping.")
