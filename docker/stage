@@ -7,7 +7,7 @@ CONF_DIR="$HOME_DIR/conf"
 REDIS="redis"
 
 # arthur on
-arthurd -g -d redis://$REDIS/8 --log-path $HOME_DIR/logs/arthurd --no-cache
+arthurd -g -d redis://$REDIS/8 --log-path $HOME_DIR/logs/arthurd --no-archive
 # Give time to arthur to create the raw index
 echo "Waiting for arthur startup completion ..."
 sleep 5
