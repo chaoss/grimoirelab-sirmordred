@@ -86,12 +86,14 @@ def get_scm_repos(project):
             repos_list.append(repo['url'].replace("/c/", "/gitroot/"))
     return repos_list
 
+
 def get_github_repos(project):
     repos = project['github_repos']
     repos_list = []
     for repo in repos:
         repos_list.append(repo['url'])
     return repos_list
+
 
 def parse_repos(repos):
     repos_list = []
