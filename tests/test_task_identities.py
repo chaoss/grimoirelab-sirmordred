@@ -123,56 +123,55 @@ class TestTaskIdentitiesLoad(unittest.TestCase):
         nuids = len(api.unique_identities(self.sh_db))
         self.assertEqual(nuids, 4)
 
-class TestTaskIdentitiesMerge(unittest.TestCase):
-    """Task tests"""
+    class TestTaskIdentitiesMerge(unittest.TestCase):
+        """Task tests"""
 
-    def setUp(self):
-        config = Config(CONF_FILE)
-        sh = config.get_conf()['sortinghat']
+        def setUp(self):
+            config = Config(CONF_FILE)
+            sh = config.get_conf()['sortinghat']
 
-        self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
-                          'database': sh['database'], 'host': sh['host'],
-                          'port': None}
+            self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
+                              'database': sh['database'], 'host': sh['host'],
+                              'port': None}
 
-        # Clean the database to start an empty state
-        Database.drop(**self.sh_kwargs)
+            # Clean the database to start an empty state
+            Database.drop(**self.sh_kwargs)
 
-        # Create command
-        Database.create(**self.sh_kwargs)
-        self.sh_db = Database(**self.sh_kwargs)
+            # Create command
+            Database.create(**self.sh_kwargs)
+            self.sh_db = Database(**self.sh_kwargs)
 
-    def test_initialization(self):
-        """Test whether attributes are initializated"""
+        def test_initialization(self):
+            """Test whether attributes are initializated"""
 
-        config = Config(CONF_FILE)
-        task = TaskIdentitiesMerge(config)
+            config = Config(CONF_FILE)
+            task = TaskIdentitiesMerge(config)
 
-        self.assertEqual(task.config, config)
+            self.assertEqual(task.config, config)
 
-    def test_autogender(self):
-        """Test whether autogender SH command is executed"""
+        def test_autogender(self):
+            """Test whether autogender SH command is executed"""
 
-        config = Config(CONF_FILE)
-        # Test default value
-        self.assertEqual(config.get_conf()['sortinghat']['gender'], False)
-        config.get_conf()['sortinghat']['gender'] = True
+            config = Config(CONF_FILE)
+            # Test default value
+            self.assertEqual(config.get_conf()['sortinghat']['gender'], False)
+            config.get_conf()['sortinghat']['gender'] = True
 
-        # Load some identities
-        task = TaskIdentitiesLoad(config)
-        task.execute()
-        # Check the number of identities loaded from local and remote files
-        uids = api.unique_identities(self.sh_db)
+            # Load some identities
+            task = TaskIdentitiesLoad(config)
+            task.execute()
+            # Check the number of identities loaded from local and remote files
+            uids = api.unique_identities(self.sh_db)
 
-        task = TaskIdentitiesMerge(config)
-        self.assertEqual(task.do_autogender(), None)
+            task = TaskIdentitiesMerge(config)
+            self.assertEqual(task.do_autogender(), None)
 
-        uids = api.unique_identities(self.sh_db)
+            uids = api.unique_identities(self.sh_db)
 
-        found_genders = [uid.profile.gender for uid in uids]
-        expected_genders = ['male', 'female', 'male', 'male']
+            found_genders = [uid.profile.gender for uid in uids]
+            expected_genders = ['male', 'female', 'male', 'male']
 
-        self.assertEqual (found_genders, expected_genders)
-
+            self.assertEqual(found_genders, expected_genders)
 
 
 if __name__ == "__main__":
