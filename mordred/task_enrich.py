@@ -161,7 +161,7 @@ class TaskEnrich(Task):
             logger.info("Refreshing project field in enriched index")
             field_id = enrich_backend.get_field_unique_id()
             eitems = refresh_projects(enrich_backend)
-            enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+            enrich_backend.elastic.bulk_upload(eitems, field_id)
 
         # Refresh identities
         logger.info("Refreshing identities fields in enriched index %s", self.backend_section)
@@ -175,7 +175,7 @@ class TaskEnrich(Task):
             eitems = refresh_identities(enrich_backend,
                                         {"name": "author_uuid",
                                          "value": uuids_refresh})
-            enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+            enrich_backend.elastic.bulk_upload(eitems, field_id)
         else:
             logger.debug("No uuids to be refreshed found")
         if ids_refresh:
@@ -183,7 +183,7 @@ class TaskEnrich(Task):
             eitems = refresh_identities(enrich_backend,
                                         {"name": "author_id",
                                          "value": ids_refresh})
-            enrich_backend.elastic.bulk_upload_sync(eitems, field_id)
+            enrich_backend.elastic.bulk_upload(eitems, field_id)
         else:
             logger.debug("No ids to be refreshed found")
 
