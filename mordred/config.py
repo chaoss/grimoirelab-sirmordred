@@ -24,7 +24,10 @@
 import configparser
 import logging
 
+from _version import __version__
+
 from grimoire_elk.utils import get_connectors
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,18 +62,38 @@ class Config():
             "enriched_index": {
                 "optional": False,
                 "default": None,
-                "type": str
-
+                "type": str,
+                "description": "Index name in which to store the enriched items"
             },
             "raw_index": {
                 "optional": False,
                 "default": None,
-                "type": str
+                "type": str,
+                "description": "Index name in which to store the raw items"
             },
-            "fetch-cache": {
+            "fetch-archive": {
                 "optional": True,
-                "default": True,
-                "type": bool
+                "default": False,
+                "type": bool,
+                "description": "Fetch the items from the archive"
+            },
+            "archive-path": {
+                "optional": True,
+                "default": None,
+                "type": str,
+                "description": "Path where the perceval archive file is"
+            },
+            "category": {
+                "optional": True,
+                "default": None,
+                "type": str,
+                "description": "Perceval category to be fetched"
+            },
+            "from-date": {
+                "optional": True,
+                "default": None,
+                "type": str,
+                "description": "Date from which start fetching items"
             }
         }
 
@@ -232,6 +255,8 @@ class Config():
                 "redis_url": optional_string_none
             }
         }
+        pc = params_collection["es_collection"]
+        pc['arthur']['description'] = "User arthur for collecting the raw data"
 
         params_enrichment = {
             "es_enrichment": {
@@ -604,3 +629,49 @@ class Config():
             conf = self.__add_types(raw_conf)
             self._add_to_conf(conf)
         self.check_config(self.conf)
+
+    @staticmethod
+    def write_doc(filename):
+
+        def format_params(section):
+            params_md = ""
+
+            for param in sorted(section):
+                pvalue = section[param]
+                param_md = " * **%s** (%s: %s)" % (param, pvalue['type'].__name__, pvalue['default'])
+                if not pvalue['optional']:
+                    param_md += " (Required)"
+                if 'description' in pvalue:
+                    param_md += ": " + str(pvalue['description'])
+
+                params_md += param_md + "\n"
+
+            return params_md
+
+        print("Generating Mordred config documentation")
+        general_sections = Config.general_params()
+        backend_sections = Config.get_backend_sections()
+
+        config_md = "# Mordred %s configuration params\n\n" % __version__
+        config_md += "This is an automatic generated doc. Don't modify it by hand.\n\n"
+
+        config_md += "## General Sections\n\n"
+        for section in sorted(general_sections):
+            config_md += "### [" + section + "] \n\n"
+            config_md += format_params(general_sections[section])
+
+        config_md += "## Sample Backend Section\n\n"
+        config_md += "In this section the perceval backends param should be also added\n"
+        for section in sorted(backend_sections):
+            config_md += "### [" + section + "]\n\n"
+            config_md += format_params(Config.backend_section_params())
+            break
+
+        with open(filename, "w") as config_doc:
+            config_doc.write(config_md)
+
+
+if __name__ == '__main__':
+    Config.write_doc("config.md")
+
+
