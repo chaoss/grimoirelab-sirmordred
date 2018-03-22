@@ -534,7 +534,7 @@ class TaskIdentitiesMerge(Task):
             logger.info("[sortinghat] Autogender not configured. Skipping.")
         else:
             logger.info("[sortinghat] Executing autogender")
-            self.do_gender()
+            self.do_autogender()
 
 
         if 'bots_names' not in cfg['sortinghat']:
