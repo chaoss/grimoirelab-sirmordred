@@ -70,30 +70,6 @@ class Config():
                 "type": str,
                 "description": "Index name in which to store the raw items"
             },
-            "fetch-archive": {
-                "optional": True,
-                "default": False,
-                "type": bool,
-                "description": "Fetch the items from the archive"
-            },
-            "archive-path": {
-                "optional": True,
-                "default": None,
-                "type": str,
-                "description": "Path where the perceval archive file is"
-            },
-            "category": {
-                "optional": True,
-                "default": None,
-                "type": str,
-                "description": "Perceval category to be fetched"
-            },
-            "from-date": {
-                "optional": True,
-                "default": None,
-                "type": str,
-                "description": "Date from which start fetching items"
-            },
             "studies": {
                 "optional": True,
                 "default": None,
