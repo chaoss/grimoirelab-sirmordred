@@ -724,11 +724,10 @@ class Config():
             for param in sorted(section):
                 pvalue = section[param]
                 param_md = " * **%s** (%s: %s)" % (param, pvalue['type'].__name__, pvalue['default'])
-                if not pvalue['optional']:
-                    param_md += " (Required)"
                 if 'description' in pvalue:
                     param_md += ": " + str(pvalue['description'])
-
+                if not pvalue['optional']:
+                    param_md += " (**Required**)"
                 params_md += param_md + "\n"
 
             return params_md
@@ -738,7 +737,8 @@ class Config():
         backend_sections = Config.get_backend_sections()
 
         config_md = "# Mordred %s configuration params\n\n" % __version__
-        config_md += "This is an automatic generated doc. Don't modify it by hand.\n\n"
+        config_md += "This is an automatic generated doc. Don't modify it by hand.\n"
+        config_md += "Use python mordred/config.py to generate it.\n\n"
 
         config_md += "## General Sections\n\n"
         for section in sorted(general_sections):
