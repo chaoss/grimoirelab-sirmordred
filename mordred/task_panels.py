@@ -110,10 +110,15 @@ class TaskPanels(Task):
         else:
             config_url = '.kibana/config/_search'
             url = urljoin(es_url + "/", config_url)
-            res = self.grimoire_con.get(url)
-            res.raise_for_status()
-            version = res.json()['hits']['hits'][0]['_id']
-        logger.debug("Kibiter version: %s", version)
+            version = None
+            try:
+                res = self.grimoire_con.get(url)
+                res.raise_for_status()
+                version = res.json()['hits']['hits'][0]['_id']
+                logger.debug("Kibiter version: %s", version)
+            except requests.exceptions.HTTPError:
+                logger.warning("Can not find Kibiter version")
+
         return version
 
     def __kb6_update_config(self, url, data):
@@ -535,13 +540,13 @@ class TaskPanelsMenu(Task):
         menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", metadashboard)
         self.grimoire_con.delete(menu_url)
 
-    def __get_menu_entries(self):
+    def __get_menu_entries(self, kibiter_major):
         """ Get the menu entries from the panel definition """
         menu_entries = OrderedDict()
         for entry in self.panels_menu:
             if entry['source'] not in self.data_sources:
                 continue
-            if self.conf['general']['kibana'] != '4':
+            if kibiter_major != '4':
                 menu_entries[entry['name']] = OrderedDict()
             for subentry in entry['menu']:
                 try:
@@ -550,14 +555,14 @@ class TaskPanelsMenu(Task):
                     logging.error("Can't open dashboard file %s", subentry['panel'])
                     continue
                 # The name for the entry is in self.panels_menu
-                if self.conf['general']['kibana'] == '4':
+                if kibiter_major == '4':
                     menu_entries[dash_name] = dash_name
                 else:
                     menu_entries[entry['name']][subentry['name']] = dash_name
 
         return menu_entries
 
-    def __get_dash_menu(self):
+    def __get_dash_menu(self, kibiter_major):
         """ Order the dashboard menu """
 
         omenu = OrderedDict()
@@ -565,8 +570,8 @@ class TaskPanelsMenu(Task):
         omenu["Overview"] = self.menu_panels_common['Overview']
 
         # Now the data _getsources
-        ds_menu = self.__get_menu_entries()
-        if self.conf['general']['kibana'] == '4':
+        ds_menu = self.__get_menu_entries(kibiter_major)
+        if kibiter_major == '4':
             # Convert the menu to one level
             for entry in ds_menu:
                 name = entry.replace("-", " ")
@@ -583,11 +588,16 @@ class TaskPanelsMenu(Task):
         return omenu
 
     def execute(self):
-        print("Dashboard menu: uploading...")
-        # Create the panels menu
-        menu = self.__get_dash_menu()
-        # Remove the current menu and create the new one
         kibiter_major = self.es_version(self.conf['es_enrichment']['url'])
+        if kibiter_major == "2":
+            # In ES 2.2 Kibina was 4.4.1
+            kibiter_major = "4"
+
+        print("Dashboard menu: uploading for %s ..." % kibiter_major)
+
+        # Create the panels menu
+        menu = self.__get_dash_menu(kibiter_major)
+        # Remove the current menu and create the new one
         self.__upload_title(kibiter_major)
         self.__remove_dashboard_menu(kibiter_major)
         self.__create_dashboard_menu(menu, kibiter_major)
