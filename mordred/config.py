@@ -28,7 +28,6 @@ from _version import __version__
 
 from grimoire_elk.utils import get_connectors
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -94,6 +93,12 @@ class Config():
                 "default": None,
                 "type": str,
                 "description": "Date from which start fetching items"
+            },
+            "studies": {
+                "optional": True,
+                "default": None,
+                "type": list,
+                "description": "List of studies to be executed"
             }
         }
 
@@ -103,103 +108,70 @@ class Config():
     def general_params(cls):
         """ Define all the possible config params """
 
-        optional_bool_none = {
-            "optional": True,
-            "default": None,
-            "type": bool
-        }
-        optional_string_none = {
-            "optional": True,
-            "default": None,
-            "type": str
-        }
-        optional_int_none = {
-            "optional": True,
-            "default": None,
-            "type": int
-        }
-        optional_empty_list = {
-            "optional": True,
-            "default": [],
-            "type": list
-        }
-        no_optional_empty_string = {
-            "optional": False,
-            "default": "",
-            "type": str
-        }
-        no_optional_true = {
-            "optional": False,
-            "default": True,
-            "type": bool
-        }
-        optional_false = {
-            "optional": True,
-            "default": False,
-            "type": bool
-        }
-
         params = {}
 
         # GENERAL CONFIG
         params_general = {
             "general": {
-                "sleep": optional_int_none,  # we are not using it
                 "min_update_delay": {
                     "optional": True,
                     "default": 60,
-                    "type": int
-                },
-                "kibana": {
-                    "optional": True,
-                    "default": "5",
-                    "type": str
+                    "type": int,
+                    "description": "Short delay between tasks (collect, enrich ...)"
                 },
                 "update": {
                     "optional": False,
                     "default": False,
-                    "type": bool
+                    "type": bool,
+                    "description": "Execute the tasks in loop"
                 },
                 "short_name": {
                     "optional": False,
                     "default": "Short name",
-                    "type": str
+                    "type": str,
+                    "description": "Short name of the project"
                 },
                 "debug": {
                     "optional": False,
                     "default": True,
-                    "type": bool
+                    "type": bool,
+                    "description": "Debug mode (logging mainly)"
                 },
-                "from_date": optional_string_none,  # per data source param now
                 "logs_dir": {
                     "optional": False,
                     "default": "logs",
-                    "type": str
+                    "type": str,
+                    "description": "Directory with the logs of mordred"
                 },
                 "log_handler": {
                     "optional": True,
                     "default": "file",
-                    "type": str
+                    "type": str,
+                    "description": "use rotate for rotating the logs automatically"
                 },
                 "log_max_bytes": {
                     "optional": True,
                     "default": 104857600,  # 100MB
-                    "type": int
+                    "type": int,
+                    "description": "Max number of bytes per log file"
                 },
                 "log_backup_count": {
                     "optional": True,
                     "default": 5,
-                    "type": int
+                    "type": int,
+                    "description": "Number of rotate logs files to preserve"
                 },
                 "bulk_size": {
                     "optional": True,
                     "default": 1000,
-                    "type": int
+                    "type": int,
+                    "description": "Number of items to include in Elasticsearch bulk operations"
                 },
                 "scroll_size": {
                     "optional": True,
                     "default": 100,
-                    "type": int
+                    "type": int,
+                    "description": "Number of items to receive in Elasticsearch when scrolling"
                 }
 
             }
@@ -209,29 +181,62 @@ class Config():
                 "projects_file": {
                     "optional": True,
                     "default": "projects.json",
-                    "type": str
+                    "type": str,
+                    "description": "Projects file path with repositories to be collected group by projects"
                 },
                 "projects_url": {
                     "optional": True,
                     "default": None,
-                    "type": str
+                    "type": str,
+                    "description": "Projects file URL"
                 },
                 "load_eclipse": {
                     "optional": True,
                     "default": False,
-                    "type": bool
+                    "type": bool,
+                    "description": "Load the projects from Eclipse"
                 }
             }
         }
 
         params_phases = {
             "phases": {
-                "collection": no_optional_true,
-                "enrichment": no_optional_true,
-                "identities": no_optional_true,
-                "panels": no_optional_true,
-                "track_items": optional_false,
-                "report": optional_false
+                "collection": {
+                    "optional": False,
+                    "default": True,
+                    "type": bool,
+                    "description": "Activate collection of items"
+                },
+                "enrichment": {
+                    "optional": False,
+                    "default": True,
+                    "type": bool,
+                    "description": "Activate enrichment of items"
+                },
+                "identities": {
+                    "optional": False,
+                    "default": True,
+                    "type": bool,
+                    "description": "Do the identities tasks"
+                },
+                "panels": {
+                    "optional": False,
+                    "default": True,
+                    "type": bool,
+                    "description": "Load panels, create alias and other tasks related"
+                },
+                "track_items": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Track specific items from a gerrit repository"
+                },
+                "report": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Generate the PDF report for a project (alpha)"
+                }
             }
         }
 
@@ -243,35 +248,71 @@ class Config():
         # Config provided by tasks
         params_collection = {
             "es_collection": {
-                "password": optional_string_none,
-                "user": optional_string_none,
+                "password": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "Password for connection to Elasticsearch"
+                },
+                "user": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "User for connection to Elasticsearch"
+                },
                 "url": {
                     "optional": False,
                     "default": "http://172.17.0.1:9200",
-                    "type": str
+                    "type": str,
+                    "description": "Elasticsearch URL"
                 },
-                "arthur": optional_false,
-                "arthur_url": optional_string_none,
-                "redis_url": optional_string_none
+                "arthur": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Use arthur for collecting items from perceval"
+                },
+                "arthur_url": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "URL for the arthur service"
+                },
+                "redis_url": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "URL for the redis service"
+                }
             }
         }
-        pc = params_collection["es_collection"]
-        pc['arthur']['description'] = "User arthur for collecting the raw data"
 
         params_enrichment = {
             "es_enrichment": {
                 "url": {
                     "optional": False,
                     "default": "http://172.17.0.1:9200",
-                    "type": str
+                    "type": str,
+                    "description": "Elasticsearch URL"
                 },
                 "autorefresh": {
                     "optional": True,
                     "default": True,
-                    "type": bool
+                    "type": bool,
+                    "description": "Execute the autorefresh of identities"
                 },
-                "user": optional_string_none,
-                "password": optional_string_none
+                "user": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "User for connection to Elasticsearch"
+                },
+                "password": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "Password for connection to Elasticsearch"
+                }
             }
         }
 
@@ -280,22 +321,26 @@ class Config():
                 "kibiter_time_from": {
                     "optional": True,
                     "default": "now-90d",
-                    "type": str
+                    "type": str,
+                    "description": "Default time interval for Kibiter"
                 },
                 "kibiter_default_index": {
                     "optional": True,
                     "default": "git",
-                    "type": str
+                    "type": str,
+                    "description": "Default index pattern for Kibiter"
                 },
                 "kibiter_url": {
                     "optional": True,
                     "default": None,
-                    "type": str
+                    "type": str,
+                    "description": "Kibiter URL"
                 },
                 "kibiter_version": {
                     "optional": True,
                     "default": None,
-                    "type": str
+                    "type": str,
+                    "description": "Kibiter version"
                 }
             }
         }
@@ -305,30 +350,45 @@ class Config():
                 "start_date": {
                     "optional": False,
                     "default": "1970-01-01",
-                    "type": str
+                    "type": str,
+                    "description": "Start date for the report"
                 },
                 "end_date": {
                     "optional": False,
                     "default": "2100-01-01",
-                    "type": str
+                    "type": str,
+                    "description": "End date for the report"
                 },
                 "interval": {
                     "optional": False,
                     "default": "quarter",
-                    "type": str
+                    "type": str,
+                    "description": "Interval for the report"
                 },
                 "config_file": {
                     "optional": False,
                     "default": "report.cfg",
-                    "type": str
+                    "type": str,
+                    "description": "Config file for the report"
                 },
                 "data_dir": {
                     "optional": False,
                     "default": "report_data",
-                    "type": str
+                    "type": str,
+                    "description": "Directory in which to store the report data"
                 },
-                "filters": optional_empty_list,
-                "offset": optional_string_none
+                "filters": {
+                    "optional": True,
+                    "default": [],
+                    "type": list,
+                    "description": "General filters to be applied to all queries"
+                },
+                "offset": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "Date offset to be applied to start and end"
+                }
             }
         }
 
@@ -337,91 +397,124 @@ class Config():
                 "affiliate": {
                     "optional": False,
                     "default": "True",
-                    "type": bool
+                    "type": bool,
+                    "description": "Affiliate identities to organizations"
                 },
                 "unaffiliated_group": {
                     "optional": False,
                     "default": "Unknown",
-                    "type": str
-                },
-                "unify_method": {  # not used
-                    "optional": True,
-                    "default": "fast-matching",
-                    "type": str
+                    "type": str,
+                    "description": "Name of the organization for unaffiliated identities"
                 },
                 "matching": {
                     "optional": False,
                     "default": ["email"],
-                    "type": list
+                    "type": list,
+                    "description": "Algorithm for matching identities in Sortinghat"
                 },
                 "sleep_for": {
                     "optional": False,
                     "default": 3600,
-                    "type": int
+                    "type": int,
+                    "description": "Delay between task identities executions"
                 },
                 "database": {
                     "optional": False,
                     "default": "sortinghat_db",
-                    "type": str
+                    "type": str,
+                    "description": "Name of the Sortinghat database"
                 },
                 "host": {
                     "optional": False,
                     "default": "mariadb",
-                    "type": str
+                    "type": str,
+                    "description": "Host with the Sortinghat database"
                 },
                 "user": {
                     "optional": False,
                     "default": "root",
-                    "type": str
+                    "type": str,
+                    "description": "User to access the Sortinghat database"
                 },
-                "password": no_optional_empty_string,
+                "password": {
+                    "optional": False,
+                    "default": "",
+                    "type": str,
+                    "description": "Password to access the Sortinghat database"
+                },
                 "autoprofile": {
                     "optional": False,
                     "default": ["customer", "git", "github"],
-                    "type": list
+                    "type": list,
+                    "description": "Order in which to get the identities information for filling the profile"
                 },
                 "load_orgs": {
                     "optional": True,
                     "default": False,
                     "type": bool,
-                    "deprecated": "Orgs are loaded if defined always"
+                    "deprecated": "Load organizations in Sortinghat database",
+                    "description": ""
                 },
                 "identities_format": {
                     "optional": True,
                     "default": "sortinghat",
                     "type": str,
-                    "doc": "Format of the identities data to be loaded"
-                },
-                "github_api_token": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "deprecated": "Use identities_api_token"
+                    "description": "Format of the identities data to be loaded"
                 },
                 "strict_mapping": {
                     "optional": True,
                     "default": True,
                     "type": bool,
-                    "doc": "rigorous check of values in identities matching " + \
+                    "description": "rigorous check of values in identities matching " + \
                            "(i.e, well formed email addresses)"
                 },
                 "reset_on_load": {
                     "optional": True,
                     "default": False,
                     "type": bool,
-                    "doc": "Unmerge and remove affiliations for all identities on load"
+                    "description": "Unmerge and remove affiliations for all identities on load"
                 },
-                "orgs_file": optional_string_none,
-                "identities_file": optional_empty_list,
-                "identities_export_url": optional_string_none,
-                "identities_api_token": optional_string_none,
-                "bots_names": optional_empty_list,
-                "no_bots_names": optional_empty_list,  # to clean bots in SH,
-                "gender": {
+                "orgs_file": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "File path with the organizations to be loaded in Sortinghat"
+                },
+                "identities_file": {
+                    "optional": True,
+                    "default": [],
+                    "type": list,
+                    "description": "File path with the identities to be loaded in Sortinghat"
+                },
+                "identities_export_url": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "URL in which to export the identities in Sortinghat"
+                },
+                "identities_api_token": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "API token for remote operation with GitHub and Gitlab"
+                },
+                "bots_names": {
+                    "optional": True,
+                    "default": [],
+                    "type": list,
+                    "description": "Name of the identities to be marked as bots"
+                },
+                "no_bots_names": {
+                    "optional": True,
+                    "default": [],
+                    "type": list,
+                    "description": "Name of the identities to be unmarked as bots"
+                },
+                "autogender": {
                     "optional": True,
                     "default": False,
                     "type": bool,
-                    "doc": "Add gender to the profiles"
+                    "description": "Add gender to the profiles (executes autogender)"
                 }
             }
         }
@@ -431,11 +524,27 @@ class Config():
                 "project": {
                     "optional": False,
                     "default": "TrackProject",
-                    "type": str
+                    "type": str,
+                    "description": "Gerrit project to track"
                 },
-                "upstream_raw_es_url": no_optional_empty_string,
-                "raw_index_gerrit": no_optional_empty_string,
-                "raw_index_git": no_optional_empty_string
+                "upstream_raw_es_url": {
+                    "optional": False,
+                    "default": "",
+                    "type": str,
+                    "description": "URL with the file with the gerrit reviews to track"
+                },
+                "raw_index_gerrit": {
+                    "optional": False,
+                    "default": "",
+                    "type": str,
+                    "description": "Name of the gerrit raw index"
+                },
+                "raw_index_git": {
+                    "optional": False,
+                    "default": "",
+                    "type": str,
+                    "description": "Name of the git raw index"
+                }
             }
         }
 
@@ -673,5 +782,3 @@ class Config():
 
 if __name__ == '__main__':
     Config.write_doc("config.md")
-
-
