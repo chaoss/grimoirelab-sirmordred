@@ -287,7 +287,7 @@ class TaskRawDataArthurCollection(Task):
         ajson = {"tasks": [{}]}
         # This is the perceval tag
         ajson["tasks"][0]['task_id'] = self.backend_tag(repo)
-        ajson["tasks"][0]['backend'] = self.backend_section
+        ajson["tasks"][0]['backend'] = self.backend_section.split(":")[0]
         ajson["tasks"][0]['backend_args'] = backend_args
         ajson["tasks"][0]['category'] = backend_args['category']
         ajson["tasks"][0]['archive'] = {}
@@ -298,6 +298,7 @@ class TaskRawDataArthurCollection(Task):
         # Get the last activity for the data source
         es = ElasticSearch(es_col_url, es_index)
         connector = get_connector_from_name(self.backend_section)
+
         klass = connector[0]  # Backend for the connector
         signature = inspect.signature(klass.fetch)
 
