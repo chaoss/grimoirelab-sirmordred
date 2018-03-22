@@ -24,7 +24,7 @@
 import configparser
 import logging
 
-from _version import __version__
+from mordred._version import __version__
 
 from grimoire_elk.utils import get_connectors
 
