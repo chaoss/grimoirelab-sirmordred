@@ -1,6 +1,7 @@
 # Mordred 0.1.19 configuration params
 
 This is an automatic generated doc. Don't modify it by hand.
+Use python mordred/config.py to generate it.
 
 ## General Sections
 
@@ -91,10 +92,6 @@ This is an automatic generated doc. Don't modify it by hand.
 In this section the perceval backends param should be also added
 ### [apache]
 
- * **archive-path** (str: None): Path where the perceval archive file is
- * **category** (str: None): Perceval category to be fetched
  * **enriched_index** (str: None) (Required): Index name in which to store the enriched items
- * **fetch-archive** (bool: False): Fetch the items from the archive
- * **from-date** (str: None): Date from which start fetching items
  * **raw_index** (str: None) (Required): Index name in which to store the raw items
  * **studies** (list: None): List of studies to be executed
