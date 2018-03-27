@@ -54,6 +54,9 @@
       "redmine": [
           "http://example.com"
       ],
+      "remo": [
+          "http://example.com"
+      ],
       "rss": [
           "http://example.com/rss"
       ],
