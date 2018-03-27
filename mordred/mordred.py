@@ -37,7 +37,7 @@ import requests
 
 from arthur.common import Q_STORAGE_ITEMS
 
-from grimoire_elk.elk.utils import grimoire_con
+from grimoire_elk.enriched.utils import grimoire_con
 
 from mordred.config import Config
 from mordred.error import DataCollectionError
