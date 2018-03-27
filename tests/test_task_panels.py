@@ -43,6 +43,14 @@ def check_import_dashboard_stackexchange(elastic_url, import_file, es_index=None
         raise RuntimeError('stackexchange present but stackoverflow no in data sources')
 
 
+def check_create_dashboard(panel_file, data_sources):
+    # data_sources must be only defined for Overview and Data Status panels
+    if panel_file not in TaskPanels.panels_multi_ds and data_sources:
+        raise RuntimeError('Creating %s with data sources filtering' % panel_file)
+    if panel_file in TaskPanels.panels_multi_ds and not data_sources:
+        raise RuntimeError('Creating %s without data sources filtering' % panel_file)
+
+
 class TestTaskPanels(unittest.TestCase):
     """TaskPanels tests"""
 
@@ -64,6 +72,16 @@ class TestTaskPanels(unittest.TestCase):
         task = TaskPanels(config)
 
         task.create_dashboard(None, data_sources=["stackexchange"])
+
+    @patch('mordred.task_panels.TaskPanels.create_dashboard', side_effect=check_create_dashboard)
+    def test_create_dashboard_multi_ds(self, mock_get_dashboard_name):
+        """ Test the creation of dashboards with filtered data sources """
+        mock_get_dashboard_name.return_value = ''
+
+        config = Config(CONF_FILE)
+        task = TaskPanels(config)
+
+        task.execute()
 
 
 if __name__ == "__main__":

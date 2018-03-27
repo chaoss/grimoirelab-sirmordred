@@ -43,15 +43,17 @@ ES6_KIBANA_INIT_URL_PATH = "/api/kibana/settings/indexPattern:placeholder"
 
 
 class TaskPanels(Task):
-    """ Upload all the Kibana dashboards/GrimoireLab panels based on
+    """
+    Upload all the Kibana dashboards/GrimoireLab panels based on
     enabled data sources AND the menu file. Before uploading the panels
     it also sets up common configuration variables for Kibiter
     """
-    panels_common = ["panels/json/overview.json",
-                     "panels/json/last_month_contributors.json",
-                     "panels/json/about.json",
-                     "panels/json/affiliations.json",
-                     "panels/json/data_status.json"]
+
+    # Panels which include several data sources
+    panels_multi_ds = ["panels/json/overview.json", "panels/json/data_status.json"]
+    # Panels to be uploaded always, no matter the data sources configured
+    panels_common = panels_multi_ds + ["panels/json/last_month_contributors.json", "panels/json/about.json",
+                                       "panels/json/affiliations.json"]
 
     def __init__(self, conf):
         super().__init__(conf)
@@ -244,7 +246,10 @@ class TaskPanels(Task):
         print("Dashboard panels, visualizations: uploading...")
         # Create the commons panels
         for panel_file in self.panels_common:
-            self.create_dashboard(panel_file, data_sources=self.panels.keys())
+            data_sources = None  # for some panels, only the active data sources must be included
+            if panel_file in TaskPanels.panels_multi_ds:
+                data_sources = self.panels.keys()
+            self.create_dashboard(panel_file, data_sources=data_sources)
 
         # Upload all the Kibana dashboards/GrimoireLab panels based on
         # enabled data sources AND the menu file
