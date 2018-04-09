@@ -32,7 +32,7 @@ from distutils.dir_util import copy_tree
 
 from dateutil import parser
 
-from report.report import Report
+from manuscripts.report import Report
 
 from mordred.task import Task
 
