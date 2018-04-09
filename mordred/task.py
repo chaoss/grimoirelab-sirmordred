@@ -154,6 +154,9 @@ class Task():
         clean = False
         connector = get_connector_from_name(self.get_backend(self.backend_section))
 
+        if 'projects_file' in self.conf['projects']:
+            json_projects_map = self.conf['projects']['projects_file']
+
         enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
                                       self.db_user, self.db_password, self.db_host)
         elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
