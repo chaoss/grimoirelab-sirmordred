@@ -141,13 +141,13 @@ class Config():
                     "optional": True,
                     "default": 1000,
                     "type": int,
-                    "description": "Number of items to include in Elasticsearch bulk operations"
+                    "description": "Number of items to write in Elasticsearch using bulk operations"
                 },
                 "scroll_size": {
                     "optional": True,
                     "default": 100,
                     "type": int,
-                    "description": "Number of items to receive in Elasticsearch when scrolling"
+                    "description": "Number of items to read from Elasticsearch when scrolling"
                 }
 
             }
