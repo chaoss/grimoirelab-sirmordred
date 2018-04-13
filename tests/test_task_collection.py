@@ -103,7 +103,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
         """Test fetching data from archives"""
 
         # proj_file -> 'test-projects-archive.json' stored within the conf file
-        conf_file = 'archive-test.cfg'
+        conf_file = 'archives-test.cfg'
         config = Config(conf_file)
 
         backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
