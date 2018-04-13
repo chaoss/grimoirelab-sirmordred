@@ -441,8 +441,8 @@ class Config():
                     "optional": True,
                     "default": True,
                     "type": bool,
-                    "description": "rigorous check of values in identities matching " + \
-                           "(i.e, well formed email addresses)"
+                    "description": "rigorous check of values in identities matching "
+                                   "(i.e, well formed email addresses)"
                 },
                 "reset_on_load": {
                     "optional": True,
