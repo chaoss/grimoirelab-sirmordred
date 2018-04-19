@@ -55,7 +55,7 @@ setup(name="grimoire-mordred",
       long_description=long_description,
       url="https://github.com/grimoirelab/mordred",
       version=version,
-      author="Bitergia",
+      author="CHAOSS",
       author_email="acs@bitergia.com",
       license="GPLv3",
       classifiers=[
@@ -70,14 +70,14 @@ setup(name="grimoire-mordred",
           'mordred'
       ],
       install_requires=[
-          'grimoire-elk>=0.30.18',
-          'kidash>=0.4.0',
-          'grimoire-reports>=0.1.0',
-          'sortinghat>=0.4.2',
+          'grimoire-elk>=0.30.33',
+          'kidash>=0.4.4',
+          'manuscripts>=0.2.7',
+          'sortinghat>=0.6.2',
           'PyMySQL',
           'pyyaml',
           'redis',
-          'kingarthur'
+          'kingarthur>=0.1.7'
       ],
       scripts=[
           'bin/mordred'
