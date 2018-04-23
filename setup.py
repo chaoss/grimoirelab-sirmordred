@@ -30,7 +30,7 @@ from setuptools import setup
 
 here = os.path.abspath(os.path.dirname(__file__))
 readme_md = os.path.join(here, 'README.md')
-version_py = os.path.join(here, 'mordred', '_version.py')
+version_py = os.path.join(here, 'sirmordred', '_version.py')
 
 # Pypi wants the description to be in reStrcuturedText, but
 # we have it in Markdown. So, let's convert formats.
@@ -50,10 +50,10 @@ with codecs.open(version_py, 'r', encoding='utf-8') as fd:
                         fd.read(), re.MULTILINE).group(1)
 
 
-setup(name="grimoire-mordred",
+setup(name="sirmordred",
       description="Drive GrimoireLab tools to produce a dashboard",
       long_description=long_description,
-      url="https://github.com/grimoirelab/mordred",
+      url="https://github.com/chaoss/grimoirelab-sirmordred",
       version=version,
       author="CHAOSS",
       author_email="acs@bitergia.com",
@@ -67,7 +67,7 @@ setup(name="grimoire-mordred",
       ],
       keywords="development repositories analytics git github bugzilla jira jenkins",
       packages=[
-          'mordred'
+          'sirmordred'
       ],
       install_requires=[
           'grimoire-elk>=0.30.33',
@@ -80,6 +80,6 @@ setup(name="grimoire-mordred",
           'kingarthur>=0.1.7'
       ],
       scripts=[
-          'bin/mordred'
+          'bin/sirmordred'
       ],
       zip_safe=False)

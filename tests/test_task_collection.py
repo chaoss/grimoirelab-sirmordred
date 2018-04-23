@@ -31,9 +31,9 @@ from os.path import expanduser, join
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.config import Config
-from mordred.task_collection import TaskRawDataCollection
-from mordred.task_projects import TaskProjects
+from sirmordred.config import Config
+from sirmordred.task_collection import TaskRawDataCollection
+from sirmordred.task_projects import TaskProjects
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'

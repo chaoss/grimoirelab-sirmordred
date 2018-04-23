@@ -20,7 +20,7 @@ git clone https://github.com/grimoirelab/grimoirelab.git --depth 1
 echo "Installing and checking GrimoireLab Release"
 sudo grimoirelab/utils/build_grimoirelab --build --install --check --install_system --relfile $CONF_DIR/requirements.cfg -l debug
 
-# This could be an ENV var probably (it is defined in mordred conf)
+# This could be an ENV var probably (it is defined in sirmordred conf)
 REDIS="redis"
 
 # arthur on
@@ -34,6 +34,6 @@ echo "Starting two workers: collect and update tasks"
 (arthurw -g -d redis://$REDIS/8 update > $HOME_DIR/logs/worker-update.log 2>&1) &
 
 # Hack to get the panels menu file: -N don't re-retrieve files unless newer than local
-wget -N https://raw.githubusercontent.com/grimoirelab/mordred/master/menu.yaml
+wget -N https://raw.githubusercontent.com/chaoss/grimoirelab-sirmordred/master/menu.yaml
 
-mordred -c $HOME_DIR/conf/setup.cfg
+sirmordred -c $HOME_DIR/conf/setup.cfg

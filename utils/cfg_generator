@@ -91,9 +91,9 @@ def create_config(path, enabled_backends):
     config.set('general','short_name','')
     config.set('general','update','true')
     config.set('general','sleep', '0 # in seconds')
-    config.set('general','projects_file', '# /etc/mordred/project.json')
+    config.set('general','projects_file', '# /etc/sirmordred/project.json')
     config.set('general','debug', 'false')
-    config.set('general','logs_dir', '# /var/log/mordred/')
+    config.set('general','logs_dir', '# /var/log/sirmordred/')
     config.set('general','from_date', '# yyyy-mm-dd')
     config.set('general','debug', 'false')
 
@@ -111,7 +111,7 @@ def create_config(path, enabled_backends):
     config.set('sortinghat','user','')
     config.set('sortinghat','password','')
     config.set('sortinghat','load_organizations','false')
-    config.set('sortinghat','orgs_file','/home/bitergia/mordred/conf/orgs/orgs_file')
+    config.set('sortinghat','orgs_file','/home/bitergia/sirmordred/conf/orgs/orgs_file')
     config.set('sortinghat','unify_method','# see: sortinghat unify --help ')
     config.set('sortinghat','unaffiliated_group','# commonly: Unknown')
 

@@ -1,16 +1,16 @@
-# Mordred
+# SirMordred
 
 
 ## Intro
 
-Mordred Docker container will help you to deploy the Bitergia Analytics dashboard
+SirMordred Docker container will help you to deploy the Bitergia Analytics dashboard
 using a set of configuration files. In the documentation below we assume you
 already have a running MariaDB server, ElasticSearch 2.2 and Kibiter (our fork for Kibana
 which container is bitergia/kibiter:4.4.1). If you don't want to install Kibiter
 just use Kibana 4.4.1, but you'll miss the improvements we added ;).
 
 The different files we will have to modify are:
-- setup.cfg: Mordred's configuration file
+- setup.cfg: SirMordred's configuration file
 - requirements.cfg: file with the versions of the components we will use
 - projects.json: JSON file with projects and its repositories
 - orgs_file.json: a Sorting Hat file format with companies/organizations and domains
@@ -20,7 +20,7 @@ Let's start hacking!.
 
 ## setup.cfg
 
-The Mordred's configuration file have several sections but don't panic, it is
+SirMordred's configuration file have several sections but don't panic, it is
 easier than you may think at a glance.
 
 First, we define the project name. The only thing you need to modify here is
@@ -121,7 +121,7 @@ identities_export_url = "https://github.com/<owner>/<repo>/blob/master/sh_identi
 github_api_token = "42207XXXXXXXX"
 ```
 
-For builidng the dashboard, mordred configures Kibiter. No config is needed
+For builidng the dashboard, sirmordred configures Kibiter. No config is needed
 by default but sometimes is useful to change the default time frame is shown.
 
 [panels]

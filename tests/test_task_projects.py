@@ -32,8 +32,8 @@ from os import remove
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.config import Config
-from mordred.task_projects import TaskProjects
+from sirmordred.config import Config
+from sirmordred.task_projects import TaskProjects
 
 
 CONF_FILE = 'test.cfg'

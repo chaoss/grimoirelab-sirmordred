@@ -31,9 +31,9 @@ import requests
 
 from copy import deepcopy
 
-from mordred.config import Config
-from mordred.task import Task
-from mordred.eclipse_projects_lib import compose_title, compose_projects_json
+from sirmordred.config import Config
+from sirmordred.task import Task
+from sirmordred.eclipse_projects_lib import compose_title, compose_projects_json
 
 logger = logging.getLogger(__name__)
 

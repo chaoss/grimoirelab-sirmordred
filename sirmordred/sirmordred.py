@@ -39,23 +39,23 @@ from arthur.common import Q_STORAGE_ITEMS
 
 from grimoire_elk.enriched.utils import grimoire_con
 
-from mordred.config import Config
-from mordred.error import DataCollectionError
-from mordred.error import DataEnrichmentError
-from mordred.task import Task
-from mordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
-from mordred.task_enrich import TaskEnrich
-from mordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
-from mordred.task_manager import TasksManager
-from mordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
-from mordred.task_projects import TaskProjects
-from mordred.task_report import TaskReport
-from mordred.task_track import TaskTrackItems
+from sirmordred.config import Config
+from sirmordred.error import DataCollectionError
+from sirmordred.error import DataEnrichmentError
+from sirmordred.task import Task
+from sirmordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
+from sirmordred.task_enrich import TaskEnrich
+from sirmordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
+from sirmordred.task_manager import TasksManager
+from sirmordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
+from sirmordred.task_projects import TaskProjects
+from sirmordred.task_report import TaskReport
+from sirmordred.task_track import TaskTrackItems
 
 logger = logging.getLogger(__name__)
 
 
-class Mordred:
+class SirMordred:
 
     def __init__(self, config):
         """ config is a Config object """
@@ -168,7 +168,7 @@ class Mordred:
                         output[backend_section] += projects[pro][backend]
 
         # backend could be in project/repo file but not enabled in
-        # mordred conf file
+        # sirmordred conf file
         enabled = {}
         for k in output:
             if k in self.conf:
@@ -293,7 +293,7 @@ class Mordred:
 
     def start(self):
         """
-        This method defines the workflow of Mordred. So it calls to:
+        This method defines the workflow of SirMordred. So it calls to:
         - initialize the databases
         - execute the different phases for the first iteration
           (collection, identities, enrichment)
@@ -301,30 +301,30 @@ class Mordred:
         - start also the Sorting Hat merge
         """
 
-        # logger.debug("Starting Mordred engine ...")
+        # logger.debug("Starting SirMordred engine ...")
         logger.info("")
         logger.info("----------------------------")
-        logger.info("Starting Mordred engine ...")
+        logger.info("Starting SirMordred engine ...")
         logger.info("- - - - - - - - - - - - - - ")
 
         # check we have access to the needed ES
         if not self.check_es_access():
-            print('Can not access Elasticsearch service. Exiting mordred ...')
+            print('Can not access Elasticsearch service. Exiting sirmordred ...')
             sys.exit(1)
 
         # If arthur is configured check that it is working
         if self.conf['es_collection']['arthur']:
             if not self.check_redis_access():
-                print('Can not access redis service. Exiting mordred ...')
+                print('Can not access redis service. Exiting sirmordred ...')
                 sys.exit(1)
             if not self.check_arthur_access():
-                print('Can not access arthur service. Exiting mordred ...')
+                print('Can not access arthur service. Exiting sirmordred ...')
                 sys.exit(1)
 
         # If bestiary is configured check that it is working
         if self.conf['projects']['projects_url']:
             if not self.check_bestiary_access():
-                print('Can not access bestiary service. Exiting mordred ...')
+                print('Can not access bestiary service. Exiting sirmordred ...')
                 sys.exit(1)
 
         # Initial round: panels and projects loading
@@ -389,4 +389,4 @@ class Mordred:
                 var = traceback.format_exc()
                 logger.error(var)
 
-        logger.info("Finished Mordred engine ...")
+        logger.info("Finished SirMordred engine ...")

@@ -31,8 +31,8 @@ import unittest
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.config import Config
-from mordred.task import Task
+from sirmordred.config import Config
+from sirmordred.task import Task
 
 CONF_FILE = 'test.cfg'
 BACKEND_NAME = 'stackexchange'

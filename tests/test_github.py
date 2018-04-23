@@ -32,8 +32,8 @@ sys.path.insert(0, '..')
 
 import configparser
 
-from mordred.error import GithubFileNotFound
-from mordred.github import Github
+from sirmordred.error import GithubFileNotFound
+from sirmordred.github import Github
 
 CONF_FILE = 'test.cfg'
 

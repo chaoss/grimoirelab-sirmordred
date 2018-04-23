@@ -36,8 +36,8 @@ from datetime import datetime
 
 import requests
 
-from mordred.task import Task
-from mordred.task_manager import TasksManager
+from sirmordred.task import Task
+from sirmordred.task_manager import TasksManager
 from sortinghat import api
 from sortinghat.cmd.init import Init
 from sortinghat.cmd.load import Load
@@ -395,7 +395,7 @@ class TaskIdentitiesExport(Task):
                 gzipped_base64_identities = base64_raw.decode('ascii')
                 upload_json = {
                     "content": gzipped_base64_identities,
-                    "message": "mordred automatic update"
+                    "message": "sirmordred automatic update"
                 }
                 if repo_file_sha:
                     upload_json["sha"] = repo_file_sha
