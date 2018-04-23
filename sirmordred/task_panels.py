@@ -32,7 +32,7 @@ from urllib.parse import urljoin
 
 from kidash.kidash import import_dashboard, get_dashboard_name, \
     exists_dashboard
-from mordred.task import Task
+from sirmordred.task import Task
 
 logger = logging.getLogger(__name__)
 

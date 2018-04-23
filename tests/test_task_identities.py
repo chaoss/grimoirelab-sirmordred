@@ -32,8 +32,8 @@ from sortinghat.db.database import Database
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.config import Config
-from mordred.task_identities import TaskIdentitiesLoad, TaskIdentitiesMerge
+from sirmordred.config import Config
+from sirmordred.task_identities import TaskIdentitiesLoad, TaskIdentitiesMerge
 
 
 CONF_FILE = 'test.cfg'

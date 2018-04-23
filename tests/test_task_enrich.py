@@ -32,10 +32,10 @@ from sortinghat.db.database import Database
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.config import Config
-from mordred.error import DataEnrichmentError
-from mordred.task_projects import TaskProjects
-from mordred.task_enrich import TaskEnrich
+from sirmordred.config import Config
+from sirmordred.error import DataEnrichmentError
+from sirmordred.task_projects import TaskProjects
+from sirmordred.task_enrich import TaskEnrich
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'

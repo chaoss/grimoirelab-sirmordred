@@ -24,7 +24,7 @@
 import configparser
 import logging
 
-from mordred._version import __version__
+from sirmordred._version import __version__
 
 from grimoire_elk.utils import get_connectors
 
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class Config():
-    """Class aimed to manage mordred configuration"""
+    """Class aimed to manage sirmordred configuration"""
 
     def __init__(self, conf_file, conf_list=[]):
         """Initialize object.
@@ -117,7 +117,7 @@ class Config():
                     "optional": False,
                     "default": "logs",
                     "type": str,
-                    "description": "Directory with the logs of mordred"
+                    "description": "Directory with the logs of sirmordred"
                 },
                 "log_handler": {
                     "optional": True,
@@ -743,13 +743,13 @@ class Config():
 
             return params_md
 
-        print("Generating Mordred config documentation")
+        print("Generating SirMordred config documentation")
         general_sections = Config.general_params()
         backend_sections = Config.get_backend_sections()
 
-        config_md = "# Mordred %s configuration params\n\n" % __version__
+        config_md = "# SirMordred %s configuration params\n\n" % __version__
         config_md += "This is an automatic generated doc. Don't modify it by hand.\n"
-        config_md += "Use python mordred/config.py to generate it.\n\n"
+        config_md += "Use python sirmordred/config.py to generate it.\n\n"
 
         config_md += "## General Sections\n\n"
         for section in sorted(general_sections):

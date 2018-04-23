@@ -27,8 +27,8 @@ from grimoire_elk.elastic import ElasticSearch
 from grimoire_elk.track_items import fetch_track_items, get_gerrit_numbers, enrich_gerrit_items
 from grimoire_elk.track_items import get_commits_from_gerrit, enrich_git_items
 
-from mordred.task import Task
-from mordred.task_projects import TaskProjects
+from sirmordred.task import Task
+from sirmordred.task_projects import TaskProjects
 
 logger = logging.getLogger(__name__)
 

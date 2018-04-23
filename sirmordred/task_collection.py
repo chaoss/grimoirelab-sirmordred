@@ -44,9 +44,9 @@ from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elastic import ElasticSearch
 from grimoire_elk.utils import get_connector_from_name, get_elastic
 
-from mordred.error import DataCollectionError
-from mordred.task import Task
-from mordred.task_projects import TaskProjects
+from sirmordred.error import DataCollectionError
+from sirmordred.task import Task
+from sirmordred.task_projects import TaskProjects
 
 
 logger = logging.getLogger(__name__)

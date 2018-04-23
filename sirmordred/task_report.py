@@ -34,7 +34,7 @@ from dateutil import parser
 
 from manuscripts.report import Report
 
-from mordred.task import Task
+from sirmordred.task import Task
 
 logger = logging.getLogger(__name__)
 

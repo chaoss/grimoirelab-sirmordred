@@ -29,8 +29,8 @@ from unittest.mock import patch
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.config import Config
-from mordred.task_panels import TaskPanels
+from sirmordred.config import Config
+from sirmordred.task_panels import TaskPanels
 
 CONF_FILE = 'test.cfg'
 
@@ -62,8 +62,8 @@ class TestTaskPanels(unittest.TestCase):
 
         self.assertEqual(task.config, config)
 
-    @patch('mordred.task_panels.import_dashboard', side_effect=check_import_dashboard_stackexchange)
-    @patch('mordred.task_panels.get_dashboard_name')
+    @patch('sirmordred.task_panels.import_dashboard', side_effect=check_import_dashboard_stackexchange)
+    @patch('sirmordred.task_panels.get_dashboard_name')
     def test_create_dashboard_stackexchange(self, mock_get_dashboard_name, mock_import_dashboard):
         """ Test the creation of a dashboard which includes stackexchange in data sources """
         mock_get_dashboard_name.return_value = ''
@@ -73,7 +73,7 @@ class TestTaskPanels(unittest.TestCase):
 
         task.create_dashboard(None, data_sources=["stackexchange"])
 
-    @patch('mordred.task_panels.TaskPanels.create_dashboard', side_effect=check_create_dashboard)
+    @patch('sirmordred.task_panels.TaskPanels.create_dashboard', side_effect=check_create_dashboard)
     def test_create_dashboard_multi_ds(self, mock_get_dashboard_name):
         """ Test the creation of dashboards with filtered data sources """
         mock_get_dashboard_name.return_value = ''

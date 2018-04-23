@@ -24,7 +24,7 @@
 import logging
 import urllib.request
 
-from mordred.error import GithubFileNotFound
+from sirmordred.error import GithubFileNotFound
 
 logger = logging.getLogger(__name__)
 

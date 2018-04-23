@@ -28,12 +28,12 @@ import unittest
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
-from mordred.mordred import Mordred
-from mordred.config import Config
-from mordred.task_manager import TasksManager
-from mordred.task_collection import TaskRawDataCollection
-from mordred.task_enrich import TaskEnrich
-from mordred.task_projects import TaskProjects
+from sirmordred.sirmordred import SirMordred
+from sirmordred.config import Config
+from sirmordred.task_manager import TasksManager
+from sirmordred.task_collection import TaskRawDataCollection
+from sirmordred.task_enrich import TaskEnrich
+from sirmordred.task_projects import TaskProjects
 
 CONF_FILE = 'test.cfg'
 
@@ -43,7 +43,7 @@ class TestTasksManager(unittest.TestCase):
 
     def setUp(self):
         self.config = Config(CONF_FILE)
-        mordred = Mordred(self.config)
+        mordred = SirMordred(self.config)
 
         task = TaskProjects(self.config)
         self.assertEqual(task.execute(), None)
