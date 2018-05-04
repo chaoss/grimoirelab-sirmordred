@@ -92,8 +92,8 @@ class TasksManager(threading.Thread):
                     task.execute()
                 except Exception as ex:
                     logger.error("Exception in Task Manager %s", ex)
-                    raise
                     TasksManager.COMM_QUEUE.put(sys.exc_info())
+                    raise
 
             if self.timer > 0 and self.config.get_conf()['general']['update']:
                 logger.debug("Sleeping in Task Manager %s s", self.timer)
