@@ -252,15 +252,18 @@ class TaskEnrich(Task):
                                      self.backend_section)
         #  ** END SYNC LOGIC **
 
-        self.__enrich_items()
+        try:
+            self.__enrich_items()
 
-        if cfg['es_enrichment']['autorefresh']:
-            logger.debug("Doing autorefresh for %s", self.backend_section)
-            self.__autorefresh()
-        else:
-            logger.debug("Not doing autorefresh for %s", self.backend_section)
+            if cfg['es_enrichment']['autorefresh']:
+                logger.debug("Doing autorefresh for %s", self.backend_section)
+                self.__autorefresh()
+            else:
+                logger.debug("Not doing autorefresh for %s", self.backend_section)
 
-        self.__studies()
-
-        with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
-            TasksManager.NUMBER_ENRICH_TASKS_ON -= 1
+            self.__studies()
+        except Exception as e:
+            raise e
+        finally:
+            with TasksManager.NUMBER_ENRICH_TASKS_ON_LOCK:
+                TasksManager.NUMBER_ENRICH_TASKS_ON -= 1
