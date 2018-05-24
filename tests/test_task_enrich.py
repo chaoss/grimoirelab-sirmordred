@@ -33,6 +33,7 @@ from sortinghat.db.database import Database
 sys.path.insert(0, '..')
 
 from mordred.config import Config
+from mordred.error import DataEnrichmentError
 from mordred.task_projects import TaskProjects
 from mordred.task_enrich import TaskEnrich
 
@@ -106,24 +107,27 @@ class TestTaskEnrich(unittest.TestCase):
         TaskProjects(config).execute()
         backend_section = GIT_BACKEND_SECTION
         task = TaskEnrich(config, backend_section=backend_section)
-        self.assertEqual(task.execute(), None)
-
-        # Configure a wrong study
-        cfg['git']['studies'] = ['bad_study']
-        with self.assertRaises(RuntimeError):
-            self.assertEqual(task.execute(), None)
 
         # Configure no studies
         cfg['git']['studies'] = None
         self.assertEqual(task.execute(), None)
 
+        # Configure a wrong study
+        cfg['git']['studies'] = ['bad_study']
+        with self.assertRaises(DataEnrichmentError):
+            self.assertEqual(task.execute(), None)
+
         # Configure several studies
-        cfg['git']['studies'] = ["enrich_demography", "enrich_areas_of_code"]
+        cfg['git']['studies'] = ['enrich_onion']
+        self.assertEqual(task.execute(), None)
+
+        # Configure several studies
+        cfg['git']['studies'] = ['enrich_demography:1', 'enrich_areas_of_code']
         self.assertEqual(task.execute(), None)
 
         # Configure several studies, one wrong
-        cfg['git']['studies'] = ["enrich_demography", "enrich_areas_of_code1"]
-        with self.assertRaises(RuntimeError):
+        cfg['git']['studies'] = ['enrich_demography:1', "enrich_areas_of_code1"]
+        with self.assertRaises(DataEnrichmentError):
             self.assertEqual(task.execute(), None)
 
 
