@@ -590,6 +590,14 @@ class Config():
         return gelk_backends + extra_backends
 
     @classmethod
+    def get_study_sections(cls):
+        # a study name could include and extra ":<param>"
+        # to have several backend entries with different configs
+        studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion")
+
+        return studies
+
+    @classmethod
     def get_global_data_sources(cls):
         """ Data sources than are collected and enriched globally """
 
@@ -610,10 +618,13 @@ class Config():
         # First let's check all common sections entries
         check_params = cls.general_params()
         backend_sections = cls.get_backend_sections()
+        study_sections = cls.get_study_sections()
 
         for section in config.keys():
             if section in backend_sections or section[1:] in backend_sections:
                 # backend_section or *backend_section, to be checked later
+                continue
+            if section.startswith((study_sections)):
                 continue
             if section not in check_params.keys():
                 raise RuntimeError("Wrong section:", section)
