@@ -1,2 +1,8 @@
-# Reuse the setup.py one
--e .
+PyMySQL
+pyyaml
+redis
+kingarthur>=0.1.7
+-e git+https://github.com/chaoss/grimoirelab-sortinghat/#egg=grimoirelab-sortinghat
+-e git+https://github.com/chaoss/grimoirelab-manuscripts/#egg=grimoirelab-manuscripts
+-e git+https://github.com/chaoss/grimoirelab-kidash/#egg=grimoirelab-kidash
+-e git+https://github.com/chaoss/grimoirelab-elk/#egg=grimoirelab-elk
