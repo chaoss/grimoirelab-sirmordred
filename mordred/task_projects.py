@@ -19,14 +19,13 @@
 #
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
+#     Quan Zhou <quan@bitergia.com>
 #
 
 import json
 import logging
-import shutil
 
 from threading import Lock
-from os import path
 
 import requests
 
@@ -34,7 +33,7 @@ from copy import deepcopy
 
 from mordred.config import Config
 from mordred.task import Task
-from mordred.eclipse_projects_lib import get_repos_list_project, get_mls_repos
+from mordred.eclipse_projects_lib import compose_title, compose_projects_json
 
 logger = logging.getLogger(__name__)
 
@@ -124,50 +123,15 @@ class TaskProjects(Task):
         projects_file = config['projects']['projects_file']
 
         eclipse_projects_url = 'http://projects.eclipse.org/json/projects/all'
-        # For debugging with a Eclipse local file
-        eclipse_projects_file = 'VizGrimoireUtils/eclipse/http:__projects.eclipse.org_json_projects_all.json'
 
         logger.info("Getting Eclipse projects (1 min) from  %s ", eclipse_projects_url)
         eclipse_projects_resp = requests.get(eclipse_projects_url)
+        eclipse_projects_resp.raise_for_status()
         eclipse_projects = eclipse_projects_resp.json()['projects']
         projects = self.convert_from_eclipse(eclipse_projects)
 
-        # Create a backup file for current projects_file
-        if path.isfile(projects_file):
-            shutil.copyfile(projects_file, projects_file + ".bak")
-        logger.info("Writing Eclipse projects to %s ", projects_file)
         with open(projects_file, "w") as fprojects:
             json.dump(projects, fprojects, indent=True)
-
-    def __convert_eclipse_mls(self, mls_data):
-        """ We need to convert:
-
-        [
-         "https://dev.eclipse.org/mailman/listinfo/sisu-dev",
-         "https://dev.eclipse.org/mailman/listinfo/sisu-users"
-        ]
-
-        to
-
-        [
-            "sisu-users /home/bitergia/mboxes/sisu-users.mbox/sisu-users.mbox",
-            "sisu-dev /home/bitergia/mboxes/sisu-dev.mbox/sisu-dev.mbox"
-        ]
-
-        """
-
-        mbox_archives = '/home/bitergia/mboxes'
-        mls = []
-
-        for mlist in mls_data:
-            if len(mlist.rsplit("/", 1)) != 2:
-                logger.warning("Wrong list format %s", mlist)
-                continue
-            name = mlist.rsplit("/", 1)[1]
-            list_new = "%s %s/%s.mbox/%s.mbox" % (name, mbox_archives, name, name)
-            mls.append(list_new)
-
-        return mls
 
     def convert_from_eclipse(self, eclipse_projects):
         """ Convert from eclipse projects format to grimoire projects json format """
@@ -180,18 +144,7 @@ class TaskProjects(Task):
             "bugzilla": ["https://bugs.eclipse.org/bugs/"]
         }
 
-        for project in eclipse_projects:
-            projects[project] = {}
-            pdata = projects[project]
-            pdata["meta"] = {
-                "title": eclipse_projects[project]["title"]
-            }
-            pdata["bugzilla"] = get_repos_list_project(project, eclipse_projects, "its")
-            pdata["gerrit"] = get_repos_list_project(project, eclipse_projects, "scr", 'git.eclipse.org')
-            pdata["git"] = get_repos_list_project(project, eclipse_projects, "scm")
-            pdata["github"] = get_repos_list_project(project, eclipse_projects, "github")
-            pdata["mailing_lists"] = get_mls_repos(eclipse_projects[project], True)
-            pdata["mbox"] = self.__convert_eclipse_mls(pdata["mailing_lists"])
-            # pdata["irc"] = get_repos_list_project(project, eclipse_projects, "irc")
+        projects = compose_title(projects, eclipse_projects)
+        projects = compose_projects_json(projects, eclipse_projects)
 
         return projects
