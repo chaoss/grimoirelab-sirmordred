@@ -593,7 +593,7 @@ class Config():
     def get_study_sections(cls):
         # a study name could include and extra ":<param>"
         # to have several backend entries with different configs
-        studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion")
+        studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion", "kafka_kip")
 
         return studies
 
