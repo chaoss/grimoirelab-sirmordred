@@ -125,6 +125,10 @@ class TestTaskEnrich(unittest.TestCase):
         cfg['git']['studies'] = ['enrich_demography:1', 'enrich_areas_of_code']
         self.assertEqual(task.execute(), None)
 
+        # Configure kafka kip study
+        cfg['mbox']['studies'] = ['kafka_kip']
+        self.assertEqual(task.execute(), None)
+
         # Configure several studies, one wrong
         cfg['git']['studies'] = ['enrich_demography:1', "enrich_areas_of_code1"]
         with self.assertRaises(DataEnrichmentError):
