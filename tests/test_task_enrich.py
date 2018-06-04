@@ -112,6 +112,10 @@ class TestTaskEnrich(unittest.TestCase):
         cfg['git']['studies'] = None
         self.assertEqual(task.execute(), None)
 
+        # Configure no studies
+        cfg['git']['studies'] = []
+        self.assertEqual(task.execute(), None)
+
         # Configure a wrong study
         cfg['git']['studies'] = ['bad_study']
         with self.assertRaises(DataEnrichmentError):
