@@ -64,9 +64,14 @@ class TaskEnrich(Task):
         self.last_autorefresh = datetime.utcnow()  # Last autorefresh date
 
     def __load_studies(self):
+        studies = [study for study in self.conf[self.backend_section]['studies'] if study.strip() != ""]
+        if not studies:
+            logger.debug('No studies for %s' % self.backend_section)
+            return None
+
         studies_args = []
 
-        for study in self.conf[self.backend_section]['studies']:
+        for study in studies:
             if study not in self.conf:
                 msg = 'Missing config for study %s:' % study
                 logger.error(msg)
@@ -122,7 +127,8 @@ class TaskEnrich(Task):
             backend_args = self._compose_perceval_params(self.backend_section, url)
             studies_args = None
 
-            if 'studies' in self.conf[self.backend_section] and self.conf[self.backend_section]['studies']:
+            if 'studies' in self.conf[self.backend_section] and \
+                    self.conf[self.backend_section]['studies']:
                 studies_args = self.__load_studies()
 
             try:
@@ -218,9 +224,13 @@ class TaskEnrich(Task):
            cfg[self.backend_section]['studies']:
             logger.debug('No studies for %s' % self.backend_section)
             return
-        else:
-            logger.debug("Executing studies for %s: %s" % (self.backend_section,
-                         cfg[self.backend_section]['studies']))
+
+        studies = [study for study in cfg[self.backend_section]['studies'] if study.strip() != ""]
+        if not studies:
+            logger.debug('No studies for %s' % self.backend_section)
+            return
+
+        logger.debug("Executing studies for %s: %s" % (self.backend_section, studies))
         time.sleep(2)  # Wait so enrichment has finished in ES
         enrich_backend = self._get_enrich_backend()
 
@@ -230,13 +240,11 @@ class TaskEnrich(Task):
 
         # Time to check that configured studies are valid
         logger.debug("All studies in %s: %s", self.backend_section, all_studies_names)
-        logger.debug("Configured studies %s", cfg[self.backend_section]['studies'])
-        cfg_studies_types = [study.split(":")[0] for study in cfg[self.backend_section]['studies']]
+        logger.debug("Configured studies %s", studies)
+        cfg_studies_types = [study.split(":")[0] for study in studies]
         if not set(cfg_studies_types).issubset(set(all_studies_names)):
-            logger.error('Wrong studies names for %s: %s', self.backend_section,
-                         cfg[self.backend_section]['studies'])
-            raise RuntimeError('Wrong studies names ', self.backend_section,
-                               cfg[self.backend_section]['studies'])
+            logger.error('Wrong studies names for %s: %s', self.backend_section, studies)
+            raise RuntimeError('Wrong studies names ', self.backend_section, studies)
 
         for study in enrich_backend.studies:
             if study.__name__ in cfg_studies_types:
@@ -244,7 +252,7 @@ class TaskEnrich(Task):
 
         enrich_backend.studies = active_studies
         print("Executing for %s the studies %s" % (self.backend_section,
-              [study for study in cfg[self.backend_section]['studies']]))
+              [study for study in studies]))
 
         studies_args = self.__load_studies()
         do_studies(enrich_backend, studies_args)
