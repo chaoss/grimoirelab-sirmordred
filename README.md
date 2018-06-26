@@ -2,6 +2,37 @@
 
 SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via a configuration file. Below you can find details about the different sections composing the configuration file.
 
+## Requirements
+
+One good way of having an immediate sense of requirements is to look through our [`.travis.yml`](.travis.yml) file to see what our CI does to validate SirMordred.
+
+1. Ensure you have all the [supporting systems](https://chaoss.github.io/grimoirelab-tutorial/basics/supporting.html) SirMordred needs
+2. Prepare and activate a `python3` virtualenv by following our [tutorial instructions](https://chaoss.github.io/grimoirelab-tutorial/basics/install.html#venvs).
+3. Install dependencies by following the steps in our [`.travis.yml file`](.travis.yml). At the time of this writing, those are:
+    ```sh
+    pip install pandas==0.18.1
+    pip install httpretty==0.8.6
+    pip install -r "requirements.txt"
+    pip install flake8
+    pip install coveralls
+    ```
+
+## Testing
+
+To run the tests, you need an ElasticSearch+Kibana and MySQL server instances running. In particular:
+
+1. Ensure [ElasticSearch is installed and running](https://chaoss.github.io/grimoirelab-tutorial/basics/supporting.html#installing-elasticsearch). [You can do this via a Docker image easily](https://chaoss.github.io/grimoirelab-tutorial/basics/supporting.html#installing-elasticsearch-and-kibana-from-a-docker-container): `docker run -d -p 9200:9200 -p 5601:5601 nshou/elasticsearch-kibana`
+2. Ensure a password-less MySQL instance is running. It's easy to do with
+   Docker: `docker run -p 3306:3306 -e MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql`
+
+Once you have the above supporting systems running locally, you can lint the
+repo and run the tests via:
+
+```sh
+flake8 .
+cd tests && ./runtests.py
+```
+
 ## General Sections
 
 ### [es_collection] 
@@ -122,3 +153,4 @@ A complete list of studies parameters is available at:
 * **study-param-1**: ..
 * **study-param-2**: ..
 * **study-param-n**: ..
+
