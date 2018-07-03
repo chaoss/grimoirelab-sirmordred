@@ -30,8 +30,7 @@ import yaml
 from collections import OrderedDict
 from urllib.parse import urljoin
 
-from kidash.kidash import import_dashboard, get_dashboard_name, \
-    exists_dashboard
+from kidash.kidash import import_dashboard, get_dashboard_name
 from sirmordred.task import Task
 
 logger = logging.getLogger(__name__)
@@ -69,7 +68,7 @@ class TaskPanels(Task):
 
         # Gets the cross set of enabled data sources and data sources
         # available in the menu file. For the result set gets the file
-        # names to be uploaded
+        # names of dashoards and index pattern to be uploaded
         enabled_ds = conf.get_data_sources()
         self.panels = {}
 
@@ -80,6 +79,8 @@ class TaskPanels(Task):
                 if ds['source'] not in self.panels.keys():
                     self.panels[ds['source']] = []
                 self.panels[ds['source']].append(entry['panel'])
+            if 'index-pattern' in ds:
+                self.panels[ds['source']].append(ds['index-pattern'])
 
     def is_backend_task(self):
         return False
@@ -210,7 +211,7 @@ class TaskPanels(Task):
 
         return True
 
-    def create_dashboard(self, panel_file, data_sources=None):
+    def create_dashboard(self, panel_file, data_sources=None, strict=True):
         """Upload a panel to Elasticsearch if it does not exist yet.
 
         If a list of data sources is specified, upload only those
@@ -218,23 +219,23 @@ class TaskPanels(Task):
 
         :param panel_file: file name of panel (dashobard) to upload
         :param data_sources: list of data sources
+        :param strict: only upload a dashboard if it is newer than the one already existing
         """
         es_enrich = self.conf['es_enrichment']['url']
-        # If the panel (dashboard) already exists, don't load it
-        dash_id = get_dashboard_name(panel_file)
-        if exists_dashboard(es_enrich, dash_id):
-            logger.info("Not creating a panel that exists already: %s", dash_id)
-        else:
-            logger.info("Creating the panel: %s", dash_id)
-            if data_sources and ('pipermail' in data_sources or 'hyperkitty' in data_sources):
-                # the dashboard for mbox and pipermail and hyperkitty are the same
-                data_sources = list(data_sources)
-                data_sources.append('mbox')
-            if data_sources and 'stackexchange' in data_sources:
-                # stackexchange is called stackoverflow in panels
-                data_sources = list(data_sources)
-                data_sources.append('stackoverflow')
-            import_dashboard(es_enrich, panel_file, data_sources=data_sources)
+
+        if data_sources and ('pipermail' in data_sources or 'hyperkitty' in data_sources):
+            # the dashboard for mbox and pipermail and hyperkitty are the same
+            data_sources = list(data_sources)
+            data_sources.append('mbox')
+        if data_sources and 'stackexchange' in data_sources:
+            # stackexchange is called stackoverflow in panels
+            data_sources = list(data_sources)
+            data_sources.append('stackoverflow')
+        try:
+            import_dashboard(es_enrich, panel_file, data_sources=data_sources, strict=strict)
+        except ValueError:
+            logger.error("%s does not include release field. Overwritten it always.", panel_file)
+            import_dashboard(es_enrich, panel_file, data_sources=data_sources, strict=False)
 
     def execute(self):
         # Configure kibiter
