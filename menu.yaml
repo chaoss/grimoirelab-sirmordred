@@ -2,6 +2,7 @@
 - name: Git
   source: git
   icon: default.png
+  index-pattern: panels/json/git-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/git.json
@@ -10,6 +11,7 @@
 - name: Gerrit
   source: gerrit
   icon: default.png
+  index-pattern: panels/json/gerrit-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/gerrit.json
@@ -20,6 +22,7 @@
 - name: GitHub PRs
   source: github
   icon: default.png
+  index-pattern: panels/json/github_pullrequests-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/github_pullrequests.json
@@ -30,6 +33,7 @@
 - name: GitHub Issues
   source: github
   icon: default.png
+  index-pattern: panels/json/github_issues-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/github_issues.json
@@ -40,6 +44,7 @@
 - name: Phabricator
   source: phabricator
   icon: default.png
+  index-pattern: panels/json/phabricator-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/maniphest.json
@@ -50,6 +55,7 @@
 - name: Redmine
   source: redmine
   icon: default.png
+  index-pattern: panels/json/redmine-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/redmine.json
@@ -60,6 +66,7 @@
 - name: Jira
   source: jira
   icon: default.png
+  index-pattern: panels/json/jira-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/jira.json
@@ -70,6 +77,7 @@
 - name: Bugzilla
   source: bugzilla
   icon: default.png
+  index-pattern: panels/json/bugzilla-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/bugzilla.json
@@ -78,6 +86,7 @@
 - name: Bugzilla
   source: bugzillarest
   icon: default.png
+  index-pattern: panels/json/bugzillarest-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/bugzilla.json
@@ -86,90 +95,105 @@
 - name: Confluence
   source: confluence
   icon: default.png
+  index-pattern: panels/json/confluence-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/confluence.json
 - name: MediaWiki
   source: mediawiki
   icon: default.png
+  index-pattern: panels/json/mediawiki-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/mediawiki.json
 - name: Mailing Lists
   source: mbox
   icon: default.png
+  index-pattern: panels/json/mbox-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/mailinglists.json
 - name: Mailing Lists
   source: pipermail
   icon: default.png
+  index-pattern: panels/json/pipermail-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/mailinglists.json
 - name: Discourse
   source: discourse
   icon: default.png
+  index-pattern: panels/json/discourse-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/discourse.json
 - name: Blogs (RSS)
   source: rss
   icon: default.png
+  index-pattern: panels/json/rss-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/rss.json
 - name: IRC
   source: supybot
   icon: default.png
+  index-pattern: panels/json/irc-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/irc.json
 - name: Slack
   source: slack
   icon: default.png
+  index-pattern: panels/json/slack-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/slack.json
 - name: Telegram
   source: telegram
   icon: default.png
+  index-pattern: panels/json/telegram-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/telegram.json
 - name: Twitter
   source: twitter
   icon: default.png
+  index-pattern: panels/json/twitter-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/twitter.json
 - name: Askbot Q&A
   source: askbot
   icon: default.png
+  index-pattern: panels/json/askbot-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/askbot.json
 - name: StackOverflow
   source: stackexchange
   icon: default.png
+  index-pattern: panels/json/stackoverflow-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/stackoverflow.json
 - name: Jenkins
   source: jenkins
   icon: default.png
+  index-pattern: panels/json/jenkins-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/jenkins.json
 - name: Mozilla Club
   source: mozillaclub
   icon: default.png
+  index-pattern: panels/json/mozillaclub-index-pattern.json
   menu:
   - name: Events
     panel: panels/json/mozilla_club.json
 - name: Mozilla Reps
   source: remo
   icon: default.png
+  index-pattern: panels/json/remo-index-pattern.json
   menu:
   - name: Events
     panel: panels/json/reps_events.json
@@ -178,6 +202,7 @@
 - name: Meetup
   source: meetup
   icon: default.png
+  index-pattern: panels/json/meetup-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/meetup.json
@@ -186,24 +211,28 @@
 - name: Google Hits
   source: google_hits
   icon: default.png
+  index-pattern: panels/json/google_hits-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/google_hits.json
 - name: DockerHub
   source: dockerhub
   icon: default.png
+  index-pattern: panels/json/dockerhub-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/dockerhub.json
 - name: Apache
   source: apache
   icon: default.png
+  index-pattern: panels/json/apache-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/apache.json
 - name: Testing
   source: functest
   icon: default.png
+  index-pattern: panels/json/testing_all-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/testing_all.json
