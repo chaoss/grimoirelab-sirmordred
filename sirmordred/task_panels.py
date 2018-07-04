@@ -79,8 +79,9 @@ class TaskPanels(Task):
                 if ds['source'] not in self.panels.keys():
                     self.panels[ds['source']] = []
                 self.panels[ds['source']].append(entry['panel'])
-            if 'index-pattern' in ds:
-                self.panels[ds['source']].append(ds['index-pattern'])
+            if 'index-patterns' in ds:
+                for index_pattern in ds['index-patterns']:
+                    self.panels[ds['source']].append(index_pattern)
 
     def is_backend_task(self):
         return False
