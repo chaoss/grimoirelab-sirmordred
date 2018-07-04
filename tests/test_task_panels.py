@@ -30,13 +30,13 @@ from unittest.mock import patch
 sys.path.insert(0, '..')
 
 from sirmordred.config import Config
-from sirmordred.task_panels import TaskPanels
+from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 
 CONF_FILE = 'test.cfg'
 
 
 def check_import_dashboard_stackexchange(elastic_url, import_file, es_index=None,
-                                         data_sources=None, add_vis_studies=False):
+                                         data_sources=None, add_vis_studies=False, strict=False):
     """ Check that stackexchange data sources adds also stackoverflow
         data source which is the name used in panels """
     if "stackexchange" in data_sources and "stackoverflow" not in data_sources:
@@ -82,6 +82,23 @@ class TestTaskPanels(unittest.TestCase):
         task = TaskPanels(config)
 
         task.execute()
+
+
+class TestTaskPanelsMenu(unittest.TestCase):
+    """TaskPanelsMenu tests"""
+
+    def test_initialization(self):
+        """Test whether attributes are initializated"""
+
+        config = Config(CONF_FILE)
+        task = TaskPanelsMenu(config)
+
+        self.assertEqual(task.config, config)
+
+        self.assertEqual(len(task.panels_menu), 29)
+
+        for entry in task.panels_menu:
+            self.assertEqual(len(entry['index-patterns']), 1)
 
 
 if __name__ == "__main__":
