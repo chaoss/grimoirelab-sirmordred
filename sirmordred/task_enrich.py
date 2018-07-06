@@ -233,6 +233,7 @@ class TaskEnrich(Task):
         logger.debug("Executing studies for %s: %s" % (self.backend_section, studies))
         time.sleep(2)  # Wait so enrichment has finished in ES
         enrich_backend = self._get_enrich_backend()
+        ocean_backend = self._get_ocean_backend(enrich_backend)
 
         active_studies = []
         all_studies = enrich_backend.studies
@@ -255,7 +256,8 @@ class TaskEnrich(Task):
               [study for study in studies]))
 
         studies_args = self.__load_studies()
-        do_studies(enrich_backend, studies_args)
+
+        do_studies(ocean_backend, enrich_backend, studies_args)
         # Return studies to its original value
         enrich_backend.studies = all_studies
 
