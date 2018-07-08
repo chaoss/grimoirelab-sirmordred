@@ -26,6 +26,7 @@ import logging
 
 from sirmordred._version import __version__
 
+from sirmordred.task import Task
 from grimoire_elk.utils import get_connectors
 
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ class Config():
             },
             "studies": {
                 "optional": True,
-                "default": None,
+                "default": [],
                 "type": list,
                 "description": "List of studies to be executed"
             }
@@ -585,7 +586,7 @@ class Config():
         # a backend name could include and extra ":<param>"
         # to have several backend entries with different configs
         gelk_backends = list(get_connectors().keys())
-        extra_backends = ["apache", "google_hits", "remo:activities"]
+        extra_backends = ["apache", "google_hits"]
 
         return gelk_backends + extra_backends
 
@@ -620,9 +621,12 @@ class Config():
         backend_sections = cls.get_backend_sections()
         study_sections = cls.get_study_sections()
 
-        for section in config.keys():
-            if section in backend_sections or section[1:] in backend_sections:
-                # backend_section or *backend_section, to be checked later
+        # filter out commented sections (e.g., [*backend_section:tag])
+        config_sections = [section for section in config.keys() if section.split(":")[0][0] != "*"]
+
+        for section in config_sections:
+            if Task.get_backend(section) in backend_sections:
+                # backend_section:tag
                 continue
             if section.startswith((study_sections)):
                 continue
@@ -651,10 +655,8 @@ class Config():
         # A backend section entry could have specific perceval params which are
         # not checked
         check_params = cls.backend_section_params()
-        for section in config.keys():
-            # [data_source] or [*data_source]
-            if section in backend_sections or section[1:] in backend_sections:
-                # backend_section or *backend_section
+        for section in config_sections:
+            if Task.get_backend(section) in backend_sections:
                 for param in check_params:
                     if param not in config[section].keys():
                         if not check_params[param]['optional']:
