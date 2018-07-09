@@ -441,7 +441,7 @@ class TaskPanelsMenu(Task):
                 raise
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
-        if 'shortname' in self.conf['general']:
+        if 'short_name' in self.conf['general']:
             self.project_name = self.conf['general']['short_name']
         else:
             self.project_name = 'GrimoireLab'
