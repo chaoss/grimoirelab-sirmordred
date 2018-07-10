@@ -109,7 +109,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
         backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
                             'discourse', 'dockerhub', 'gerrit', 'github', 'jenkins',
                             'jira', 'mediawiki', 'meetup', 'mozillaclub', 'nntp', 'phabricator',
-                            'redmine', 'remo', 'rss', 'stackexchange', 'slack', 'telegram']
+                            'redmine', 'remo', 'rss', 'stackexchange', 'slack', 'telegram', 'twitter']
 
         for backend_section in backend_sections:
             task = TaskRawDataCollection(config, backend_section=backend_section)
