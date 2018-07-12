@@ -195,7 +195,7 @@ class TaskRawDataArthurCollection(Task):
             # larger than ARTHUR_MAX_MEMORY_SIZE
 
             if self.ARTHUR_LAST_MEMORY_SIZE > self.ARTHUR_MAX_MEMORY_SIZE:
-                logger.debug("Python dict full. Not collecting items from redis queue.")
+                logger.debug("Items queue full. Not collecting items from redis queue.")
                 return
 
             logger.info("Collecting items from redis queue")
