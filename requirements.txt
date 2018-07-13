@@ -7,4 +7,7 @@ redis
 -e git+https://github.com/chaoss/grimoirelab-kidash/#egg=grimoirelab-kidash
 -e git+https://github.com/chaoss/grimoirelab-elk/#egg=grimoirelab-elk
 -e git+https://github.com/chaoss/grimoirelab-perceval/#egg=grimoirelab-perceval
+-e git+https://github.com/chaoss/grimoirelab-perceval-puppet/#egg=grimoirelab-perceval-puppet
+-e git+https://github.com/chaoss/grimoirelab-perceval-opnfv/#egg=grimoirelab-perceval-opnfv
+-e git+https://github.com/chaoss/grimoirelab-perceval-mozilla/#egg=grimoirelab-perceval-mozilla
 -e git+https://github.com/chaoss/grimoirelab-kingarthur/#egg=grimoirelab-kingarthur
