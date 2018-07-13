@@ -30,8 +30,8 @@ sys.path.insert(0, '..')
 
 from sirmordred.config import (Config, logger)
 
-CONF_FILE = 'test.cfg'
-CONF_STUDIES = 'test_studies.cfg'
+CONF_FULL = 'test.cfg'
+CONF_SLIM = 'test_studies.cfg'
 CONF_WRONG = 'test_wrong.cfg'
 
 
@@ -41,22 +41,22 @@ class TestConfig(unittest.TestCase):
     def test_init(self):
         """Test whether attributes are initializated"""
 
-        config = Config(CONF_FILE)
+        config = Config(CONF_FULL)
 
         self.assertIsNotNone(config.conf)
         self.assertIsNone(config.raw_conf)
-        self.assertEqual(config.conf_list, [CONF_FILE])
+        self.assertEqual(config.conf_list, [CONF_FULL])
         self.assertEqual(len(config.conf.keys()), 42)
 
     def test_init_studies(self):
         """Test whether studies' attributes are initializated"""
 
-        config = Config(CONF_STUDIES)
+        config = Config(CONF_SLIM)
 
         self.assertIsNotNone(config.conf)
         self.assertIsNone(config.raw_conf)
-        self.assertEqual(config.conf_list, [CONF_STUDIES])
-        self.assertEqual(len(config.conf.keys()), 13)
+        self.assertEqual(config.conf_list, [CONF_SLIM])
+        self.assertEqual(len(config.conf.keys()), 14)
 
         self.assertTrue('general' in config.conf.keys())
         self.assertTrue('projects' in config.conf.keys())
@@ -85,7 +85,7 @@ class TestConfig(unittest.TestCase):
         self.assertTrue('sort_on_field' in config.conf['enrich_onion:git'].keys())
         self.assertTrue('no_incremental' in config.conf['enrich_onion:git'].keys())
 
-        self.assertTrue('github' in config.conf.keys())
+        self.assertTrue('github:issues' in config.conf.keys())
         self.assertTrue('enrich_onion:github' in config.conf.keys())
         self.assertTrue('in_index_iss' in config.conf['enrich_onion:github'].keys())
         self.assertTrue('in_index_prs' in config.conf['enrich_onion:github'].keys())
@@ -98,12 +98,14 @@ class TestConfig(unittest.TestCase):
         self.assertTrue('sort_on_field' in config.conf['enrich_onion:github'].keys())
         self.assertTrue('no_incremental' in config.conf['enrich_onion:github'].keys())
 
+        self.assertTrue('github:pulls' in config.conf.keys())
+
     def test_create_config_file(self):
         """Test whether a config file is correctly created"""
 
         tmp_path = tempfile.mktemp(prefix='mordred_')
 
-        config = Config(CONF_FILE)
+        config = Config(CONF_FULL)
         config.create_config_file(tmp_path)
         copied_config = Config(tmp_path)
         # TODO create_config_file produces a config different from the original one
@@ -118,7 +120,7 @@ class TestConfig(unittest.TestCase):
     def test_get_data_sources(self):
         """Test whether all data sources are properly retrieved"""
 
-        config = Config(CONF_FILE)
+        config = Config(CONF_FULL)
 
         expected = ['askbot', 'bugzilla', 'bugzillarest', 'confluence', 'discourse', 'dockerhub', 'functest',
                     'gerrit', 'git', 'github', 'google_hits', 'hyperkitty', 'jenkins', 'jira', 'mbox', 'meetup',
@@ -132,7 +134,7 @@ class TestConfig(unittest.TestCase):
     def test_set_param(self):
         """Test whether a param is correctly modified"""
 
-        config = Config(CONF_FILE)
+        config = Config(CONF_FULL)
 
         self.assertFalse(config.conf['twitter']['collect'])
         config.set_param("twitter", "collect", "true")
@@ -141,7 +143,7 @@ class TestConfig(unittest.TestCase):
     def test_set_param_not_found(self):
         """Test whether an error is logged if a param does not exist"""
 
-        config = Config(CONF_FILE)
+        config = Config(CONF_FULL)
 
         with self.assertLogs(logger, level='ERROR') as cm:
             config.set_param("twitter", "acme", "true")
