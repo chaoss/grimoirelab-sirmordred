@@ -753,6 +753,10 @@ class Config():
                     "(https://travis-ci.org/grimoirelab/mordred.svg?branch=master)]" \
                     "(https://travis-ci.org/grimoirelab/mordred)\n\n" % __version__
 
+        config_md = "SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, " \
+                    "via a configuration file. Below you can find details about the different sections composing " \
+                    "the configuration file.\n\n"
+
         config_md += "## General Sections\n\n"
         for section in sorted(general_sections):
             config_md += "### [" + section + "] \n\n"
@@ -786,4 +790,4 @@ class Config():
 
 
 if __name__ == '__main__':
-    Config.write_doc("config.md")
+    Config.write_doc("../README.md")
