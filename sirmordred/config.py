@@ -747,23 +747,39 @@ class Config():
 
         print("Generating SirMordred config documentation")
         general_sections = Config.general_params()
-        backend_sections = Config.get_backend_sections()
 
-        config_md = "# SirMordred %s configuration params\n\n" % __version__
-        config_md += "This is an automatic generated doc. Don't modify it by hand.\n"
-        config_md += "Use python sirmordred/config.py to generate it.\n\n"
+        config_md = "# SirMordred %s " \
+                    "[![Build Status]" \
+                    "(https://travis-ci.org/grimoirelab/mordred.svg?branch=master)]" \
+                    "(https://travis-ci.org/grimoirelab/mordred)\n\n" % __version__
 
         config_md += "## General Sections\n\n"
         for section in sorted(general_sections):
             config_md += "### [" + section + "] \n\n"
             config_md += format_params(general_sections[section])
 
-        config_md += "## Sample Backend Section\n\n"
-        config_md += "In this section the perceval backends param should be also added\n"
-        for section in sorted(backend_sections):
-            config_md += "### [" + section + "]\n\n"
-            config_md += format_params(Config.backend_section_params())
-            break
+        config_md += "## Backend Sections\n\n"
+        config_md += "In this section, a template of a backend section is shown.\n" \
+                     "Further information about Perceval backends parameters are available at:\n\n" \
+                     "* Params details: http://perceval.readthedocs.io/en/latest/perceval.backends.core.html\n" \
+                     "* Examples: https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg\n\n"
+        config_md += "### [backend-name:tag] # :tag is optional\n"
+        config_md += "* **collect** (bool: True): enable/disable collection phase\n"
+        config_md += "* **raw_index** (str: None): Index name in which to store the raw items (**Required**)\n"
+        config_md += "* **enriched_index** (str: None): Index name in which to store the enriched items (**Required**)\n"
+        config_md += "* **studies** (list: []): List of studies to be executed\n"
+        config_md += "* **backend-param-1**: ..\n"
+        config_md += "* **backend-param-2**: ..\n"
+        config_md += "* **backend-param-n**: ..\n\n"
+
+        config_md += "## Studies Sections\n\n"
+        config_md += "In this section, a template of a study section is shown.\n" \
+                     "A complete list of studies parameters is available at:\n\n" \
+                     "* https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg\n\n"
+        config_md += "### [studies-name:tag] # :tag is optional\n"
+        config_md += "* **study-param-1**: ..\n"
+        config_md += "* **study-param-2**: ..\n"
+        config_md += "* **study-param-n**: ..\n"
 
         with open(filename, "w") as config_doc:
             config_doc.write(config_md)
