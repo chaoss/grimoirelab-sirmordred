@@ -235,8 +235,7 @@ class TaskPanels(Task):
         try:
             import_dashboard(es_enrich, panel_file, data_sources=data_sources, strict=strict)
         except ValueError:
-            logger.error("%s does not include release field. Overwritten it always.", panel_file)
-            import_dashboard(es_enrich, panel_file, data_sources=data_sources, strict=False)
+            logger.error("%s does not include release field. Not loading the panel.", panel_file)
         except RuntimeError:
             logger.error("Can not load the panel %s", panel_file)
 
