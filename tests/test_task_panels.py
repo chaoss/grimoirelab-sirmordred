@@ -98,7 +98,7 @@ class TestTaskPanelsMenu(unittest.TestCase):
         self.assertEqual(len(task.panels_menu), 29)
 
         for entry in task.panels_menu:
-            self.assertEqual(len(entry['index-patterns']), 1)
+            self.assertGreaterEqual(len(entry['index-patterns']), 0)
 
 
 if __name__ == "__main__":
