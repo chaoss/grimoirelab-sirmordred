@@ -46,7 +46,7 @@ class TestConfig(unittest.TestCase):
         self.assertIsNotNone(config.conf)
         self.assertIsNone(config.raw_conf)
         self.assertEqual(config.conf_list, [CONF_FULL])
-        self.assertEqual(len(config.conf.keys()), 42)
+        self.assertEqual(len(config.conf.keys()), 43)
 
     def test_init_studies(self):
         """Test whether studies' attributes are initializated"""
@@ -123,7 +123,7 @@ class TestConfig(unittest.TestCase):
         config = Config(CONF_FULL)
 
         expected = ['askbot', 'bugzilla', 'bugzillarest', 'confluence', 'discourse', 'dockerhub', 'functest',
-                    'gerrit', 'git', 'github', 'google_hits', 'hyperkitty', 'jenkins', 'jira', 'mbox', 'meetup',
+                    'gerrit', 'git', 'gitlab', 'github', 'google_hits', 'hyperkitty', 'jenkins', 'jira', 'mbox', 'meetup',
                     'mediawiki', 'mozillaclub', 'nntp', 'phabricator', 'pipermail', 'redmine', 'remo', 'rss',
                     'stackexchange', 'slack', 'supybot', 'telegram', 'twitter']
         data_sources = config.get_data_sources()
