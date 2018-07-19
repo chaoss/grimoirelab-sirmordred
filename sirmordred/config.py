@@ -750,8 +750,8 @@ class Config():
 
         config_md = "# SirMordred %s " \
                     "[![Build Status]" \
-                    "(https://travis-ci.org/grimoirelab/mordred.svg?branch=master)]" \
-                    "(https://travis-ci.org/grimoirelab/mordred)" \
+                    "(https://travis-ci.org/chaoss/grimoirelab-sirmordred.svg?branch=master)]" \
+                    "(https://travis-ci.org/chaoss/grimoirelab-sirmordred)" \
                     "[![Coverage Status]" \
                     "(https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)]" \
                     "(https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)\n\n" % __version__

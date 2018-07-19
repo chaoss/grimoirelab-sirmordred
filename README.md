@@ -1,4 +1,4 @@
-# SirMordred 0.1.38 [![Build Status](https://travis-ci.org/grimoirelab/mordred.svg?branch=master)](https://travis-ci.org/grimoirelab/mordred)[![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)
+# SirMordred 0.1.38 [![Build Status](https://travis-ci.org/chaoss/grimoirelab-sirmordred.svg?branch=master)](https://travis-ci.org/chaoss/grimoirelab-sirmordred)[![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)
 
 SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via a configuration file. Below you can find details about the different sections composing the configuration file.
 
