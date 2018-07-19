@@ -751,11 +751,14 @@ class Config():
         config_md = "# SirMordred %s " \
                     "[![Build Status]" \
                     "(https://travis-ci.org/grimoirelab/mordred.svg?branch=master)]" \
-                    "(https://travis-ci.org/grimoirelab/mordred)\n\n" % __version__
+                    "(https://travis-ci.org/grimoirelab/mordred)" \
+                    "[![Coverage Status]" \
+                    "(https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)]" \
+                    "(https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)\n\n" % __version__
 
-        config_md = "SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, " \
-                    "via a configuration file. Below you can find details about the different sections composing " \
-                    "the configuration file.\n\n"
+        config_md += "SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, " \
+                     "via a configuration file. Below you can find details about the different sections composing " \
+                     "the configuration file.\n\n"
 
         config_md += "## General Sections\n\n"
         for section in sorted(general_sections):
