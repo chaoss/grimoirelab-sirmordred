@@ -33,4 +33,8 @@ before_install:
 
 script:
   - flake8 .
-  - cd tests && ./run_tests.py
+  - cd tests
+  - coverage run --source=sirmordred run_tests.py
+
+after_success:
+  - coveralls
