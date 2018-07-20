@@ -107,7 +107,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
         config = Config(conf_file)
 
         backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
-                            'discourse', 'dockerhub', 'gerrit', 'github', 'jenkins',
+                            'discourse', 'dockerhub', 'gerrit', 'github', 'gitlab', 'jenkins',
                             'jira', 'mediawiki', 'meetup', 'mozillaclub', 'nntp', 'phabricator',
                             'redmine', 'remo', 'rss', 'stackexchange', 'slack', 'telegram', 'twitter']
 
