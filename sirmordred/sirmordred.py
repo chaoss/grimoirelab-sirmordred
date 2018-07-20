@@ -42,7 +42,6 @@ from grimoire_elk.enriched.utils import grimoire_con
 from sirmordred.config import Config
 from sirmordred.error import DataCollectionError
 from sirmordred.error import DataEnrichmentError
-from sirmordred.task import Task
 from sirmordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
@@ -158,14 +157,19 @@ class SirMordred:
         output = {}
         projects = TaskProjects.get_projects()
 
-        for backend_section in Config.get_backend_sections():
-            for pro in projects:
-                backend = Task.get_backend(backend_section)
-                if backend in projects[pro]:
-                    if backend_section not in output:
-                        output[backend_section] = projects[pro][backend]
-                    else:
-                        output[backend_section] += projects[pro][backend]
+        for pro in projects:
+            # remove duplicates in backends_section with list(set(..))
+            backend_sections = list(set([sect for sect in projects[pro].keys()
+                                         for backend_section in Config.get_backend_sections()
+                                         if sect and sect.startswith(backend_section)]))
+
+            # sort backends section
+            backend_sections.sort()
+            for backend_section in backend_sections:
+                if backend_section not in output:
+                    output[backend_section] = projects[pro][backend_section]
+                else:
+                    output[backend_section] += projects[pro][backend_section]
 
         # backend could be in project/repo file but not enabled in
         # sirmordred conf file
