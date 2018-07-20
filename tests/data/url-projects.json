@@ -28,11 +28,17 @@
    "https://github.com/VizGrimoire/GrimoireLib --filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
    "https://github.com/MetricsGrimoire/CMetrics"
   ],
+  "gitlab": [
+   "https://gitlab.com/inkscape/inkscape-web"
+  ],
   "github": [
    "https://github.com/grimoirelab/perceval"
   ],
+  "github:pull": [
+   "https://github.com/grimoirelab/perceval"
+  ],
   "google_hits": [
-   ""
+   "bitergia grimoirelab"
   ],
   "hyperkitty": [
    "https://lists.mailman3.org/archives/list/mailman-users@mailman3.org"
@@ -42,6 +48,15 @@
   ],
   "jira": [
    "https://jira.opnfv.org"
+  ],
+  "mattermost": [
+   "https://chat.openshift.io 8j366ft5affy3p36987pcugaoa"
+  ],
+  "mattermost:group1": [
+   "https://chat.openshift.io 8j366ft5affy3p36987cip"
+  ],
+  "mattermost:group2": [
+   "https://chat.openshift.io 8j366ft5affy3p36987ciop"
   ],
   "mbox": [
    "metrics-grimoire ~/.perceval/mbox"
@@ -73,6 +88,9 @@
   "remo": [
    "https://reps.mozilla.org"
   ],
+  "remo:activities": [
+   "https://reps.mozilla.org"
+  ],
   "rss": [
    "https://blog.bitergia.com/feed/"
   ],
@@ -91,7 +109,7 @@
    "Mozilla_analytics"
   ],
   "twitter": [
-   ""
+   "bitergia"
   ]
  }
 }

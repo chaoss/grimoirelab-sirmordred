@@ -60,157 +60,160 @@ class TestTasksManager(unittest.TestCase):
 
         self.assertTrue(list(self.backends.keys()), 36)
 
-        backend = list(self.backends.keys())[0]
+        backends = list(self.backends.keys())
+        backends.sort()
+
+        backend = backends[0]
         self.assertEqual(backend, 'askbot')
         self.assertEqual(self.backends[backend], ['https://ask.puppet.com'])
 
-        backend = list(self.backends.keys())[1]
+        backend = backends[1]
         self.assertEqual(backend, 'bugzilla')
         self.assertEqual(self.backends[backend], ['https://bugs.eclipse.org/bugs/'])
 
-        backend = list(self.backends.keys())[2]
+        backend = backends[2]
         self.assertEqual(backend, 'bugzillarest')
         self.assertEqual(self.backends[backend], ['https://bugzilla.mozilla.org'])
 
-        backend = list(self.backends.keys())[3]
+        backend = backends[3]
         self.assertEqual(backend, 'confluence')
         self.assertEqual(self.backends[backend], ['https://wiki.open-o.org/'])
 
-        backend = list(self.backends.keys())[4]
+        backend = backends[4]
         self.assertEqual(backend, 'discourse')
         self.assertEqual(self.backends[backend], ['https://foro.mozilla-hispano.org/'])
 
-        backend = list(self.backends.keys())[5]
+        backend = backends[5]
         self.assertEqual(backend, 'dockerhub')
         self.assertEqual(self.backends[backend], ['bitergia kibiter'])
 
-        backend = list(self.backends.keys())[6]
+        backend = backends[6]
         self.assertEqual(backend, 'functest')
         self.assertEqual(self.backends[backend], ['http://testresults.opnfv.org/test/'])
 
-        backend = list(self.backends.keys())[7]
+        backend = backends[7]
         self.assertEqual(backend, 'gerrit')
         self.assertEqual(self.backends[backend], ['review.openstack.org'])
 
-        backend = list(self.backends.keys())[8]
+        backend = backends[8]
         self.assertEqual(backend, 'git')
         self.assertEqual(self.backends[backend],
                          ["https://github.com/VizGrimoire/GrimoireLib "
                           "--filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
                           "https://github.com/MetricsGrimoire/CMetrics"])
 
-        backend = list(self.backends.keys())[9]
+        backend = backends[9]
         self.assertEqual(backend, 'github')
         self.assertEqual(self.backends[backend], ['https://github.com/grimoirelab/perceval'])
 
-        backend = list(self.backends.keys())[10]
+        backend = backends[10]
         self.assertEqual(backend, 'github:pull')
         self.assertEqual(self.backends[backend], ['https://github.com/grimoirelab/perceval'])
 
-        backend = list(self.backends.keys())[11]
+        backend = backends[11]
         self.assertEqual(backend, 'gitlab')
         self.assertEqual(self.backends[backend], ['https://gitlab.com/inkscape/inkscape-web'])
 
-        backend = list(self.backends.keys())[12]
+        backend = backends[12]
         self.assertEqual(backend, 'google_hits')
         self.assertEqual(self.backends[backend], ['bitergia grimoirelab'])
 
-        backend = list(self.backends.keys())[13]
+        backend = backends[13]
         self.assertEqual(backend, 'hyperkitty')
         self.assertEqual(self.backends[backend],
                          ['https://lists.mailman3.org/archives/list/mailman-users@mailman3.org'])
 
-        backend = list(self.backends.keys())[14]
+        backend = backends[14]
         self.assertEqual(backend, 'jenkins')
         self.assertEqual(self.backends[backend], ['https://build.opnfv.org/ci'])
 
-        backend = list(self.backends.keys())[15]
+        backend = backends[15]
         self.assertEqual(backend, 'jira')
         self.assertEqual(self.backends[backend], ['https://jira.opnfv.org'])
 
-        backend = list(self.backends.keys())[16]
+        backend = backends[16]
         self.assertEqual(backend, 'mattermost')
         self.assertEqual(self.backends[backend], ['https://chat.openshift.io 8j366ft5affy3p36987pcugaoa'])
 
-        backend = list(self.backends.keys())[17]
+        backend = backends[17]
         self.assertEqual(backend, 'mattermost:group1')
         self.assertEqual(self.backends[backend], ['https://chat.openshift.io 8j366ft5affy3p36987cip'])
 
-        backend = list(self.backends.keys())[18]
+        backend = backends[18]
         self.assertEqual(backend, 'mattermost:group2')
         self.assertEqual(self.backends[backend], ['https://chat.openshift.io 8j366ft5affy3p36987ciop'])
 
-        backend = list(self.backends.keys())[19]
+        backend = backends[19]
         self.assertEqual(backend, 'mbox')
         self.assertEqual(self.backends[backend], ['metrics-grimoire ~/.perceval/mbox'])
 
-        backend = list(self.backends.keys())[20]
+        backend = backends[20]
         self.assertEqual(backend, 'mediawiki')
         self.assertEqual(self.backends[backend], ['https://wiki.mozilla.org'])
 
-        backend = list(self.backends.keys())[21]
+        backend = backends[21]
         self.assertEqual(backend, 'meetup')
         self.assertEqual(self.backends[backend], ['South-East-Puppet-User-Group'])
 
-        backend = list(self.backends.keys())[22]
+        backend = backends[22]
         self.assertEqual(backend, 'mozillaclub')
         self.assertEqual(self.backends[backend],
                          ['https://spreadsheets.google.com/feeds/cells/'
                           '1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json'])
 
-        backend = list(self.backends.keys())[23]
+        backend = backends[23]
         self.assertEqual(backend, 'nntp')
         self.assertEqual(self.backends[backend], ['news.mozilla.org mozilla.dev.project-link'])
 
-        backend = list(self.backends.keys())[24]
+        backend = backends[24]
         self.assertEqual(backend, 'phabricator')
         self.assertEqual(self.backends[backend], ['https://phabricator.wikimedia.org'])
 
-        backend = list(self.backends.keys())[25]
+        backend = backends[25]
         self.assertEqual(backend, 'pipermail')
         self.assertEqual(self.backends[backend], ['https://mail.gnome.org/archives/libart-hackers/'])
 
-        backend = list(self.backends.keys())[26]
+        backend = backends[26]
         self.assertEqual(backend, 'puppetforge')
         self.assertEqual(self.backends[backend], [''])
 
-        backend = list(self.backends.keys())[27]
+        backend = backends[27]
         self.assertEqual(backend, 'redmine')
         self.assertEqual(self.backends[backend], ['http://tracker.ceph.com/'])
 
-        backend = list(self.backends.keys())[28]
+        backend = backends[28]
         self.assertEqual(backend, 'remo')
         self.assertEqual(self.backends[backend], ['https://reps.mozilla.org'])
 
-        backend = list(self.backends.keys())[29]
+        backend = backends[29]
         self.assertEqual(backend, 'remo:activities')
         self.assertEqual(self.backends[backend], ['https://reps.mozilla.org'])
 
-        backend = list(self.backends.keys())[30]
+        backend = backends[30]
         self.assertEqual(backend, 'rss')
         self.assertEqual(self.backends[backend], ['https://blog.bitergia.com/feed/'])
 
-        backend = list(self.backends.keys())[31]
+        backend = backends[31]
         self.assertEqual(backend, 'slack')
         self.assertEqual(self.backends[backend], ['C7LSGB0AU'])
 
-        backend = list(self.backends.keys())[32]
+        backend = backends[32]
         self.assertEqual(backend, 'stackexchange')
         self.assertEqual(self.backends[backend],
                          ["https://stackoverflow.com/questions/tagged/ovirt",
                           "https://stackoverflow.com/questions/tagged/rdo",
                           "https://stackoverflow.com/questions/tagged/kibana"])
 
-        backend = list(self.backends.keys())[33]
+        backend = backends[33]
         self.assertEqual(backend, 'supybot')
         self.assertEqual(self.backends[backend],
                          ['openshift ~/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift/'])
 
-        backend = list(self.backends.keys())[34]
+        backend = backends[34]
         self.assertEqual(backend, 'telegram')
         self.assertEqual(self.backends[backend], ['Mozilla_analytics'])
 
-        backend = list(self.backends.keys())[35]
+        backend = backends[35]
         self.assertEqual(backend, 'twitter')
         self.assertEqual(self.backends[backend], ['bitergia'])
 
