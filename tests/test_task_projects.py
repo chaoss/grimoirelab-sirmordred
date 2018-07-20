@@ -92,6 +92,208 @@ class TestTaskProjects(unittest.TestCase):
 
         self.assertEqual(task.config, config)
 
+    def test_get_repos_by_backend_section(self):
+        """Test whether the repos of each section are properly loaded"""
+
+        config = Config(CONF_FILE)
+        task = TaskProjects(config)
+        self.assertEqual(task.execute(), None)
+
+        config.conf.keys()
+        backend_sections = list(set([sect for sect in config.conf.keys()
+                                     for backend_section in Config.get_backend_sections()
+                                     if sect and sect.startswith(backend_section)]))
+        backend_sections.sort()
+        backend = backend_sections[0]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'askbot')
+        self.assertEqual(repos, ['https://ask.puppet.com'])
+
+        backend = backend_sections[1]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'bugzilla')
+        self.assertEqual(repos, ['https://bugs.eclipse.org/bugs/'])
+
+        backend = backend_sections[2]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'bugzillarest')
+        self.assertEqual(repos, ['https://bugzilla.mozilla.org'])
+
+        backend = backend_sections[3]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'confluence')
+        self.assertEqual(repos, ['https://wiki.open-o.org/'])
+
+        backend = backend_sections[4]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'discourse')
+        self.assertEqual(repos, ['https://foro.mozilla-hispano.org/'])
+
+        backend = backend_sections[5]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'dockerhub')
+        self.assertEqual(repos, ['bitergia kibiter'])
+
+        backend = backend_sections[6]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'functest')
+        self.assertEqual(repos, ['http://testresults.opnfv.org/test/'])
+
+        backend = backend_sections[7]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'gerrit')
+        self.assertEqual(repos, ['review.openstack.org'])
+
+        backend = backend_sections[8]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'git')
+        self.assertEqual(repos,
+                         ["https://github.com/VizGrimoire/GrimoireLib "
+                          "--filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
+                          "https://github.com/MetricsGrimoire/CMetrics"])
+
+        backend = backend_sections[9]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'github')
+        self.assertEqual(repos, ['https://github.com/grimoirelab/perceval'])
+
+        backend = backend_sections[10]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'github:pull')
+        self.assertEqual(repos, ['https://github.com/grimoirelab/perceval'])
+
+        backend = backend_sections[11]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'gitlab')
+        self.assertEqual(repos, ['https://gitlab.com/inkscape/inkscape-web'])
+
+        backend = backend_sections[12]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'google_hits')
+        self.assertEqual(repos, ['bitergia grimoirelab'])
+
+        backend = backend_sections[13]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'hyperkitty')
+        self.assertEqual(repos,
+                         ['https://lists.mailman3.org/archives/list/mailman-users@mailman3.org'])
+
+        backend = backend_sections[14]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'jenkins')
+        self.assertEqual(repos, ['https://build.opnfv.org/ci'])
+
+        backend = backend_sections[15]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'jira')
+        self.assertEqual(repos, ['https://jira.opnfv.org'])
+
+        backend = backend_sections[16]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'mattermost')
+        self.assertEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987pcugaoa'])
+
+        backend = backend_sections[17]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'mattermost:group1')
+        self.assertEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987cip'])
+
+        backend = backend_sections[18]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'mattermost:group2')
+        self.assertEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987ciop'])
+
+        backend = backend_sections[19]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'mbox')
+        self.assertEqual(repos, ['metrics-grimoire ~/.perceval/mbox'])
+
+        backend = backend_sections[20]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'mediawiki')
+        self.assertEqual(repos, ['https://wiki.mozilla.org'])
+
+        backend = backend_sections[21]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'meetup')
+        self.assertEqual(repos, ['South-East-Puppet-User-Group'])
+
+        backend = backend_sections[22]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'mozillaclub')
+        self.assertEqual(repos,
+                         ['https://spreadsheets.google.com/feeds/cells/'
+                          '1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json'])
+
+        backend = backend_sections[23]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'nntp')
+        self.assertEqual(repos, ['news.mozilla.org mozilla.dev.project-link'])
+
+        backend = backend_sections[24]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'phabricator')
+        self.assertEqual(repos, ['https://phabricator.wikimedia.org'])
+
+        backend = backend_sections[25]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'pipermail')
+        self.assertEqual(repos, ['https://mail.gnome.org/archives/libart-hackers/'])
+
+        backend = backend_sections[26]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'puppetforge')
+        self.assertEqual(repos, [''])
+
+        backend = backend_sections[27]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'redmine')
+        self.assertEqual(repos, ['http://tracker.ceph.com/'])
+
+        backend = backend_sections[28]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'remo')
+        self.assertEqual(repos, ['https://reps.mozilla.org'])
+
+        backend = backend_sections[29]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'remo:activities')
+        self.assertEqual(repos, ['https://reps.mozilla.org'])
+
+        backend = backend_sections[30]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'rss')
+        self.assertEqual(repos, ['https://blog.bitergia.com/feed/'])
+
+        backend = backend_sections[31]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'slack')
+        self.assertEqual(repos, ['C7LSGB0AU'])
+
+        backend = backend_sections[32]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'stackexchange')
+        self.assertEqual(repos,
+                         ["https://stackoverflow.com/questions/tagged/ovirt",
+                          "https://stackoverflow.com/questions/tagged/rdo",
+                          "https://stackoverflow.com/questions/tagged/kibana"])
+
+        backend = backend_sections[33]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'supybot')
+        self.assertEqual(repos,
+                         ['openshift ~/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift/'])
+
+        backend = backend_sections[34]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'telegram')
+        self.assertEqual(repos, ['Mozilla_analytics'])
+
+        backend = backend_sections[35]
+        repos = task.get_repos_by_backend_section(backend)
+        self.assertEqual(backend, 'twitter')
+        self.assertEqual(repos, ['bitergia'])
+
     def test_run(self):
         """Test whether the Task could be run"""
         config = Config(CONF_FILE)
