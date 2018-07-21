@@ -146,7 +146,7 @@ class SirMordred:
                 es_error = _ofuscate_server_uri(es)
 
         if not es_access:
-            logger.error('Can not connect to Elasticsearch: %s', es_error)
+            logger.error('Cannot connect to Elasticsearch: %s', es_error)
 
         return es_access
 
