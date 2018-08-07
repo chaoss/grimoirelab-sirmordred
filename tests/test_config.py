@@ -56,7 +56,7 @@ class TestConfig(unittest.TestCase):
         self.assertIsNotNone(config.conf)
         self.assertIsNone(config.raw_conf)
         self.assertEqual(config.conf_list, [CONF_SLIM])
-        self.assertEqual(len(config.conf.keys()), 14)
+        self.assertEqual(len(config.conf.keys()), 15)
 
         self.assertTrue('general' in config.conf.keys())
         self.assertTrue('projects' in config.conf.keys())
@@ -99,6 +99,9 @@ class TestConfig(unittest.TestCase):
         self.assertTrue('no_incremental' in config.conf['enrich_onion:github'].keys())
 
         self.assertTrue('github:pulls' in config.conf.keys())
+
+        self.assertTrue('enrich_pull_requests' in config.conf.keys())
+        self.assertTrue('raw_issues_index' in config.conf['enrich_pull_requests'].keys())
 
     def test_create_config_file(self):
         """Test whether a config file is correctly created"""
