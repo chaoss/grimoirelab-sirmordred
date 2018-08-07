@@ -33,6 +33,12 @@ import traceback
 
 sys.path.insert(1, '.')
 
+# Quick fix for avoiding weird warnings
+# https://github.com/chaoss/grimoirelab-sirmordred/issues/192
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 from sirmordred.config import Config
 from sirmordred.error import ElasticSearchError
 from sirmordred.error import DataCollectionError
