@@ -51,8 +51,7 @@ class TaskPanels(Task):
     # Panels which include several data sources
     panels_multi_ds = ["panels/json/overview.json", "panels/json/data_status.json"]
     # Panels to be uploaded always, no matter the data sources configured
-    panels_common = panels_multi_ds + ["panels/json/last_month_contributors.json", "panels/json/about.json",
-                                       "panels/json/affiliations.json"]
+    panels_common = panels_multi_ds + ["panels/json/about.json"]
 
     def __init__(self, conf):
         super().__init__(conf)
