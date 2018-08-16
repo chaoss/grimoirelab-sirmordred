@@ -278,6 +278,12 @@ class Config():
                     "type": bool,
                     "description": "Execute the autorefresh of identities"
                 },
+                "autorefresh_interval": {
+                    "optional": True,
+                    "default": 2,
+                    "type": int,
+                    "description": "Set time interval (days) for autorefresh identities"
+                },
                 "user": {
                     "optional": True,
                     "default": None,

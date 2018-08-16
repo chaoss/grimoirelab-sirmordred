@@ -25,7 +25,7 @@
 import logging
 import time
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from grimoire_elk.elk import (do_studies,
                               enrich_backend,
@@ -61,7 +61,14 @@ class TaskEnrich(Task):
                           'database': self.db_sh, 'host': self.db_host,
                           'port': None}
         self.db = Database(**self.sh_kwargs)
-        self.last_autorefresh = datetime.utcnow()  # Last autorefresh date
+        autorefresh_interval = self.conf['es_enrichment']['autorefresh_interval']
+        self.last_autorefresh = self.__update_last_autorefresh(days=autorefresh_interval)  # Last autorefresh date
+
+    def __update_last_autorefresh(self, days=None):
+        if not days:
+            return datetime.utcnow()
+        else:
+            return datetime.utcnow() - timedelta(days=days)
 
     def __load_studies(self):
         studies = [study for study in self.conf[self.backend_section]['studies'] if study.strip() != ""]
@@ -198,7 +205,7 @@ class TaskEnrich(Task):
         after = self.last_autorefresh
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
         (uuids_refresh, ids_refresh) = api.search_last_modified_identities(self.db, after)
-        self.last_autorefresh = datetime.utcnow()
+        self.last_autorefresh = self.__update_last_autorefresh()
         if uuids_refresh:
             logger.debug("Refreshing for %s uuids %s", self.backend_section, uuids_refresh)
             eitems = refresh_identities(enrich_backend,
