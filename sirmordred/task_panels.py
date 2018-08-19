@@ -40,6 +40,27 @@ ES6_HEADER = {"Content-Type": "application/json"}
 ES6_KIBANA_INIT_DATA = '{"value": "*"}'
 ES6_KIBANA_INIT_URL_PATH = "/api/kibana/settings/indexPattern:placeholder"
 
+COMMUNITY = 'community'
+ONION_PANEL_OVERALL = 'panels/json/onion_overall.json'
+ONION_PANEL_PROJECTS = 'panels/json/onion_projects.json'
+ONION_PANEL_ORGS = 'panels/json/onion_organizations.json'
+
+ONION_PANEL_OVERALL_IP = 'panels/json/onion_overall-index-pattern.json'
+ONION_PANEL_PROJECTS_IP = 'panels/json/onion_projects-index-pattern.json'
+ONION_PANEL_ORGS_IP = 'panels/json/onion_organizations-index-pattern.json'
+
+COMMUNITY_MENU = {
+    'name': 'Community',
+    'source': COMMUNITY,
+    'icon': 'default.png',
+    'index-patterns': [ONION_PANEL_OVERALL_IP, ONION_PANEL_PROJECTS_IP, ONION_PANEL_ORGS_IP],
+    'menu': [
+        {'name': 'Overall', 'panel': ONION_PANEL_OVERALL},
+        {'name': 'Projects', 'panel': ONION_PANEL_PROJECTS},
+        {'name': 'Organizations', 'panel': ONION_PANEL_ORGS},
+    ]
+}
+
 
 class TaskPanels(Task):
     """
@@ -81,6 +102,10 @@ class TaskPanels(Task):
             if 'index-patterns' in ds:
                 for index_pattern in ds['index-patterns']:
                     self.panels[ds['source']].append(index_pattern)
+
+        if self.conf['panels'][COMMUNITY]:
+            self.panels[COMMUNITY] = [ONION_PANEL_OVERALL, ONION_PANEL_PROJECTS, ONION_PANEL_ORGS,
+                                      ONION_PANEL_OVERALL_IP, ONION_PANEL_PROJECTS_IP, ONION_PANEL_ORGS_IP]
 
     def is_backend_task(self):
         return False
@@ -438,6 +463,10 @@ class TaskPanelsMenu(Task):
             except yaml.YAMLError as ex:
                 logger.error(ex)
                 raise
+
+        if self.conf['panels'][COMMUNITY]:
+            self.panels_menu.append(COMMUNITY_MENU)
+
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
         if 'short_name' in self.conf['general']:
@@ -452,7 +481,7 @@ class TaskPanelsMenu(Task):
         active_ds = []
         for entry in self.panels_menu:
             ds = entry['source']
-            if ds in self.conf.keys():
+            if ds in self.conf.keys() or ds == COMMUNITY:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
         return active_ds
@@ -517,7 +546,7 @@ class TaskPanelsMenu(Task):
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
         mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
                               mapping_resource)
-        logger.debug("Adding mapping for metadashbaord")
+        logger.debug("Adding mapping for metadashboard")
         res = self.grimoire_con.put(mapping_url, data=json.dumps(mapping),
                                     headers=ES6_HEADER)
         try:
