@@ -324,6 +324,12 @@ class Config():
                     "default": None,
                     "type": str,
                     "description": "Kibiter version"
+                },
+                "community": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool,
+                    "description": "Enable community structure menu"
                 }
             }
         }
