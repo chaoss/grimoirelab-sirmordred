@@ -45,9 +45,9 @@ ONION_PANEL_OVERALL = 'panels/json/onion_overall.json'
 ONION_PANEL_PROJECTS = 'panels/json/onion_projects.json'
 ONION_PANEL_ORGS = 'panels/json/onion_organizations.json'
 
-ONION_PANEL_OVERALL_IP = 'panels/json/onion_overall-index-pattern.json'
-ONION_PANEL_PROJECTS_IP = 'panels/json/onion_projects-index-pattern.json'
-ONION_PANEL_ORGS_IP = 'panels/json/onion_organizations-index-pattern.json'
+ONION_PANEL_OVERALL_IP = 'panels/json/all_onion-index-pattern.json'
+ONION_PANEL_PROJECTS_IP = 'panels/json/all_onion-index-pattern.json'
+ONION_PANEL_ORGS_IP = 'panels/json/all_onion-index-pattern.json'
 
 COMMUNITY_MENU = {
     'name': 'Community',
