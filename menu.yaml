@@ -223,7 +223,7 @@
   source: mozillaclub
   icon: default.png
   index-patterns:
-  - panels/json/mozillaclub-index-pattern.json
+  - panels/json/mozilla_club-index-pattern.json
   menu:
   - name: Events
     panel: panels/json/mozilla_club.json
@@ -257,7 +257,7 @@
   - panels/json/google-hits-index-pattern.json
   menu:
   - name: Overview
-    panel: panels/json/google_hits.json
+    panel: panels/json/google-hits.json
 - name: DockerHub
   source: dockerhub
   icon: default.png
