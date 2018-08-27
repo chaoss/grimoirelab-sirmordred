@@ -232,7 +232,6 @@
   icon: default.png
   index-patterns:
   - panels/json/remo-activities-index-pattern.json
-  - panels/json/remo-activities_metadata__timestamp-index-pattern.json
   - panels/json/remo-events-index-pattern.json
   - panels/json/remo-events_metadata__timestamp-index-pattern.json
   menu:
