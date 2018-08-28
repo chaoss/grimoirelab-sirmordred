@@ -13,12 +13,6 @@
     panel: panels/json/git_demographics.json
   - name: Areas of code
     panel: panels/json/git_areas_of_code.json
-  - name: Community Structure Overall
-    panel: panels/json/onion_overall.json
-  - name: Community Structure by project
-    panel: panels/json/onion_projects.json
-  - name: Community Structure by organization
-    panel: panels/json/onion_organizations.json
 - name: Gerrit
   source: gerrit
   icon: default.png
