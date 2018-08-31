@@ -88,9 +88,9 @@ class TestTaskEnrich(unittest.TestCase):
         raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
         enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
 
-        r = requests.get(raw_index + "/_search?size=0")
+        r = requests.get(raw_index + "/_search?size=0", verify=False)
         raw_items = r.json()['hits']['total']
-        r = requests.get(enrich_index + "/_search?size=0")
+        r = requests.get(enrich_index + "/_search?size=0", verify=False)
         enriched_items = r.json()['hits']['total']
 
         # the number of raw items is bigger since the enriched items are generated based on:
