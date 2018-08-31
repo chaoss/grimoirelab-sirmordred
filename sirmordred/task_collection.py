@@ -230,6 +230,8 @@ class TaskRawDataArthurCollection(Task):
             # The same repo could appear in git and github data sources
             # Two tasks in arthur can not have the same tag
             tag = repo + "_" + self.backend_section
+        if self.backend_section in ["mediawiki"]:
+            tag = repo.split()[0]
 
         return tag
 
