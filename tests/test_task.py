@@ -36,7 +36,6 @@ from sirmordred.task import Task
 
 CONF_FILE = 'test.cfg'
 BACKEND_NAME = 'stackexchange'
-COLLECTION_URL = 'http://bitergia:bitergia@localhost:9200'
 COLLECTION_URL_STACKEXCHANGE = 'http://127.0.0.1:9200'
 REPO_NAME = 'https://stackoverflow.com/questions/tagged/ovirt'
 
@@ -99,7 +98,6 @@ class TestTask(unittest.TestCase):
         task = Task(config)
         task.backend_section = "stackexchange"
 
-        self.assertEqual(task.conf['es_collection']['url'], COLLECTION_URL)
         self.assertEqual(task._get_collection_url(), COLLECTION_URL_STACKEXCHANGE)
 
 
