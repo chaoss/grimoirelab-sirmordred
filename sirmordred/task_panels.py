@@ -252,6 +252,9 @@ class TaskPanels(Task):
             # the dashboard for mbox and pipermail and hyperkitty are the same
             data_sources = list(data_sources)
             data_sources.append('mbox')
+        if data_sources and 'google_hits' in data_sources:
+            data_sources = list(data_sources)
+            data_sources.append('googlehits')
         if data_sources and 'stackexchange' in data_sources:
             # stackexchange is called stackoverflow in panels
             data_sources = list(data_sources)
