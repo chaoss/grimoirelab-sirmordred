@@ -253,7 +253,7 @@
   - name: Locations
     panel: panels/json/meetup_locations.json
 - name: Google Hits
-  source: google_hits
+  source: googlehits
   icon: default.png
   index-patterns:
   - panels/json/google-hits-index-pattern.json
