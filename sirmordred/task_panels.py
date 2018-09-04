@@ -279,6 +279,10 @@ class TaskPanels(Task):
             # stackexchange is called stackoverflow in panels
             data_sources = list(data_sources)
             data_sources.append('stackoverflow')
+        if data_sources and 'phabricator' in data_sources:
+            data_sources = list(data_sources)
+            data_sources.append('maniphest')
+
         try:
             import_dashboard(es_enrich, panel_file, data_sources=data_sources, strict=strict)
         except ValueError:
