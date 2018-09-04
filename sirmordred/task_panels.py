@@ -248,10 +248,13 @@ class TaskPanels(Task):
         """
         es_enrich = self.conf['es_enrichment']['url']
 
-        if data_sources and ('pipermail' in data_sources or 'hyperkitty' in data_sources):
-            # the dashboard for mbox and pipermail and hyperkitty are the same
+        mboxes_sources = set(['pipermail', 'hyperkitty', 'groupsio', 'nntp'])
+        if data_sources and any(x in data_sources for x in mboxes_sources):
             data_sources = list(data_sources)
             data_sources.append('mbox')
+        if data_sources and ('supybot' in data_sources):
+            data_sources = list(data_sources)
+            data_sources.append('irc')
         if data_sources and 'google_hits' in data_sources:
             data_sources = list(data_sources)
             data_sources.append('googlehits')
@@ -334,6 +337,18 @@ class TaskPanelsAliases(Task):
         },
         "pipermail": {
             "raw": ["pipermail-raw"],
+            "enrich": ["mbox", "mbox_enrich"]
+        },
+        "hyperkitty": {
+            "raw": ["hyperkitty-raw"],
+            "enrich": ["mbox", "mbox_enrich"]
+        },
+        "nntp": {
+            "raw": ["nntp-raw"],
+            "enrich": ["mbox", "mbox_enrich"]
+        },
+        "groupsio": {
+            "raw": ["groupsio-raw"],
             "enrich": ["mbox", "mbox_enrich"]
         },
         "phabricator": {
