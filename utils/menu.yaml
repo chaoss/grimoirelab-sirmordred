@@ -126,7 +126,31 @@
   - name: Overview
     panel: panels/json/mediawiki.json
 - name: Mailing Lists
+  source: groupsio
+  icon: default.png
+  index-patterns:
+  - panels/json/mbox-index-pattern.json
+  menu:
+  - name: Overview
+    panel: panels/json/mailinglists.json
+- name: Mailing Lists
+  source: hyperkitty
+  icon: default.png
+  index-patterns:
+  - panels/json/mbox-index-pattern.json
+  menu:
+  - name: Overview
+    panel: panels/json/mailinglists.json
+- name: Mailing Lists
   source: mbox
+  icon: default.png
+  index-patterns:
+  - panels/json/mbox-index-pattern.json
+  menu:
+  - name: Overview
+    panel: panels/json/mailinglists.json
+- name: Mailing Lists
+  source: nntp
   icon: default.png
   index-patterns:
   - panels/json/mbox-index-pattern.json
@@ -253,7 +277,7 @@
   - name: Locations
     panel: panels/json/meetup_locations.json
 - name: Google Hits
-  source: google_hits
+  source: googlehits
   icon: default.png
   index-patterns:
   - panels/json/google-hits-index-pattern.json
