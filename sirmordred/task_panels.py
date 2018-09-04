@@ -40,6 +40,20 @@ ES6_HEADER = {"Content-Type": "application/json"}
 ES6_KIBANA_INIT_DATA = '{"value": "*"}'
 ES6_KIBANA_INIT_URL_PATH = "/api/kibana/settings/indexPattern:placeholder"
 
+KAFKA = "kafka"
+KAFKA_PANEL = "panels/json/kip.json"
+KAKFA_IP = "panels/json/kafka-index-pattern.json"
+
+KAFKA_MENU = {
+    'name': 'KIP',
+    'source': KAFKA,
+    'icon': 'default.png',
+    'index-patterns': [KAKFA_IP],
+    'menu': [
+        {'name': 'Overview', 'panel': KAFKA_PANEL}
+    ]
+}
+
 COMMUNITY = 'community'
 ONION_PANEL_OVERALL = 'panels/json/onion_overall.json'
 ONION_PANEL_PROJECTS = 'panels/json/onion_projects.json'
@@ -106,6 +120,9 @@ class TaskPanels(Task):
         if self.conf['panels'][COMMUNITY]:
             self.panels[COMMUNITY] = [ONION_PANEL_OVERALL, ONION_PANEL_PROJECTS, ONION_PANEL_ORGS,
                                       ONION_PANEL_OVERALL_IP, ONION_PANEL_PROJECTS_IP, ONION_PANEL_ORGS_IP]
+
+        if self.conf['panels'][KAFKA]:
+            self.panels[KAFKA] = [KAFKA_PANEL, KAKFA_IP]
 
     def is_backend_task(self):
         return False
@@ -333,23 +350,23 @@ class TaskPanelsAliases(Task):
         },
         "mbox": {
             "raw": ["mbox-raw"],
-            "enrich": ["mbox", "mbox_enrich"]
+            "enrich": ["mbox", "mbox_enrich", "kafka"]
         },
         "pipermail": {
             "raw": ["pipermail-raw"],
-            "enrich": ["mbox", "mbox_enrich"]
+            "enrich": ["mbox", "mbox_enrich", "kafka"]
         },
         "hyperkitty": {
             "raw": ["hyperkitty-raw"],
-            "enrich": ["mbox", "mbox_enrich"]
+            "enrich": ["mbox", "mbox_enrich", "kafka"]
         },
         "nntp": {
             "raw": ["nntp-raw"],
-            "enrich": ["mbox", "mbox_enrich"]
+            "enrich": ["mbox", "mbox_enrich", "kafka"]
         },
         "groupsio": {
             "raw": ["groupsio-raw"],
-            "enrich": ["mbox", "mbox_enrich"]
+            "enrich": ["mbox", "mbox_enrich", "kafka"]
         },
         "phabricator": {
             "raw": ["phabricator-raw"],
@@ -484,6 +501,9 @@ class TaskPanelsMenu(Task):
         if self.conf['panels'][COMMUNITY]:
             self.panels_menu.append(COMMUNITY_MENU)
 
+        if self.conf['panels'][KAFKA]:
+            self.panels_menu.append(KAFKA_MENU)
+
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
         if 'short_name' in self.conf['general']:
@@ -498,7 +518,7 @@ class TaskPanelsMenu(Task):
         active_ds = []
         for entry in self.panels_menu:
             ds = entry['source']
-            if ds in self.conf.keys() or ds == COMMUNITY:
+            if ds in self.conf.keys() or ds == COMMUNITY or ds == KAFKA:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
         return active_ds
