@@ -330,6 +330,12 @@ class Config():
                     "default": True,
                     "type": bool,
                     "description": "Enable community structure menu"
+                },
+                "kafka": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable kafka menu"
                 }
             }
         }
