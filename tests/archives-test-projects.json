@@ -27,6 +27,9 @@
       "gitlab": [
           "https://gitlab.com/fdroid/fdroiddata"
       ],
+      "google_hits": [
+            "bitergia grimoirelab"
+      ],
       "jenkins": [
           "http://example.com/ci"
       ],
