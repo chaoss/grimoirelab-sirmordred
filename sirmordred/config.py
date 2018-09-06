@@ -604,7 +604,7 @@ class Config():
         # a backend name could include and extra ":<param>"
         # to have several backend entries with different configs
         gelk_backends = list(get_connectors().keys())
-        extra_backends = ["apache", "google_hits"]
+        extra_backends = ["apache"]
 
         return gelk_backends + extra_backends
 
