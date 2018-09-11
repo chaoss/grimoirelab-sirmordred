@@ -314,16 +314,10 @@ class Config():
                     "description": "Default index pattern for Kibiter"
                 },
                 "kibiter_url": {
-                    "optional": True,
+                    "optional": False,
                     "default": None,
                     "type": str,
                     "description": "Kibiter URL"
-                },
-                "kibiter_version": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "Kibiter version"
                 },
                 "community": {
                     "optional": True,
