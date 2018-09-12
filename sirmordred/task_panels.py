@@ -22,6 +22,7 @@
 #     Alvaro del Castillo <acs@bitergia.com>
 #
 
+import copy
 import json
 import logging
 import requests
@@ -35,10 +36,8 @@ from sirmordred.task import Task
 
 logger = logging.getLogger(__name__)
 
-# Header mandatory in Ellasticsearc 6 (optional in earlier versions)
+# Header mandatory in ElasticSearch 6
 ES6_HEADER = {"Content-Type": "application/json"}
-ES6_KIBANA_INIT_DATA = '{"value": "*"}'
-ES6_KIBANA_INIT_URL_PATH = "/api/kibana/settings/indexPattern:placeholder"
 
 KAFKA = "kafka"
 KAFKA_PANEL = "panels/json/kip.json"
@@ -77,8 +76,7 @@ COMMUNITY_MENU = {
 
 
 class TaskPanels(Task):
-    """
-    Upload all the Kibana dashboards/GrimoireLab panels based on
+    """Upload all the Kibana dashboards/GrimoireLab panels based on
     enabled data sources AND the menu file. Before uploading the panels
     it also sets up common configuration variables for Kibiter
     """
@@ -127,131 +125,43 @@ class TaskPanels(Task):
     def is_backend_task(self):
         return False
 
-    def __kibiter_version(self, major):
-        """ Get the kibiter vesion.
+    def __configure_kibiter_setting(self, endpoint, data_value=None):
+        kibana_headers = copy.deepcopy(ES6_HEADER)
+        kibana_headers["kbn-xsrf"] = "true"
 
-        :param major: major Elasticsearch version
-        """
-        version = None
+        kibana_url = self.conf['panels']['kibiter_url'] + '/api/kibana/settings'
+        endpoint_url = kibana_url + '/' + endpoint
+        try:
+            res = self.grimoire_con.post(endpoint_url, headers=kibana_headers,
+                                         data=json.dumps(data_value), verify=False)
+            res.raise_for_status()
+        except requests.exceptions.HTTPError:
+            logger.error("Impossible to set %s: %s", endpoint, str(res.json()))
+            return False
 
-        es_url = self.conf['es_enrichment']['url']
-        if major == "6":
-            config_url = '.kibana/_search'
-            url = urljoin(es_url + "/", config_url)
-            query = {
-                "stored_fields": ["_id"],
-                "query": {
-                    "term": {
-                        "type": "config"
-                    }
-                }
-            }
-            try:
-                res = self.grimoire_con.get(url, data=json.dumps(query), headers=ES6_HEADER)
-                res.raise_for_status()
-                version = res.json()['hits']['hits'][0]['_id'].split(':', 1)[1]
-            except Exception:
-                logger.error("Can not find kibiter version")
-        else:
-            config_url = '.kibana/config/_search'
-            url = urljoin(es_url + "/", config_url)
-            version = None
-            try:
-                res = self.grimoire_con.get(url)
-                res.raise_for_status()
-                version = res.json()['hits']['hits'][0]['_id']
-                logger.debug("Kibiter version: %s", version)
-            except requests.exceptions.HTTPError:
-                logger.warning("Can not find Kibiter version")
-
-        return version
-
-    def __kb6_update_config(self, url, data):
-        """Update config in Kibana6.
-
-        Up to Kibana 6, you just updated properties in a dictionary,
-        but now the whole config data is a dictionary itself: we
-        need to read it, update the dictionary, and upload it again.
-
-        :param url: url to read and update
-        :param data: data to update
-        """
-
-        query = {
-            "query": {
-                "term": {
-                    "type": "config"
-                }
-            }
-        }
-        res = self.grimoire_con.get(url, data=json.dumps(query),
-                                    headers=ES6_HEADER)
-        res.raise_for_status()
-        item = res.json()['_source']
-        for field, value in data.items():
-            item['config'][field] = value
-        res = self.grimoire_con.post(url, data=json.dumps(item),
-                                     headers=ES6_HEADER)
-        res.raise_for_status()
+        return True
 
     def __configure_kibiter(self):
 
         if 'panels' not in self.conf:
             logger.warning("Panels config not availble. Not configuring Kibiter.")
-            return False
+            return
 
-        kibiter_major = self.es_version(self.conf['es_enrichment']['url'])
-        if kibiter_major == "6":
-            if self.conf['panels']["kibiter_url"] and self.conf['panels']["kibiter_version"]:
-                # Force the creation of the .kibana index
-                # We don't have this data so it just works for this value
-                k6_init_url = self.conf['panels']["kibiter_url"]
-                k6_init_url += ES6_KIBANA_INIT_URL_PATH
-                k6_init_headers = {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                    "kbn-version": self.conf['panels']['kibiter_version']
-                }
-
-                try:
-                    res = self.grimoire_con.post(k6_init_url, headers=k6_init_headers,
-                                                 data=ES6_KIBANA_INIT_DATA)
-                    res.raise_for_status()
-                except Exception as ex:
-                    logger.error("Can not create the .kibana in ES6 %s", ex)
-
-        kibiter_time_from = self.conf['panels']['kibiter_time_from']
+        # set default index pattern
         kibiter_default_index = self.conf['panels']['kibiter_default_index']
+        data_value = {"value": kibiter_default_index}
 
-        logger.info("Configuring Kibiter %s for default index %s and time frame %s",
-                    kibiter_major, kibiter_default_index, kibiter_time_from)
+        defaultIndexFlag = self.__configure_kibiter_setting('defaultIndex', data_value=data_value)
 
-        kibiter_version = self.__kibiter_version(kibiter_major)
-        if not kibiter_version:
-            return False
-        print("Kibiter/Kibana: version found is %s" % kibiter_version)
-        time_picker = "{\n  \"from\": \"" + kibiter_time_from \
-            + "\",\n  \"to\": \"now\",\n  \"mode\": \"quick\"\n}"
+        # set defautl time picker
+        kibiter_time_from = self.conf['panels']['kibiter_time_from']
+        time_picker = {"from": kibiter_time_from, "to": "now", "mode": "quick"}
+        data_value = {"value": json.dumps(time_picker)}
 
-        if kibiter_major == "6":
-            config_resource = '.kibana/doc/config:' + kibiter_version
-        else:
-            config_resource = '.kibana/config/' + kibiter_version
-        kibiter_config = {
-            "defaultIndex": kibiter_default_index,
-            "timepicker:timeDefaults": time_picker
-        }
+        timePickerFlag = self.__configure_kibiter_setting('timepicker:timeDefaults', data_value=data_value)
 
-        es_url = self.conf['es_enrichment']['url']
-        url = urljoin(es_url + "/", config_resource)
-        if kibiter_major == "6":
-            self.__kb6_update_config(url, data=kibiter_config)
-        else:
-            res = self.grimoire_con.post(url, data=json.dumps(kibiter_config),
-                                         headers=ES6_HEADER)
-            res.raise_for_status()
-
-        return True
+        if defaultIndexFlag and timePickerFlag:
+            logger.info("Kibiter settings configured!")
 
     def create_dashboard(self, panel_file, data_sources=None, strict=True):
         """Upload a panel to Elasticsearch if it does not exist yet.
@@ -263,6 +173,7 @@ class TaskPanels(Task):
         :param data_sources: list of data sources
         :param strict: only upload a dashboard if it is newer than the one already existing
         """
+
         es_enrich = self.conf['es_enrichment']['url']
 
         mboxes_sources = set(['pipermail', 'hyperkitty', 'groupsio', 'nntp'])
@@ -291,13 +202,8 @@ class TaskPanels(Task):
             logger.error("Can not load the panel %s", panel_file)
 
     def execute(self):
-        # Configure kibiter
-        if self.__configure_kibiter():
-            print("Kibiter/Kibana: configured!")
-        else:
-            logger.error("Can not configure kibiter")
 
-        print("Dashboard panels, visualizations: uploading...")
+        logger.info("Dashboard panels, visualizations: uploading...")
         # Create the commons panels
         for panel_file in self.panels_common:
             data_sources = None  # for some panels, only the active data sources must be included
@@ -313,11 +219,14 @@ class TaskPanels(Task):
                     self.create_dashboard(panel_file)
                 except Exception as ex:
                     logger.error("%s not correctly uploaded (%s)", panel_file, ex)
-        print("Dashboard panels, visualizations: uploaded!")
+        logger.info("Dashboard panels, visualizations: uploaded!")
+
+        # Configure kibiter
+        self.__configure_kibiter()
 
 
 class TaskPanelsAliases(Task):
-    """ Create the aliases needed for the panels """
+    """Create the aliases needed for the panels"""
 
     # aliases not following the ds-raw and ds rule
     aliases = {
@@ -451,7 +360,8 @@ class TaskPanelsAliases(Task):
                 raise
 
     def __create_aliases(self):
-        """ Create aliases in ElasticSearch used by the panels """
+        """Create aliases in ElasticSearch used by the panels"""
+
         real_alias = self.backend_section.replace(":", "_")  # remo:activities -> remo_activities
         es_col_url = self._get_collection_url()
         es_enrich_url = self.conf['es_enrichment']['url']
@@ -477,13 +387,13 @@ class TaskPanelsAliases(Task):
 
     def execute(self):
         # Create the aliases
-        print("Elasticsearch aliases for {}: creating...".format(self.backend_section))
+        logger.info("Elasticsearch aliases for {}: creating...".format(self.backend_section))
         self.__create_aliases()
-        print("Elasticsearch aliases for {}: created!".format(self.backend_section))
+        logger.info("Elasticsearch aliases for {}: created!".format(self.backend_section))
 
 
 class TaskPanelsMenu(Task):
-    """ Create the menu to access the panels  """
+    """Create the menu to access the panels"""
 
     MENU_YAML = 'menu.yaml'
 
@@ -528,61 +438,52 @@ class TaskPanelsMenu(Task):
         logger.debug("Active data sources for menu: %s", active_ds)
         return active_ds
 
-    def __upload_title(self, kibiter_major):
+    def __upload_title(self):
         """Upload to Kibiter the title for the dashboard.
 
         The title is shown on top of the dashboard menu, and is Usually
         the name of the project being dashboarded.
-        This is done only for Kibiter 6.x.
-
-        :param kibiter_major: major version of kibiter
         """
 
-        if kibiter_major == "6":
-            resource = ".kibana/doc/projectname"
-            data = {"projectname": {"name": self.project_name}}
-            mapping_resource = ".kibana/_mapping/doc"
-            mapping = {"dynamic": "true"}
+        resource = ".kibana/doc/projectname"
+        data = {"projectname": {"name": self.project_name}}
+        mapping_resource = ".kibana/_mapping/doc"
+        mapping = {"dynamic": "true"}
 
-            url = urljoin(self.conf['es_enrichment']['url'] + "/", resource)
-            mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
-                                  mapping_resource)
+        url = urljoin(self.conf['es_enrichment']['url'] + "/", resource)
+        mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+                              mapping_resource)
 
-            logger.debug("Adding mapping for dashboard title")
-            res = self.grimoire_con.put(mapping_url, data=json.dumps(mapping),
-                                        headers=ES6_HEADER)
-            try:
-                res.raise_for_status()
-            except requests.exceptions.HTTPError:
-                logger.error("Couldn't create mapping for dashboard title.")
-                logger.error(res.json())
+        logger.debug("Adding mapping for dashboard title")
+        res = self.grimoire_con.put(mapping_url, data=json.dumps(mapping),
+                                    headers=ES6_HEADER)
+        try:
+            res.raise_for_status()
+        except requests.exceptions.HTTPError:
+            logger.error("Couldn't create mapping for dashboard title.")
+            logger.error(res.json())
 
-            logger.debug("Uploading dashboard title")
-            res = self.grimoire_con.post(url, data=json.dumps(data),
-                                         headers=ES6_HEADER)
-            try:
-                res.raise_for_status()
-            except requests.exceptions.HTTPError:
-                logger.error("Couldn't create dashboard title.")
-                logger.error(res.json())
+        logger.debug("Uploading dashboard title")
+        res = self.grimoire_con.post(url, data=json.dumps(data),
+                                     headers=ES6_HEADER)
+        try:
+            res.raise_for_status()
+        except requests.exceptions.HTTPError:
+            logger.error("Couldn't create dashboard title.")
+            logger.error(res.json())
 
-    def __create_dashboard_menu(self, dash_menu, kibiter_major):
-        """ Create the menu definition to access the panels in a dashboard.
+    def __create_dashboard_menu(self, dash_menu):
+        """Create the menu definition to access the panels in a dashboard.
 
-        :param          menu: dashboard menu to upload
-        :param kibiter_major: major version of kibiter
+        :param menu: dashboard menu to upload
         """
+
         logger.info("Adding dashboard menu")
-        if kibiter_major == "6":
-            menu_resource = ".kibana/doc/metadashboard"
-            mapping_resource = ".kibana/_mapping/doc"
-            mapping = {"dynamic": "true"}
-            menu = {'metadashboard': dash_menu}
-        else:
-            menu_resource = ".kibana/metadashboard/main"
-            mapping_resource = ".kibana/_mapping/metadashboard"
-            mapping = {"dynamic": "true"}
-            menu = dash_menu
+        menu_resource = ".kibana/doc/metadashboard"
+        mapping_resource = ".kibana/_mapping/doc"
+        mapping = {"dynamic": "true"}
+        menu = {'metadashboard': dash_menu}
+
         menu_url = urljoin(self.conf['es_enrichment']['url'] + "/",
                            menu_resource)
         # r = requests.post(menu_url, data=json.dumps(dash_menu, sort_keys=True))
@@ -604,29 +505,24 @@ class TaskPanelsMenu(Task):
             logger.error(res.json())
             raise
 
-    def __remove_dashboard_menu(self, kibiter_major):
-        """ Remove existing menu for dashboard, if any.
-
-        Usually, we remove the menu before creating a new one.
-
-        :param kibiter_major: major version of kibiter
+    def __remove_dashboard_menu(self):
+        """Remove existing menu for dashboard, if any. Usually,
+        we remove the menu before creating a new one.
         """
+
         logger.info("Removing old dashboard menu, if any")
-        if kibiter_major == "6":
-            metadashboard = ".kibana/doc/metadashboard"
-        else:
-            metadashboard = ".kibana/metadashboard/main"
+        metadashboard = ".kibana/doc/metadashboard"
         menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", metadashboard)
         self.grimoire_con.delete(menu_url)
 
-    def __get_menu_entries(self, kibiter_major):
-        """ Get the menu entries from the panel definition """
+    def __get_menu_entries(self):
+        """Get the menu entries from the panel definition"""
+
         menu_entries = OrderedDict()
         for entry in self.panels_menu:
             if entry['source'] not in self.data_sources:
                 continue
-            if kibiter_major != '4':
-                menu_entries[entry['name']] = OrderedDict()
+            menu_entries[entry['name']] = OrderedDict()
             for subentry in entry['menu']:
                 try:
                     dash_name = get_dashboard_name(subentry['panel'])
@@ -634,30 +530,20 @@ class TaskPanelsMenu(Task):
                     logging.error("Can't open dashboard file %s", subentry['panel'])
                     continue
                 # The name for the entry is in self.panels_menu
-                if kibiter_major == '4':
-                    menu_entries[dash_name] = dash_name
-                else:
-                    menu_entries[entry['name']][subentry['name']] = dash_name
+                menu_entries[entry['name']][subentry['name']] = dash_name
 
         return menu_entries
 
-    def __get_dash_menu(self, kibiter_major):
-        """ Order the dashboard menu """
+    def __get_dash_menu(self):
+        """Order the dashboard menu"""
 
         omenu = OrderedDict()
         # Start with Overview
         omenu["Overview"] = self.menu_panels_common['Overview']
 
         # Now the data _getsources
-        ds_menu = self.__get_menu_entries(kibiter_major)
-        if kibiter_major == '4':
-            # Convert the menu to one level
-            for entry in ds_menu:
-                name = entry.replace("-", " ")
-                omenu[name] = ds_menu[entry]
-        else:
-            # Keep the menu as it is (usually, two levels)
-            omenu.update(ds_menu)
+        ds_menu = self.__get_menu_entries()
+        omenu.update(ds_menu)
 
         # At the end Data Status, About
         omenu["Data Status"] = self.menu_panels_common['Data Status']
@@ -667,17 +553,14 @@ class TaskPanelsMenu(Task):
         return omenu
 
     def execute(self):
-        kibiter_major = self.es_version(self.conf['es_enrichment']['url'])
-        if kibiter_major == "2":
-            # In ES 2.2 Kibina was 4.4.1
-            kibiter_major = "4"
+        es_version = self.es_version(self.conf['es_enrichment']['url'])
 
-        print("Dashboard menu: uploading for %s ..." % kibiter_major)
+        logger.info("Dashboard menu: uploading for %s ..." % es_version)
 
         # Create the panels menu
-        menu = self.__get_dash_menu(kibiter_major)
+        menu = self.__get_dash_menu()
         # Remove the current menu and create the new one
-        self.__upload_title(kibiter_major)
-        self.__remove_dashboard_menu(kibiter_major)
-        self.__create_dashboard_menu(menu, kibiter_major)
-        print("Dashboard menu: uploaded!")
+        self.__upload_title()
+        self.__remove_dashboard_menu()
+        self.__create_dashboard_menu(menu)
+        logger.info("Dashboard menu: uploaded!")

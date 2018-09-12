@@ -243,14 +243,14 @@ class Task():
         Elasticsearch and Kibiter are paired (same major version for 5, 6).
 
         :param url: Elasticseearch url hosting Kibiter indices
-        :returns:   major version, as string
+        :returns: version number
         """
 
         try:
             res = self.grimoire_con.get(url)
             res.raise_for_status()
-            major = res.json()['version']['number'].split(".")[0]
+            version_number = res.json()['version']['number']
         except Exception:
             logger.error("Error retrieving Elasticsearch version: " + url)
             raise
-        return major
+        return version_number

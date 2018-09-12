@@ -1,0 +1,20 @@
+elasticsearch:
+  restart: on-failure:5
+  image: bitergia/elasticsearch:6.1.0-secured
+  command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
+  environment:
+    - ES_JAVA_OPTS=-Xms2g -Xmx2g
+  ports:
+    - 9200:9200
+
+kibiter:
+  restart: on-failure:5
+  image: bitergia/kibiter:6.1.0-secured
+  environment:
+    - PROJECT_NAME=Development
+    - NODE_OPTIONS=--max-old-space-size=1000
+    - ELASTICSEARCH_URL=https://elasticsearch:9200
+  links:
+    - elasticsearch
+  ports:
+    - 5601:5601

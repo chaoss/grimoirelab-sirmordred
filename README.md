@@ -35,7 +35,8 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **kibiter_default_index** (str: git): Default index pattern for Kibiter
  * **kibiter_time_from** (str: now-90d): Default time interval for Kibiter
  * **kibiter_url** (str: None): Kibiter URL
- * **kibiter_version** (str: None): Kibiter version
+ * **community** (bool: True): Include community section in dashboard
+ * **kafka** (bool: False): Include KIP section in dashboard
 ### [phases] 
 
  * **collection** (bool: True): Activate collection of items (**Required**)
