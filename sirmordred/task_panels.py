@@ -236,6 +236,7 @@ class TaskPanels(Task):
         :param strict: only upload a dashboard if it is newer than the one already existing
         """
         es_enrich = self.conf['es_enrichment']['url']
+        kibana_url = self.conf['panels']['kibiter_url']
 
         mboxes_sources = set(['pipermail', 'hyperkitty', 'groupsio', 'nntp'])
         if data_sources and any(x in data_sources for x in mboxes_sources):
@@ -256,7 +257,7 @@ class TaskPanels(Task):
             data_sources.append('maniphest')
 
         try:
-            import_dashboard(es_enrich, panel_file, data_sources=data_sources, strict=strict)
+            import_dashboard(es_enrich, kibana_url, panel_file, data_sources=data_sources, strict=strict)
         except ValueError:
             logger.error("%s does not include release field. Not loading the panel.", panel_file)
         except RuntimeError:
