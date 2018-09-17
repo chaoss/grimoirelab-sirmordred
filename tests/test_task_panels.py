@@ -23,6 +23,7 @@
 import sys
 import unittest
 
+import httpretty
 from unittest.mock import patch
 
 # Hack to make sure that tests import the right packages
@@ -30,7 +31,9 @@ from unittest.mock import patch
 sys.path.insert(0, '..')
 
 from sirmordred.config import Config
-from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
+from sirmordred.task_panels import (KIBANA_SETTINGS_URL,
+                                    TaskPanels,
+                                    TaskPanelsMenu)
 
 CONF_FILE = 'test.cfg'
 
@@ -73,14 +76,53 @@ class TestTaskPanels(unittest.TestCase):
 
         task.create_dashboard(None, data_sources=["stackexchange"])
 
+    @httpretty.activate
     @patch('sirmordred.task_panels.TaskPanels.create_dashboard', side_effect=check_create_dashboard)
-    def test_create_dashboard_multi_ds(self, mock_get_dashboard_name):
+    @unittest.mock.patch('sirmordred.task.Task.es_version')
+    def test_create_dashboard_multi_ds_kibiter_6(self, mock_es_version, mock_get_dashboard_name):
         """ Test the creation of dashboards with filtered data sources """
         mock_get_dashboard_name.return_value = ''
+        mock_es_version.return_value = '6.1.0'
 
         config = Config(CONF_FILE)
-        task = TaskPanels(config)
+        kibana_url = config.conf['panels']['kibiter_url'] + KIBANA_SETTINGS_URL
 
+        headers = {
+            "Content-Type": "application/json",
+            "kbn-xsrf": "true"
+        }
+
+        httpretty.register_uri(httpretty.GET,
+                               kibana_url + "/defaultIndex",
+                               body={},
+                               status=200,
+                               forcing_headers=headers)
+
+        httpretty.register_uri(httpretty.GET,
+                               kibana_url + "/defaultIndex",
+                               body={},
+                               status=200,
+                               forcing_headers=headers)
+
+        httpretty.register_uri(httpretty.GET,
+                               kibana_url + "/timepicker:timeDefaults",
+                               body={},
+                               status=200,
+                               forcing_headers=headers)
+
+        task = TaskPanels(config)
+        task.execute()
+
+    @patch('sirmordred.task_panels.TaskPanels.create_dashboard', side_effect=check_create_dashboard)
+    @unittest.mock.patch('sirmordred.task.Task.es_version')
+    def test_create_dashboard_multi_ds_kibiter_5(self, mock_es_version, mock_get_dashboard_name):
+        """ Test the creation of dashboards with filtered data sources """
+        mock_get_dashboard_name.return_value = ''
+        mock_es_version.return_value = '5.6.0'
+
+        config = Config(CONF_FILE)
+
+        task = TaskPanels(config)
         task.execute()
 
 

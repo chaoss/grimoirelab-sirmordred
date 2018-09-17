@@ -314,7 +314,7 @@ class Config():
                     "description": "Default index pattern for Kibiter"
                 },
                 "kibiter_url": {
-                    "optional": True,
+                    "optional": False,
                     "default": None,
                     "type": str,
                     "description": "Kibiter URL"
