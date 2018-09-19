@@ -21,11 +21,17 @@
       "gerrit": [
           "example.org"
       ],
-      "github": [
-          "https://github.com/zhquan_example/repo"
+      "github:issue": [
+          "https://github.com/grimoirelab/perceval"
       ],
-      "gitlab": [
-          "https://gitlab.com/fdroid/fdroiddata"
+      "github:pull": [
+          "https://github.com/grimoirelab/perceval"
+      ],
+      "gitlab:issue": [
+          "https://gitlab.com/coldnight/ci-test"
+      ],
+      "gitlab:merge": [
+          "https://gitlab.com/coldnight/ci-test"
       ],
       "google_hits": [
             "bitergia grimoirelab"
