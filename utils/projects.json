@@ -11,6 +11,12 @@
         ],
         "jenkins": [
            "https://build.opnfv.org/ci"
+        ],
+        "gitlab:issue": [
+            "https://gitlab.com/gitlab-org/gitlab-ce"
+        ],
+        "gitlab:merge": [
+            "https://gitlab.com/gitlab-org/gitlab-ce"
         ]
     }
 }
