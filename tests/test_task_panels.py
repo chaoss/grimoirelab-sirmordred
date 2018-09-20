@@ -46,7 +46,7 @@ def check_import_dashboard_stackexchange(elastic_url, import_file, es_index=None
         raise RuntimeError('stackexchange present but stackoverflow no in data sources')
 
 
-def check_create_dashboard(panel_file, data_sources):
+def check_create_dashboard(panel_file, data_sources, strict):
     # data_sources must be only defined for Overview and Data Status panels
     if panel_file not in TaskPanels.panels_multi_ds and data_sources:
         raise RuntimeError('Creating %s with data sources filtering' % panel_file)
