@@ -348,6 +348,12 @@ class Config():
                     "default": False,
                     "type": bool,
                     "description": "Enable GitLab merge requests menu"
+                },
+                "mattermost": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable Mattermost menu"
                 }
             }
         }
