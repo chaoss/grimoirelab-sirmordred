@@ -75,6 +75,42 @@ COMMUNITY_MENU = {
     ]
 }
 
+GITLAB_ISSUES = "gitlab_issues"
+GITLAB_ISSUES_PANEL_OVERALL = "panels/json/gitlab_issues.json"
+GITLAB_ISSUES_PANEL_BACKLOG = "panels/json/gitlab_issues_backlog.json"
+GITLAB_ISSUES_PANEL_TIMING = "panels/json/gitlab_issues_timing.json"
+GITLAB_ISSUES_IP = "panels/json/gitlab_issues-index-pattern.json"
+
+GITLAB_ISSUES_MENU = {
+    'name': 'GitLab Issues',
+    'source': GITLAB_ISSUES,
+    'icon': 'default.png',
+    'index-patterns': [GITLAB_ISSUES_IP],
+    'menu': [
+        {'name': 'Overview', 'panel': GITLAB_ISSUES_PANEL_OVERALL},
+        {'name': 'Backlog', 'panel': GITLAB_ISSUES_PANEL_BACKLOG},
+        {'name': 'Timing', 'panel': GITLAB_ISSUES_IP}
+    ]
+}
+
+GITLAB_MERGES = "gitlab_merges"
+GITLAB_MERGES_PANEL_OVERALL = "panels/json/gitlab_merge_requests.json"
+GITLAB_MERGES_PANEL_BACKLOG = "panels/json/gitlab_merge_requests_backlog.json"
+GITLAB_MERGES_PANEL_TIMING = "panels/json/gitlab_merge_requests_timing.json"
+GITLAB_MERGES_IP = "panels/json/gitlab_merge_requests-index-pattern.json"
+
+GITLAB_MERGESS_MENU = {
+    'name': 'GitLab Merge Requests',
+    'source': GITLAB_MERGES,
+    'icon': 'default.png',
+    'index-patterns': [GITLAB_MERGES_IP],
+    'menu': [
+        {'name': 'Overview', 'panel': GITLAB_MERGES_PANEL_OVERALL},
+        {'name': 'Backlog', 'panel': GITLAB_MERGES_PANEL_BACKLOG},
+        {'name': 'Timing', 'panel': GITLAB_MERGES_PANEL_TIMING}
+    ]
+}
+
 
 class TaskPanels(Task):
     """
@@ -123,6 +159,14 @@ class TaskPanels(Task):
 
         if self.conf['panels'][KAFKA]:
             self.panels[KAFKA] = [KAFKA_PANEL, KAKFA_IP]
+
+        if self.conf['panels'][GITLAB_ISSUES]:
+            self.panels[GITLAB_ISSUES] = [GITLAB_ISSUES_PANEL_BACKLOG, GITLAB_ISSUES_PANEL_OVERALL,
+                                          GITLAB_ISSUES_PANEL_TIMING, GITLAB_ISSUES_IP]
+
+        if self.conf['panels'][GITLAB_MERGES]:
+            self.panels[GITLAB_MERGES] = [GITLAB_MERGES_PANEL_BACKLOG, GITLAB_MERGES_PANEL_OVERALL,
+                                          GITLAB_MERGES_PANEL_TIMING, GITLAB_MERGES_IP]
 
     def is_backend_task(self):
         return False
@@ -486,6 +530,12 @@ class TaskPanelsMenu(Task):
         if self.conf['panels'][KAFKA]:
             self.panels_menu.append(KAFKA_MENU)
 
+        if self.conf['panels'][GITLAB_ISSUES]:
+            self.panels_menu.append(GITLAB_ISSUES_MENU)
+
+        if self.conf['panels'][GITLAB_MERGES]:
+            self.panels_menu.append(GITLAB_ISSUES_MENU)
+
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
         if 'short_name' in self.conf['general']:
@@ -500,7 +550,7 @@ class TaskPanelsMenu(Task):
         active_ds = []
         for entry in self.panels_menu:
             ds = entry['source']
-            if ds in self.conf.keys() or ds == COMMUNITY or ds == KAFKA:
+            if ds in self.conf.keys() or ds in [COMMUNITY, KAFKA, GITLAB_ISSUES, GITLAB_MERGES]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
         return active_ds
