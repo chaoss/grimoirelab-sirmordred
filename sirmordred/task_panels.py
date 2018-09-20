@@ -36,7 +36,7 @@ from sirmordred.task import Task
 
 logger = logging.getLogger(__name__)
 
-# Header mandatory in Ellasticsearc 6
+# Header mandatory in ElasticSearch 6
 ES6_HEADER = {"Content-Type": "application/json"}
 KIBANA_SETTINGS_URL = '/api/kibana/settings'
 
@@ -91,7 +91,7 @@ GITLAB_ISSUES_MENU = {
     'menu': [
         {'name': 'Overview', 'panel': GITLAB_ISSUES_PANEL_OVERALL},
         {'name': 'Backlog', 'panel': GITLAB_ISSUES_PANEL_BACKLOG},
-        {'name': 'Timing', 'panel': GITLAB_ISSUES_IP}
+        {'name': 'Timing', 'panel': GITLAB_ISSUES_PANEL_TIMING}
     ]
 }
 
@@ -101,8 +101,8 @@ GITLAB_MERGES_PANEL_BACKLOG = "panels/json/gitlab_merge_requests_backlog.json"
 GITLAB_MERGES_PANEL_TIMING = "panels/json/gitlab_merge_requests_timing.json"
 GITLAB_MERGES_IP = "panels/json/gitlab_merge_requests-index-pattern.json"
 
-GITLAB_MERGESS_MENU = {
-    'name': 'GitLab Merge Requests',
+GITLAB_MERGES_MENU = {
+    'name': 'GitLab Merges',
     'source': GITLAB_MERGES,
     'icon': 'default.png',
     'index-patterns': [GITLAB_MERGES_IP],
@@ -425,6 +425,14 @@ class TaskPanelsAliases(Task):
             "raw": ["remo_activities-raw"],
             "enrich": ["remo-activities", "remo2-activities", "remo-activities_metadata__timestamp"]
         },
+        "gitlab:issue": {
+            "raw": ["gitlab_issue-raw"],
+            "enrich": ["gitlab", "gitlab_issue"]
+        },
+        "gitlab:merge": {
+            "raw": ["gitlab_merge-raw"],
+            "enrich": ["gitlab_merge"]
+        },
         "stackexchange": {
             "raw": ["stackexchange-raw"],
             "enrich": ["stackoverflow"]
@@ -555,7 +563,7 @@ class TaskPanelsMenu(Task):
             self.panels_menu.append(GITLAB_ISSUES_MENU)
 
         if self.conf['panels'][GITLAB_MERGES]:
-            self.panels_menu.append(GITLAB_ISSUES_MENU)
+            self.panels_menu.append(GITLAB_MERGES_MENU)
 
         if self.conf['panels'][MATTERMOST]:
             self.panels_menu.append(MATTERMOST_MENU)
