@@ -40,6 +40,8 @@ logger = logging.getLogger(__name__)
 ES6_HEADER = {"Content-Type": "application/json"}
 KIBANA_SETTINGS_URL = '/api/kibana/settings'
 
+STRICT_LOADING = "strict"
+
 KAFKA = "kafka"
 KAFKA_PANEL = "panels/json/kip.json"
 KAKFA_IP = "panels/json/kafka-index-pattern.json"
@@ -327,6 +329,8 @@ class TaskPanels(Task):
     def execute(self):
         # Configure kibiter
         kibiter_major = self.es_version(self.conf['es_enrichment']['url'])
+        strict_loading = self.conf['panels'][STRICT_LOADING]
+
         if kibiter_major < "6":
             self.__configure_kibiter_old(kibiter_major)
 
@@ -336,15 +340,14 @@ class TaskPanels(Task):
             data_sources = None  # for some panels, only the active data sources must be included
             if panel_file in TaskPanels.panels_multi_ds:
                 data_sources = self.panels.keys()
-
-            self.create_dashboard(panel_file, data_sources=data_sources)
+            self.create_dashboard(panel_file, data_sources=data_sources, strict=strict_loading)
 
         # Upload all the Kibana dashboards/GrimoireLab panels based on
         # enabled data sources AND the menu file
         for ds in self.panels:
             for panel_file in self.panels[ds]:
                 try:
-                    self.create_dashboard(panel_file)
+                    self.create_dashboard(panel_file, strict=strict_loading)
                 except Exception as ex:
                     logger.error("%s not correctly uploaded (%s)", panel_file, ex)
         logger.info("Dashboard panels, visualizations: uploaded!")
