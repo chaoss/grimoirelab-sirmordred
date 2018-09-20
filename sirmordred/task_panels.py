@@ -111,6 +111,20 @@ GITLAB_MERGESS_MENU = {
     ]
 }
 
+MATTERMOST = "mattermost"
+MATTERMOST_PANEL = "panels/json/mattermost.json"
+MATTERMOST_IP = "panels/json/mattermost-index-pattern.json"
+
+MATTERMOST_MENU = {
+    'name': 'Mattermost',
+    'source': MATTERMOST,
+    'icon': 'default.png',
+    'index-patterns': [MATTERMOST_IP],
+    'menu': [
+        {'name': 'Overview', 'panel': MATTERMOST_PANEL}
+    ]
+}
+
 
 class TaskPanels(Task):
     """
@@ -167,6 +181,9 @@ class TaskPanels(Task):
         if self.conf['panels'][GITLAB_MERGES]:
             self.panels[GITLAB_MERGES] = [GITLAB_MERGES_PANEL_BACKLOG, GITLAB_MERGES_PANEL_OVERALL,
                                           GITLAB_MERGES_PANEL_TIMING, GITLAB_MERGES_IP]
+
+        if self.conf['panels'][MATTERMOST]:
+            self.panels[MATTERMOST] = [MATTERMOST_PANEL, MATTERMOST_IP]
 
     def is_backend_task(self):
         return False
@@ -319,6 +336,7 @@ class TaskPanels(Task):
             data_sources = None  # for some panels, only the active data sources must be included
             if panel_file in TaskPanels.panels_multi_ds:
                 data_sources = self.panels.keys()
+
             self.create_dashboard(panel_file, data_sources=data_sources)
 
         # Upload all the Kibana dashboards/GrimoireLab panels based on
@@ -536,6 +554,9 @@ class TaskPanelsMenu(Task):
         if self.conf['panels'][GITLAB_MERGES]:
             self.panels_menu.append(GITLAB_ISSUES_MENU)
 
+        if self.conf['panels'][MATTERMOST]:
+            self.panels_menu.append(MATTERMOST_MENU)
+
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
         if 'short_name' in self.conf['general']:
@@ -550,9 +571,10 @@ class TaskPanelsMenu(Task):
         active_ds = []
         for entry in self.panels_menu:
             ds = entry['source']
-            if ds in self.conf.keys() or ds in [COMMUNITY, KAFKA, GITLAB_ISSUES, GITLAB_MERGES]:
+            if ds in self.conf.keys() or ds in [COMMUNITY, KAFKA, GITLAB_ISSUES, GITLAB_MERGES, MATTERMOST]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
+
         return active_ds
 
     def __upload_title(self, kibiter_major):
