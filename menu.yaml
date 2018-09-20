@@ -237,6 +237,10 @@
   menu:
   - name: Overview
     panel: panels/json/jenkins.json
+  - name: Jobs
+    panel: panels/json/jenkins_jobs.json
+  - name: Nodes
+    panel: panels/json/jenkins_nodes.json
 - name: Mozilla Club
   source: mozillaclub
   icon: default.png
