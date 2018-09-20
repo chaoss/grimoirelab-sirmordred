@@ -336,6 +336,18 @@ class Config():
                     "default": False,
                     "type": bool,
                     "description": "Enable kafka menu"
+                },
+                "gitlab_issues": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable GitLab issues menu"
+                },
+                "gitlab_merges": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable GitLab merge requests menu"
                 }
             }
         }
