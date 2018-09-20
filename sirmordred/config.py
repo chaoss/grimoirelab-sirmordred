@@ -301,6 +301,12 @@ class Config():
 
         params_panels = {
             "panels": {
+                "strict": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool,
+                    "description": "Enable strict panels loading"
+                },
                 "kibiter_time_from": {
                     "optional": True,
                     "default": "now-90d",
