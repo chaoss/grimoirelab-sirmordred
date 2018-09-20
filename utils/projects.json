@@ -8,6 +8,9 @@
         ],
         "*github:pull": [
             "https://github.com/chaoss/grimoirelab-perceval"
+        ],
+        "jenkins": [
+           "https://build.opnfv.org/ci"
         ]
     }
 }
