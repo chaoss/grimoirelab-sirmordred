@@ -189,14 +189,6 @@
   menu:
   - name: Overview
     panel: panels/json/irc.json
-- name: Mattermost
-  source: mattermost
-  icon: default.png
-  index-patterns:
-  - panels/json/mattermost-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/mattermost.json
 - name: Slack
   source: slack
   icon: default.png
