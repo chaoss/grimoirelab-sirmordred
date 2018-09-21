@@ -229,6 +229,10 @@ class TaskPanels(Task):
         return True
 
     def __configure_kibiter_6(self):
+        # Disable kibiter 6 configuration
+        if True:
+            logger.error("Kibiter 6 configuration is temporarily disabled")
+            return True
 
         if 'panels' not in self.conf:
             logger.warning("Panels config not availble. Not configuring Kibiter.")
