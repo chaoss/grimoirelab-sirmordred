@@ -343,13 +343,13 @@ class Config():
                     "type": bool,
                     "description": "Enable kafka menu"
                 },
-                "gitlab_issues": {
+                "gitlab-issues": {
                     "optional": True,
                     "default": False,
                     "type": bool,
                     "description": "Enable GitLab issues menu"
                 },
-                "gitlab_merges": {
+                "gitlab-merges": {
                     "optional": True,
                     "default": False,
                     "type": bool,
