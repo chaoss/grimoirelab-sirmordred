@@ -77,7 +77,7 @@ COMMUNITY_MENU = {
     ]
 }
 
-GITLAB_ISSUES = "gitlab_issues"
+GITLAB_ISSUES = "gitlab-issues"
 GITLAB_ISSUES_PANEL_OVERALL = "panels/json/gitlab_issues.json"
 GITLAB_ISSUES_PANEL_BACKLOG = "panels/json/gitlab_issues_backlog.json"
 GITLAB_ISSUES_PANEL_TIMING = "panels/json/gitlab_issues_timing.json"
@@ -95,7 +95,7 @@ GITLAB_ISSUES_MENU = {
     ]
 }
 
-GITLAB_MERGES = "gitlab_merges"
+GITLAB_MERGES = "gitlab-merges"
 GITLAB_MERGES_PANEL_OVERALL = "panels/json/gitlab_merge_requests.json"
 GITLAB_MERGES_PANEL_BACKLOG = "panels/json/gitlab_merge_requests_backlog.json"
 GITLAB_MERGES_PANEL_TIMING = "panels/json/gitlab_merge_requests_timing.json"
