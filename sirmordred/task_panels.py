@@ -31,7 +31,7 @@ import yaml
 from collections import OrderedDict
 from urllib.parse import urljoin
 
-from kidash.kidash import import_dashboard, get_dashboard_name
+from kidash.kidash import import_dashboard, get_dashboard_name, check_kibana_index
 from sirmordred.task import Task
 
 logger = logging.getLogger(__name__)
@@ -142,7 +142,7 @@ class TaskPanels(Task):
 
     def __init__(self, conf):
         super().__init__(conf)
-        # Read panels and menu description from yaml file """
+        # Read panels and menu description from yaml file
         with open(TaskPanelsMenu.MENU_YAML, 'r') as f:
             try:
                 self.panels_menu = yaml.load(f)
@@ -229,14 +229,14 @@ class TaskPanels(Task):
         return True
 
     def __configure_kibiter_6(self):
-        # Disable kibiter 6 configuration
-        if True:
-            logger.error("Kibiter 6 configuration is temporarily disabled")
-            return True
-
         if 'panels' not in self.conf:
             logger.warning("Panels config not availble. Not configuring Kibiter.")
             return False
+
+        # Create .kibana index if not exists
+        es_url = self.conf['es_enrichment']['url']
+        kibiter_url = self.conf['panels']['kibiter_url']
+        check_kibana_index(es_url, kibiter_url)
 
         # set default index pattern
         kibiter_default_index = self.conf['panels']['kibiter_default_index']
@@ -337,6 +337,8 @@ class TaskPanels(Task):
 
         if kibiter_major < "6":
             self.__configure_kibiter_old(kibiter_major)
+        else:
+            self.__configure_kibiter_6()
 
         logger.info("Dashboard panels, visualizations: uploading...")
         # Create the commons panels
@@ -355,9 +357,6 @@ class TaskPanels(Task):
                 except Exception as ex:
                     logger.error("%s not correctly uploaded (%s)", panel_file, ex)
         logger.info("Dashboard panels, visualizations: uploaded!")
-
-        if kibiter_major == "6":
-            self.__configure_kibiter_6()
 
 
 class TaskPanelsAliases(Task):
