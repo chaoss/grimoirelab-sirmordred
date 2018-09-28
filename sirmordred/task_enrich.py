@@ -27,12 +27,16 @@ import time
 
 from datetime import datetime, timedelta
 
+from elasticsearch import Elasticsearch
+
 from grimoire_elk.elk import (do_studies,
                               enrich_backend,
                               refresh_projects,
                               refresh_identities)
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elastic import ElasticSearch
+from grimoire_elk.enriched.git import GitEnrich
+from grimoire_elk.utils import get_elastic
 
 from sirmordred.error import DataEnrichmentError
 from sirmordred.task import Task
@@ -62,7 +66,8 @@ class TaskEnrich(Task):
                           'port': None}
         self.db = Database(**self.sh_kwargs)
         autorefresh_interval = self.conf['es_enrichment']['autorefresh_interval']
-        self.last_autorefresh = self.__update_last_autorefresh(days=autorefresh_interval)  # Last autorefresh date
+        self.last_autorefresh = self.__update_last_autorefresh(days=autorefresh_interval)
+        self.last_autorefresh_studies = self.last_autorefresh
 
     def __update_last_autorefresh(self, days=None):
         if not days:
@@ -187,9 +192,8 @@ class TaskEnrich(Task):
         print("Enrichment for {}: finished after {} hours".format(self.backend_section,
                                                                   spent_time))
 
-    def __autorefresh(self):
+    def __autorefresh(self, enrich_backend, studies=False):
         # Refresh projects
-        enrich_backend = self._get_enrich_backend()
         field_id = enrich_backend.get_field_unique_id()
 
         if False:
@@ -201,11 +205,21 @@ class TaskEnrich(Task):
 
         # Refresh identities
         logger.info("Refreshing identities fields in enriched index %s", self.backend_section)
-        uuids_refresh = []
-        after = self.last_autorefresh
+
+        if studies:
+            after = self.last_autorefresh_studies
+        else:
+            after = self.last_autorefresh
+
+        # As we are going to recover modified indentities just below, store this time
+        # to make sure next iteration we are not loosing any modification, but don't
+        # update corresponding field with this below until we make sure the update
+        # was done in ElasticSearch
+        next_autorefresh = self.__update_last_autorefresh()
+
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
         (uuids_refresh, ids_refresh) = api.search_last_modified_identities(self.db, after)
-        self.last_autorefresh = self.__update_last_autorefresh()
+
         if uuids_refresh:
             logger.debug("Refreshing for %s uuids %s", self.backend_section, uuids_refresh)
             eitems = refresh_identities(enrich_backend,
@@ -222,6 +236,48 @@ class TaskEnrich(Task):
             enrich_backend.elastic.bulk_upload(eitems, field_id)
         else:
             logger.debug("No ids to be refreshed found")
+
+        # Update corresponding autorefresh date
+        if studies:
+            self.last_autorefresh_studies = next_autorefresh
+        else:
+            self.last_autorefresh = next_autorefresh
+
+    def __autorefresh_studies(self, cfg):
+        """Execute autorefresh for areas of code study if configured"""
+
+        if 'studies' not in self.conf[self.backend_section] or \
+                'enrich_areas_of_code:git' not in self.conf[self.backend_section]['studies']:
+            logger.debug("Not doing autorefresh for studies, Areas of Code study is not active.")
+            return
+
+        aoc_index = self.conf['enrich_areas_of_code:git'].get('out_index', GitEnrich.GIT_AOC_ENRICHED)
+
+        # if `out_index` exists but has no value, use default
+        if not aoc_index:
+            aoc_index = GitEnrich.GIT_AOC_ENRICHED
+
+        logger.debug("Autorefresh for Areas of Code study index: %s", aoc_index)
+
+        es = Elasticsearch([self.conf['es_enrichment']['url']], timeout=100,
+                           verify_certs=self._get_enrich_backend().elastic.requests.verify)
+
+        if not es.indices.exists(index=aoc_index):
+            logger.debug("Not doing autorefresh, index doesn't exist for Areas of Code study")
+            return
+
+        logger.debug("Doing autorefresh for Areas of Code study")
+
+        # Create a GitEnrich backend tweaked to work with AOC index
+        aoc_backend = GitEnrich(self.db_sh, None, cfg['projects']['projects_file'],
+                                self.db_user, self.db_password, self.db_host)
+        aoc_backend.mapping = None
+        aoc_backend.roles = ['author']
+        elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
+                                     aoc_index, clean=False, backend=aoc_backend)
+        aoc_backend.set_elastic(elastic_enrich)
+
+        self.__autorefresh(aoc_backend, studies=True)
 
     def __studies(self):
         """ Execute the studies configured for the current backend """
@@ -297,13 +353,21 @@ class TaskEnrich(Task):
         try:
             self.__enrich_items()
 
-            if cfg['es_enrichment']['autorefresh']:
+            autorefresh = cfg['es_enrichment']['autorefresh']
+
+            if autorefresh:
                 logger.debug("Doing autorefresh for %s", self.backend_section)
-                self.__autorefresh()
+                self.__autorefresh(self._get_enrich_backend())
             else:
                 logger.debug("Not doing autorefresh for %s", self.backend_section)
 
             self.__studies()
+
+            if autorefresh:
+                self.__autorefresh_studies(cfg)
+            else:
+                logger.debug("Not doing autorefresh for %s studies", self.backend_section)
+
         except Exception as e:
             raise e
         finally:
