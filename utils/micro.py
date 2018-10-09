@@ -84,8 +84,12 @@ def get_raw(config, backend_section, arthur):
         task = TaskRawDataCollection(config, backend_section=backend_section)
 
     TaskProjects(config).execute()
-    task.execute()
-    logging.info("Loading raw data finished!")
+    try:
+        task.execute()
+        logging.info("Loading raw data finished!")
+    except Exception as e:
+        logging.error(str(e))
+        sys.exit(-1)
 
 
 def get_identities(config):
@@ -109,8 +113,12 @@ def get_enrich(config, backend_section):
 
     TaskProjects(config).execute()
     task = TaskEnrich(config, backend_section=backend_section)
-    task.execute()
-    logging.info("Loading enriched data finished!")
+    try:
+        task.execute()
+        logging.info("Loading enriched data finished!")
+    except Exception as e:
+        logging.error(str(e))
+        sys.exit(-1)
 
 
 def get_panels(config):
