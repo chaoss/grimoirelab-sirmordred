@@ -16,6 +16,7 @@ Use python mordred/config.py to generate it.
 ### [es_enrichment] 
 
  * **autorefresh** (bool: True): Execute the autorefresh of identities
+ * **autorefresh_interval** (int: 2): Time interval (days) to autorefresh identities
  * **password** (str: None): Password for connection to Elasticsearch
  * **url** (str: http://172.17.0.1:9200): Elasticsearch URL (**Required**)
  * **user** (str: None): User for connection to Elasticsearch
