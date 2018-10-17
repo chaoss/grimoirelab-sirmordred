@@ -20,11 +20,13 @@
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
 
+import json
 import sys
 import unittest
+import unittest.mock
 
 import httpretty
-from unittest.mock import patch
+from urllib.parse import urljoin
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
@@ -38,20 +40,27 @@ from sirmordred.task_panels import (KIBANA_SETTINGS_URL,
 CONF_FILE = 'test.cfg'
 
 
+class MockedTaskPanels(TaskPanels):
+
+    VERSION = "5.6.0"
+
+    def __init__(self, conf):
+        super().__init__(conf)
+
+    def es_version(self, url):
+
+        return MockedTaskPanels.VERSION.split(".")[0]
+
+    def create_dashboard(self, panel_file, data_sources=None, strict=True):
+        return
+
+
 def check_import_dashboard_stackexchange(elastic_url, import_file, es_index=None,
                                          data_sources=None, add_vis_studies=False, strict=False):
     """ Check that stackexchange data sources adds also stackoverflow
         data source which is the name used in panels """
     if "stackexchange" in data_sources and "stackoverflow" not in data_sources:
         raise RuntimeError('stackexchange present but stackoverflow no in data sources')
-
-
-def check_create_dashboard(panel_file, data_sources, strict):
-    # data_sources must be only defined for Overview and Data Status panels
-    if panel_file not in TaskPanels.panels_multi_ds and data_sources:
-        raise RuntimeError('Creating %s with data sources filtering' % panel_file)
-    if panel_file in TaskPanels.panels_multi_ds and not data_sources:
-        raise RuntimeError('Creating %s without data sources filtering' % panel_file)
 
 
 class TestTaskPanels(unittest.TestCase):
@@ -65,8 +74,8 @@ class TestTaskPanels(unittest.TestCase):
 
         self.assertEqual(task.config, config)
 
-    @patch('sirmordred.task_panels.import_dashboard', side_effect=check_import_dashboard_stackexchange)
-    @patch('sirmordred.task_panels.get_dashboard_name')
+    @unittest.mock.patch('sirmordred.task_panels.import_dashboard', side_effect=check_import_dashboard_stackexchange)
+    @unittest.mock.patch('sirmordred.task_panels.get_dashboard_name')
     def test_create_dashboard_stackexchange(self, mock_get_dashboard_name, mock_import_dashboard):
         """ Test the creation of a dashboard which includes stackexchange in data sources """
         mock_get_dashboard_name.return_value = ''
@@ -77,15 +86,15 @@ class TestTaskPanels(unittest.TestCase):
         task.create_dashboard(None, data_sources=["stackexchange"])
 
     @httpretty.activate
-    @patch('sirmordred.task_panels.TaskPanels.create_dashboard', side_effect=check_create_dashboard)
-    @unittest.mock.patch('sirmordred.task.Task.es_version')
-    def test_create_dashboard_multi_ds_kibiter_6(self, mock_es_version, mock_get_dashboard_name):
+    def test_create_dashboard_multi_ds_kibiter_6(self):
         """ Test the creation of dashboards with filtered data sources """
-        mock_get_dashboard_name.return_value = ''
-        mock_es_version.return_value = '6.1.0'
 
         config = Config(CONF_FILE)
-        kibana_url = config.conf['panels']['kibiter_url'] + KIBANA_SETTINGS_URL
+        es_url = config.conf['es_enrichment']['url']
+        es_kibana_url = urljoin(es_url + "/", '.kibana')
+        kibiter_api_url = urljoin(config.conf['panels']['kibiter_url'], KIBANA_SETTINGS_URL)
+        kibiter_defaultIndex_url = kibiter_api_url + '/defaultIndex'
+        kibiter_timePicker_url = kibiter_api_url + '/timepicker:timeDefaults'
 
         headers = {
             "Content-Type": "application/json",
@@ -93,36 +102,102 @@ class TestTaskPanels(unittest.TestCase):
         }
 
         httpretty.register_uri(httpretty.GET,
-                               kibana_url + "/defaultIndex",
+                               es_kibana_url,
+                               body={},
+                               status=200)
+
+        httpretty.register_uri(httpretty.POST,
+                               kibiter_defaultIndex_url,
                                body={},
                                status=200,
                                forcing_headers=headers)
 
-        httpretty.register_uri(httpretty.GET,
-                               kibana_url + "/defaultIndex",
+        httpretty.register_uri(httpretty.POST,
+                               kibiter_timePicker_url,
                                body={},
                                status=200,
                                forcing_headers=headers)
 
-        httpretty.register_uri(httpretty.GET,
-                               kibana_url + "/timepicker:timeDefaults",
-                               body={},
-                               status=200,
-                               forcing_headers=headers)
-
-        task = TaskPanels(config)
+        MockedTaskPanels.VERSION = '6.1.0'
+        task = MockedTaskPanels(config)
         task.execute()
 
-    @patch('sirmordred.task_panels.TaskPanels.create_dashboard', side_effect=check_create_dashboard)
-    @unittest.mock.patch('sirmordred.task.Task.es_version')
-    def test_create_dashboard_multi_ds_kibiter_5(self, mock_es_version, mock_get_dashboard_name):
+    @httpretty.activate
+    def test_create_dashboard_multi_ds_kibiter_6_hhtp_error(self):
         """ Test the creation of dashboards with filtered data sources """
-        mock_get_dashboard_name.return_value = ''
-        mock_es_version.return_value = '5.6.0'
 
         config = Config(CONF_FILE)
+        es_url = config.conf['es_enrichment']['url']
+        es_kibana_url = urljoin(es_url + "/", '.kibana')
+        kibiter_api_url = urljoin(config.conf['panels']['kibiter_url'], KIBANA_SETTINGS_URL)
+        kibiter_defaultIndex_url = kibiter_api_url + '/defaultIndex'
+        kibiter_timePicker_url = kibiter_api_url + '/timepicker:timeDefaults'
 
-        task = TaskPanels(config)
+        headers = {
+            "Content-Type": "application/json",
+            "kbn-xsrf": "true"
+        }
+
+        httpretty.register_uri(httpretty.GET,
+                               es_kibana_url,
+                               body='{}',
+                               status=200)
+
+        httpretty.register_uri(httpretty.POST,
+                               kibiter_defaultIndex_url,
+                               body='{}',
+                               status=200,
+                               forcing_headers=headers)
+
+        httpretty.register_uri(httpretty.POST,
+                               kibiter_timePicker_url,
+                               body='{}',
+                               status=401,
+                               forcing_headers=headers)
+
+        MockedTaskPanels.VERSION = '6.1.0'
+        task = MockedTaskPanels(config)
+        task.execute()
+
+    @httpretty.activate
+    def test_create_dashboard_multi_ds_kibiter_5(self):
+        """ Test the creation of dashboards with filtered data sources """
+
+        config = Config(CONF_FILE)
+        version = "5.6.0"
+
+        es_url = config.conf['es_enrichment']['url']
+        config_search_url = urljoin(es_url + "/", '.kibana/config/_search')
+        config_version_url = urljoin(es_url + "/", '.kibana/config/' + version)
+
+        data_search = {
+            "took": 0,
+            "timed_out": False,
+            "_shards": {
+                "total": 1,
+                "successful": 1,
+                "skipped": 0,
+                "failed": 0
+            },
+            "hits": {
+                "total": 0,
+                "max_score": None,
+                "hits": [
+                    {"_id": version}
+                ]
+            }
+        }
+
+        httpretty.register_uri(httpretty.GET,
+                               config_search_url,
+                               body=json.dumps(data_search),
+                               status=200)
+
+        httpretty.register_uri(httpretty.POST,
+                               config_version_url,
+                               status=200)
+
+        task = MockedTaskPanels(config)
         task.execute()
 
 
