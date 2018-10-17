@@ -70,14 +70,14 @@ setup(name="sirmordred",
           'sirmordred'
       ],
       install_requires=[
-          'grimoire-elk>=0.30.33',
-          'kidash>=0.4.4',
-          'manuscripts>=0.2.7',
-          'sortinghat>=0.6.2',
+          'grimoire-elk>=0.31',
+          'kidash>=0.4.13',
+          'manuscripts>=0.2.16',
+          'sortinghat>=0.7',
           'PyMySQL',
           'pyyaml',
           'redis',
-          'kingarthur>=0.1.7'
+          'kingarthur>=0.1.12'
       ],
       scripts=[
           'bin/sirmordred'
