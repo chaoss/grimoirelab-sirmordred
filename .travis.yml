@@ -12,9 +12,8 @@ services:
 # addons:
 #    mariadb: '10.0'
 
-# sleep to wait for Elasticsearch init
 before_install:
-  - sleep 5
+  - curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.0.deb && sudo dpkg -i --force-confnew elasticsearch-6.1.0.deb && sudo service elasticsearch restart
   - pip install pandas==0.18.1
   - pip install httpretty==0.8.6
   - pip install -r "requirements.txt"
