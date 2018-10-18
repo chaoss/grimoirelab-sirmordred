@@ -484,7 +484,25 @@ class TaskPanelsAliases(Task):
             res = self.grimoire_con.post(aliases_url, data=action, headers=ES6_HEADER)
             res.raise_for_status()
 
+    def __get_alias_target(self, es_url, alias):
+        index = ''
+        url = urljoin(es_url + "/", "_alias/" + alias)
+        res = self.grimoire_con.get(url)
+        if res.status_code == 200:
+            lst = list(res.json().keys())
+            if len(lst) > 0:
+                index = lst[0]
+        return index
+
     def __create_alias(self, es_url, es_index, alias):
+        if self.__exists_alias(es_url, es_index):
+            # The original index is already an alias, point to its underlying index then
+            index = self.__get_alias_target(es_url, es_index)
+            if index == '':
+                logger.debug("%s is an alias but cannot find index it points to", es_index)
+                return
+            logger.debug("%s is already an alias to %s, using alias target as new alias source", es_index, index)
+            es_index = index
         if self.__exists_alias(es_url, alias):
             # The alias already exists
             return
