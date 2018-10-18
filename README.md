@@ -111,6 +111,14 @@ Further information about Perceval backends parameters are available at:
 * **backend-param-2**: ..
 * **backend-param-n**: ..
 
+#### Enrichment params
+Some backend sections allow to specify specific enrichment options, listed below.
+
+##### [jenkins]
+* **node_regex**: regular expression for extracting node name from `builtOn` field. This
+  regular expression **must contain at least one group**. First group will be used to extract
+  node name. More groups are allowed but not used to extract anything else.
+
 ## Studies Sections
 
 In this section, a template of a study section is shown.
