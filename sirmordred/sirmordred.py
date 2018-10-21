@@ -35,6 +35,10 @@ from datetime import datetime, timedelta
 import redis
 import requests
 
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
+
 from arthur.common import Q_STORAGE_ITEMS
 
 from grimoire_elk.enriched.utils import grimoire_con
