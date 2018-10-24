@@ -109,6 +109,7 @@ def setup_logs(logs_dir, debug_mode, log_file_handler, max_bytes, backup_count):
 
     logging.getLogger('requests').setLevel(logging.WARNING)
     logging.getLogger('urrlib3').setLevel(logging.WARNING)
+    logging.getLogger('elasticsearch').setLevel(logging.INFO)
 
     return logger
 

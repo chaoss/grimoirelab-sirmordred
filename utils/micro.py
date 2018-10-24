@@ -33,7 +33,9 @@ from sirmordred.task_panels import TaskPanels, TaskPanelsMenu, TaskPanelsAliases
 from sirmordred.task_projects import TaskProjects
 
 DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
+
 logging.basicConfig(level=logging.DEBUG, format=DEBUG_LOG_FORMAT)
+logging.getLogger('elasticsearch').setLevel(logging.INFO)
 
 
 def micro_mordred(cfg_path, backend_sections, raw, arthur, identities, enrich, panels):
