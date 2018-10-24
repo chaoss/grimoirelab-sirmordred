@@ -230,8 +230,8 @@ class TaskIdentitiesLoad(Task):
             if not cfg['sortinghat']['strict_mapping']:
                 cmd += ['--no-email-validation']
             if self.__execute_command(cmd) != 0:
-                logger.error('Can not generate the SH JSON file from ' +
-                             'GrimoireLab yaml file. Do the files exists? ' +
+                logger.error('Can not generate the SH JSON file from '
+                             'GrimoireLab yaml file. Do the files exists? '
                              'Is the API token right?')
             else:
                 # Load the JSON file in SH format

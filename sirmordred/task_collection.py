@@ -71,8 +71,7 @@ class TaskRawDataCollection(Task):
         if 'bulk_size' in cfg['general']:
             ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
 
-        if ('collect' in cfg[self.backend_section] and
-                not cfg[self.backend_section]['collect']):
+        if 'collect' in cfg[self.backend_section] and not cfg[self.backend_section]['collect']:
             logging.info('%s collect disabled', self.backend_section)
             return
 
@@ -82,8 +81,7 @@ class TaskRawDataCollection(Task):
         clean = False
 
         fetch_archive = False
-        if ('fetch-archive' in cfg[self.backend_section] and
-            cfg[self.backend_section]['fetch-archive']):
+        if 'fetch-archive' in cfg[self.backend_section] and cfg[self.backend_section]['fetch-archive']:
             fetch_archive = True
 
         # repos could change between executions because changes in projects
@@ -361,8 +359,7 @@ class TaskRawDataArthurCollection(Task):
 
         cfg = self.config.get_conf()
 
-        if ('collect' in cfg[self.backend_section] and
-            not cfg[self.backend_section]['collect']):
+        if 'collect' in cfg[self.backend_section] and not cfg[self.backend_section]['collect']:
             logging.info('%s collect disabled', self.backend_section)
             return
 
@@ -376,8 +373,7 @@ class TaskRawDataArthurCollection(Task):
         clean = False
 
         fetch_archive = False
-        if ('fetch-archive' in self.conf[self.backend_section] and
-            self.conf[self.backend_section]['fetch-archive']):
+        if 'fetch-archive' in self.conf[self.backend_section] and self.conf[self.backend_section]['fetch-archive']:
             fetch_archive = True
 
         # repos could change between executions because changes in projects
