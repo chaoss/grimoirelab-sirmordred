@@ -331,8 +331,7 @@ class TaskEnrich(Task):
     def execute(self):
         cfg = self.config.get_conf()
 
-        if ('enrich' in cfg[self.backend_section] and
-            not cfg[self.backend_section]['enrich']):
+        if 'enrich' in cfg[self.backend_section] and not cfg[self.backend_section]['enrich']:
             logger.info('%s enrich disabled', self.backend_section)
             return
 

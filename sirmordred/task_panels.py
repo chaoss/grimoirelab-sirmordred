@@ -521,16 +521,14 @@ class TaskPanelsAliases(Task):
         index_raw = self.conf[self.backend_section]['raw_index']
         index_enrich = self.conf[self.backend_section]['enriched_index']
 
-        if (self.backend_section in self.aliases and
-            'raw' in self.aliases[self.backend_section]):
+        if self.backend_section in self.aliases and 'raw' in self.aliases[self.backend_section]:
             for alias in self.aliases[self.backend_section]['raw']:
                 self.__create_alias(es_col_url, index_raw, alias)
         else:
             # Standard alias for the raw index
             self.__create_alias(es_col_url, index_raw, real_alias + "-raw")
 
-        if (self.backend_section in self.aliases and
-            'enrich' in self.aliases[self.backend_section]):
+        if self.backend_section in self.aliases and 'enrich' in self.aliases[self.backend_section]:
             for alias in self.aliases[self.backend_section]['enrich']:
                 self.__create_alias(es_enrich_url, index_enrich, alias)
         else:
