@@ -115,10 +115,13 @@ class TaskEnrich(Task):
         no_incremental = False
         github_token = None
         pair_programming = False
+        node_regex = None
         if 'github' in cfg and 'backend_token' in cfg['github']:
             github_token = cfg['github']['backend_token']
         if 'git' in cfg and 'pair-programming' in cfg['git']:
             pair_programming = cfg['git']['pair-programming']
+        if 'jenkins' in cfg and 'node_regex' in cfg['jenkins']:
+            node_regex = cfg['jenkins']['node_regex']
         only_studies = False
         only_identities = False
 
@@ -171,6 +174,7 @@ class TaskEnrich(Task):
                                jenkins_rename_file=jenkins_rename_file,
                                unaffiliated_group=cfg['sortinghat']['unaffiliated_group'],
                                pair_programming=pair_programming,
+                               node_regex=node_regex,
                                studies_args=studies_args)
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . "
