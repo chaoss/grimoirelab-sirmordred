@@ -5,6 +5,7 @@
   index-patterns:
   - panels/json/git-index-pattern.json
   - panels/json/git_areas_of_code-index-pattern.json
+  - panels/json/demographics-index-pattern.json
   menu:
   - name: Overview
     panel: panels/json/git.json
