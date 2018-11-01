@@ -155,11 +155,15 @@ class TestTaskRawDataCollection(unittest.TestCase):
                             'jira', 'mediawiki', 'meetup', 'mozillaclub', 'nntp', 'phabricator',
                             'redmine', 'remo', 'rss', 'stackexchange', 'slack', 'telegram', 'twitter']
 
+        # We need to load the projects
+        TaskProjects(config).execute()
         for backend_section in backend_sections:
             task = TaskRawDataCollection(config, backend_section=backend_section)
-            # We need to load the projects
-            TaskProjects(config).execute()
-            self.assertIsNotNone(task.execute())
+            errors = task.execute()
+            for err in errors:
+                self.assertIn('backend', err)
+                self.assertIn('repo', err)
+                self.assertIn('error', err)
 
 
 if __name__ == "__main__":
