@@ -34,6 +34,7 @@ sys.path.insert(0, '..')
 from sirmordred.config import Config
 from sirmordred.error import DataEnrichmentError
 from sirmordred.task_projects import TaskProjects
+from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
 
 CONF_FILE = 'test.cfg'
@@ -176,6 +177,29 @@ class TestTaskEnrich(unittest.TestCase):
         # Configure several studies, one wrong
         cfg['git']['studies'] = ['enrich_demography:1', "enrich_areas_of_code1"]
         with self.assertRaises(DataEnrichmentError):
+            self.assertEqual(task.execute(), None)
+
+    def test_execute_from_archive(self):
+        """Test fetching data from archives"""
+
+        # proj_file -> 'test-projects-archive.json' stored within the conf file
+        conf_file = 'archives-test.cfg'
+        config = Config(conf_file)
+
+        backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
+                            'discourse', 'dockerhub', 'gerrit', 'github:issue', 'github:pull',
+                            'gitlab:issue', 'gitlab:merge', 'google_hits', 'jenkins',
+                            'jira', 'mediawiki', 'meetup', 'mozillaclub', 'nntp', 'phabricator',
+                            'redmine', 'remo', 'rss', 'stackexchange', 'slack', 'telegram', 'twitter']
+
+        # We need to load the projects
+        TaskProjects(config).execute()
+        for backend_section in backend_sections:
+            task = TaskRawDataCollection(config, backend_section=backend_section)
+            task.execute()
+
+        for backend_section in backend_sections:
+            task = TaskEnrich(config, backend_section=backend_section)
             self.assertEqual(task.execute(), None)
 
 
