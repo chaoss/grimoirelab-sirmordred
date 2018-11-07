@@ -25,6 +25,8 @@
     panel: panels/json/gerrit_backlog.json
   - name: Timing
     panel: panels/json/gerrit_timing.json
+  - name: Efficiency
+    panel: panels/json/gerrit_efficiency.json
 - name: GitHub PRs
   source: github
   icon: default.png
@@ -37,6 +39,8 @@
     panel: panels/json/github_pull_requests_backlog.json
   - name: Timing
     panel: panels/json/github_pull_requests_timing.json
+  - name: Efficiency
+    panel: panels/json/github_pull_requests_efficiency.json
 - name: GitHub Issues
   source: github
   icon: default.png
@@ -49,6 +53,8 @@
     panel: panels/json/github_issues_backlog.json
   - name: Timing
     panel: panels/json/github_issues_timing.json
+  - name: Efficiency
+    panel: panels/json/github_issues_efficiency.json
 - name: Phabricator
   source: phabricator
   icon: default.png
