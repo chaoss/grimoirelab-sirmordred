@@ -86,26 +86,10 @@ def setup_logs(logs_dir, debug_mode, log_file_handler, max_bytes, backup_count):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
-    pfh_filepath = os.path.join(logs_dir,'perceval.log')
-    pfh = log_file_handler(pfh_filepath, **log_file_handler_kwargs)
-    fh.setLevel(logging_mode)
-    pfh.setFormatter(formatter)
-    perceval_logger = logging.getLogger('perceval')
-    perceval_logger.addHandler(pfh)
-
-    gfh_filepath = os.path.join(logs_dir,'grimoire.log')
-    gfh = log_file_handler(gfh_filepath, **log_file_handler_kwargs)
-    fh.setLevel(logging_mode)
-    gfh.setFormatter(formatter)
-    perceval_logger = logging.getLogger('grimoire')
-    perceval_logger.addHandler(gfh)
-
-    wfh_filepath = os.path.join(logs_dir,'sirmordred.log')
-    wfh = log_file_handler(wfh_filepath, **log_file_handler_kwargs)
-    wfh.setLevel(logging_mode)
-    wfh.setFormatter(formatter)
-    workflow_logger = logging.getLogger('sirmordred')
-    workflow_logger.addHandler(wfh)
+    # this is needed because the log messages of the grimoire_elk library are to verbose
+    if not debug_mode:
+        logging.getLogger('perceval').setLevel(logging.WARNING)
+        logging.getLogger('grimoire_elk').setLevel(logging.WARNING)
 
     logging.getLogger('requests').setLevel(logging.WARNING)
     logging.getLogger('urrlib3').setLevel(logging.WARNING)
