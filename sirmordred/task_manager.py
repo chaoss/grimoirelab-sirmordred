@@ -62,12 +62,18 @@ class TasksManager(threading.Thread):
         self.backend_section = backend_section
         self.stopper = stopper  # To stop the thread from parent
         self.timer = timer
+        self.thread_id = None
 
     def add_task(self, task):
         self.tasks.append(task)
 
     def run(self):
-        logger.debug('Starting Task Manager thread %s', self.backend_section)
+        def __set_thread_id():
+            self.thread_id = threading.get_ident()
+
+        __set_thread_id()
+
+        logger.debug('[thread:%s][%s] Thread starts', self.thread_id, self.backend_section)
 
         # Configure the tasks
         logger.debug(self.tasks_cls)
@@ -78,25 +84,28 @@ class TasksManager(threading.Thread):
             self.tasks.append(task)
 
         if not self.tasks:
-            logger.debug('Task Manager thread %s without tasks', self.backend_section)
+            logger.debug('[thread:%s] Thread %s without tasks', self.thread_id, self.backend_section)
 
-        logger.debug('run(tasks) - run(%s)', self.tasks)
+        logger.debug('[thread:%s][%s] Tasks will be executed in this order: %s', self.thread_id,
+                     self.backend_section, self.tasks)
         while not self.stopper.is_set():
             # we give 1 extra second to the stopper, so this loop does
             # not finish before it is set.
             time.sleep(1)
 
             for task in self.tasks:
-                logger.debug("Executing task %s", task)
                 try:
                     task.execute()
                 except Exception as ex:
-                    logger.error("Exception in Task Manager %s", ex, exc_info=True)
+                    logger.error("[thread:%s][%s] Exception in Task Manager %s", self.thread_id, self.backend_section,
+                                 ex, exc_info=True)
                     TasksManager.COMM_QUEUE.put(sys.exc_info())
                     raise
+                logger.debug('[thread:%s][%s] Tasks finished: %s', self.thread_id, self.backend_section, task)
 
             if self.timer > 0 and self.config.get_conf()['general']['update']:
-                logger.debug("Sleeping in Task Manager %s s", self.timer)
+                logger.debug("[thread:%s][%s] sleeping for %s seconds ", self.thread_id, self.backend_section,
+                             self.timer)
                 time.sleep(self.timer)
 
-        logger.debug('Exiting Task Manager thread %s', self.backend_section)
+        logger.debug('[thread:%s][%s] Thread is exiting', self.thread_id, self.backend_section)

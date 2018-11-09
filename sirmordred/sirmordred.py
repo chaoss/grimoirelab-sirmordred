@@ -223,8 +223,6 @@ class SirMordred:
                     global_t.append(t)
             return backend_t, global_t
 
-        logger.debug('Tasks Manager starting .. ')
-
         backend_tasks, global_tasks = _split_tasks(tasks_cls)
         logger.debug('backend_tasks = %s' % (backend_tasks))
         logger.debug('global_tasks = %s' % (global_tasks))
@@ -258,7 +256,6 @@ class SirMordred:
         if wait_for_threads:
             time.sleep(1)  # Give enough time create and run all threads
             stopper.set()  # All threads must stop in the next iteration
-            logger.debug(" Waiting for all threads to complete. This could take a while ..")
 
         # Wait for all threads to complete
         for t in threads:
@@ -267,13 +264,13 @@ class SirMordred:
         # Checking for exceptions in threads to log them
         self.__check_queue_for_errors()
 
-        logger.debug(" Task manager and all its tasks (threads) finished!")
+        logger.debug("[thread:main] All threads (and their tasks) are finished")
 
     def __check_queue_for_errors(self):
         try:
             exc = TasksManager.COMM_QUEUE.get(block=False)
         except queue.Empty:
-            logger.debug("No exceptions in threads. Let's continue ..")
+            logger.debug("[thread:main] No exceptions in threads queue. Let's continue ..")
         else:
             exc_type, exc_obj, exc_trace = exc
             # deal with the exception
