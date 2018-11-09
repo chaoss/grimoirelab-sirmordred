@@ -101,7 +101,7 @@ class TaskEnrich(Task):
         time_start = time.time()
 
         # logger.info('%s starts for %s ', 'enrichment', self.backend_section)
-        logger.info('[%s] enrichment starts', self.backend_section)
+        logger.info('[%s] enrichment phase starts', self.backend_section)
         print("Enrichment for {}: starting...".format(self.backend_section))
 
         cfg = self.config.get_conf()
@@ -146,9 +146,9 @@ class TaskEnrich(Task):
                     self.conf[self.backend_section]['studies']:
                 studies_args = self.__load_studies()
 
+            logger.info('[%s] enrichment starts for %s', self.backend_section, repo)
             try:
                 es_col_url = self._get_collection_url()
-                logger.debug('[%s] enrichment starts for %s', self.backend_section, repo)
                 backend = self.get_backend(self.backend_section)
                 enrich_backend(es_col_url, self.clean, backend, backend_args,
                                cfg[self.backend_section]['raw_index'],
@@ -182,6 +182,8 @@ class TaskEnrich(Task):
                 logger.error("Exception: %s", ex)
                 raise DataEnrichmentError('Failed to produce enriched data for ' + self.backend_section)
 
+            logger.info('[%s] enrichment finished for %s', self.backend_section, repo)
+
             # Let's try to create the aliases for the enriched index
             if not self.enrich_aliases:
                 logger.debug("Creating aliases after enrich")
@@ -192,7 +194,7 @@ class TaskEnrich(Task):
                 self.enrich_aliases = True
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start))
-        logger.info('[%s] enrichment finished in %s', self.backend_section, spent_time)
+        logger.info('[%s] enrichment phase finished in %s', self.backend_section, spent_time)
         print("Enrichment for {}: finished after {} hours".format(self.backend_section,
                                                                   spent_time))
 
