@@ -62,6 +62,16 @@ class TaskRawDataCollection(Task):
         # This will be options in next iteration
         self.clean = False
 
+    def select_aliases(self, cfg, backend_section):
+
+        aliases = self.load_aliases_from_json()
+        if backend_section in aliases:
+            found = aliases[backend_section]['raw']
+        else:
+            found = [self.get_backend(backend_section) + '-raw']
+
+        return found
+
     def execute(self):
         cfg = self.config.get_conf()
 
@@ -108,9 +118,13 @@ class TaskRawDataCollection(Task):
             ds = self.backend_section
             backend = self.get_backend(self.backend_section)
             project = None  # just used for github in cauldron
+
+            es_aliases = self.select_aliases(cfg, self.backend_section)
+
             try:
                 feed_backend(es_col_url, clean, fetch_archive, backend, backend_args,
-                             cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project)
+                             cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project,
+                             es_aliases=es_aliases)
             except Exception:
                 logger.error("Something went wrong collecting data from this %s repo: %s . "
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))
