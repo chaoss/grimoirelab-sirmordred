@@ -69,6 +69,16 @@ class TaskEnrich(Task):
         self.last_autorefresh = self.__update_last_autorefresh(days=autorefresh_interval)
         self.last_autorefresh_studies = self.last_autorefresh
 
+    def select_aliases(self, cfg, backend_section):
+
+        aliases = self.load_aliases_from_json()
+        if backend_section in aliases:
+            found = aliases[backend_section]['enrich']
+        else:
+            found = [self.get_backend(backend_section)]
+
+        return found
+
     def __update_last_autorefresh(self, days=None):
         if not days:
             return datetime.utcnow()
@@ -142,14 +152,16 @@ class TaskEnrich(Task):
             backend_args = self._compose_perceval_params(self.backend_section, url)
             studies_args = None
 
+            backend = self.get_backend(self.backend_section)
             if 'studies' in self.conf[self.backend_section] and \
                     self.conf[self.backend_section]['studies']:
                 studies_args = self.__load_studies()
 
             logger.info('[%s] enrichment starts for %s', self.backend_section, repo)
+            es_enrich_aliases = self.select_aliases(cfg, self.backend_section)
+
             try:
                 es_col_url = self._get_collection_url()
-                backend = self.get_backend(self.backend_section)
                 enrich_backend(es_col_url, self.clean, backend, backend_args,
                                cfg[self.backend_section]['raw_index'],
                                cfg[self.backend_section]['enriched_index'],
@@ -175,7 +187,8 @@ class TaskEnrich(Task):
                                unaffiliated_group=cfg['sortinghat']['unaffiliated_group'],
                                pair_programming=pair_programming,
                                node_regex=node_regex,
-                               studies_args=studies_args)
+                               studies_args=studies_args,
+                               es_enrich_aliases=es_enrich_aliases)
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . "
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
