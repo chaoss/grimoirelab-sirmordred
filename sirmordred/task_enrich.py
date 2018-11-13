@@ -224,21 +224,18 @@ class TaskEnrich(Task):
         next_autorefresh = self.__update_last_autorefresh()
 
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
-        (uuids_refresh, ids_refresh) = api.search_last_modified_identities(self.db, after)
+        uuids_refresh = api.search_last_modified_unique_identities(self.db, after)
+        ids_refresh = api.search_last_modified_identities(self.db, after)
 
         if uuids_refresh:
-            logger.debug("Refreshing for %s uuids %s", self.backend_section, uuids_refresh)
-            eitems = refresh_identities(enrich_backend,
-                                        {"name": "author_uuid",
-                                         "value": uuids_refresh})
+            logger.debug("Refreshing identity uuids for %s", self.backend_section)
+            eitems = refresh_identities(enrich_backend, author_field="author_uuid", author_values=uuids_refresh)
             enrich_backend.elastic.bulk_upload(eitems, field_id)
         else:
             logger.debug("No uuids to be refreshed found")
         if ids_refresh:
-            logger.debug("Refreshing for %s ids %s", self.backend_section, ids_refresh)
-            eitems = refresh_identities(enrich_backend,
-                                        {"name": "author_id",
-                                         "value": ids_refresh})
+            logger.debug("Refreshing identity ids for %s", self.backend_section)
+            eitems = refresh_identities(enrich_backend, author_field="author_id", author_values=ids_refresh)
             enrich_backend.elastic.bulk_upload(eitems, field_id)
         else:
             logger.debug("No ids to be refreshed found")
