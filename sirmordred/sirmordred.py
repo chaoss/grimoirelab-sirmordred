@@ -283,7 +283,7 @@ class SirMordred:
         """
 
         if self.conf['phases']['panels']:
-            tasks_cls = [TaskPanelsAliases, TaskPanels, TaskPanelsMenu]
+            tasks_cls = [TaskPanels, TaskPanelsMenu]
             self.execute_tasks(tasks_cls)
         if self.conf['phases']['identities']:
             tasks_cls = [TaskInitSortingHat]
@@ -353,8 +353,6 @@ class SirMordred:
             #     all_tasks_cls.append(TaskIdentitiesCollection)
         if self.conf['phases']['enrichment']:
             all_tasks_cls.append(TaskEnrich)
-            # During enrich new indexes can be created a they need their aliases
-            all_tasks_cls.append(TaskPanelsAliases)
         if self.conf['phases']['track_items']:
             all_tasks_cls.append(TaskTrackItems)
         if self.conf['phases']['report']:
