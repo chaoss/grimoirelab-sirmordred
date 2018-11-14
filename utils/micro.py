@@ -29,7 +29,7 @@ from sirmordred.config import Config
 from sirmordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
 from sirmordred.task_identities import TaskIdentitiesMerge
 from sirmordred.task_enrich import TaskEnrich
-from sirmordred.task_panels import TaskPanels, TaskPanelsMenu, TaskPanelsAliases
+from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
 
 DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
@@ -64,11 +64,6 @@ def micro_mordred(cfg_path, backend_sections, raw, arthur, identities, enrich, p
             get_enrich(config, backend)
 
     if panels:
-        for backend in backend_sections:
-            task = TaskPanelsAliases(config)
-            task.backend_section = backend
-            task.execute()
-
         get_panels(config)
 
 
