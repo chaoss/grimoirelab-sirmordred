@@ -28,7 +28,6 @@ import logging
 import requests
 import yaml
 
-from collections import OrderedDict
 from urllib.parse import urljoin
 
 from kidash.kidash import import_dashboard, get_dashboard_name, check_kibana_index
@@ -549,9 +548,27 @@ class TaskPanelsMenu(Task):
     MENU_YAML = 'menu.yaml'
 
     menu_panels_common = {
-        "Overview": "Overview",
-        "About": "About",
-        "Data Status": "Data-Status"
+        "Overview": {
+            "title": "Overview",
+            "name": "Overview",
+            "description": "Overview panel",
+            "type": "entry",
+            "panel_id": "Overview"
+        },
+        "About": {
+            "title": "About",
+            "name": "About",
+            "description": "About panel",
+            "type": "entry",
+            "panel_id": "About"
+        },
+        "Data Status": {
+            "title": "Data Status",
+            "name": "Data Status",
+            "description": "Data Status panel",
+            "type": "entry",
+            "panel_id": "Data-Status"
+        }
     }
 
     def __init__(self, conf):
@@ -564,12 +581,6 @@ class TaskPanelsMenu(Task):
                 logger.error(ex)
                 raise
 
-        if self.conf['panels'][COMMUNITY]:
-            self.panels_menu.append(COMMUNITY_MENU)
-
-        if self.conf['panels'][KAFKA]:
-            self.panels_menu.append(KAFKA_MENU)
-
         if self.conf['panels'][GITLAB_ISSUES]:
             self.panels_menu.append(GITLAB_ISSUES_MENU)
 
@@ -578,6 +589,12 @@ class TaskPanelsMenu(Task):
 
         if self.conf['panels'][MATTERMOST]:
             self.panels_menu.append(MATTERMOST_MENU)
+
+        if self.conf['panels'][COMMUNITY]:
+            self.panels_menu.append(COMMUNITY_MENU)
+
+        if self.conf['panels'][KAFKA]:
+            self.panels_menu.append(KAFKA_MENU)
 
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
@@ -692,11 +709,17 @@ class TaskPanelsMenu(Task):
 
     def __get_menu_entries(self, kibiter_major):
         """ Get the menu entries from the panel definition """
-        menu_entries = OrderedDict()
+        menu_entries = []
         for entry in self.panels_menu:
             if entry['source'] not in self.data_sources:
                 continue
-            menu_entries[entry['name']] = OrderedDict()
+            parent_menu_item = {
+                'name': entry['name'],
+                'title': entry['name'],
+                'description': "",
+                'type': "menu",
+                'dashboards': []
+            }
             for subentry in entry['menu']:
                 try:
                     dash_name = get_dashboard_name(subentry['panel'])
@@ -704,24 +727,33 @@ class TaskPanelsMenu(Task):
                     logging.error("Can't open dashboard file %s", subentry['panel'])
                     continue
                 # The name for the entry is in self.panels_menu
-                menu_entries[entry['name']][subentry['name']] = dash_name
+                child_item = {
+                    "name": subentry['name'],
+                    "title": subentry['name'],
+                    "description": "",
+                    "type": "entry",
+                    "panel_id": dash_name
+                }
+                parent_menu_item['dashboards'].append(child_item)
+            menu_entries.append(parent_menu_item)
 
         return menu_entries
 
     def __get_dash_menu(self, kibiter_major):
         """Order the dashboard menu"""
 
-        omenu = OrderedDict()
+        # omenu = OrderedDict()
+        omenu = []
         # Start with Overview
-        omenu["Overview"] = self.menu_panels_common['Overview']
+        omenu.append(self.menu_panels_common['Overview'])
 
         # Now the data _getsources
         ds_menu = self.__get_menu_entries(kibiter_major)
-        omenu.update(ds_menu)
+        omenu += ds_menu
 
         # At the end Data Status, About
-        omenu["Data Status"] = self.menu_panels_common['Data Status']
-        omenu["About"] = self.menu_panels_common['About']
+        omenu.append(self.menu_panels_common['Data Status'])
+        omenu.append(self.menu_panels_common['About'])
 
         logger.debug("Menu for panels: %s", json.dumps(ds_menu, indent=4))
         return omenu
