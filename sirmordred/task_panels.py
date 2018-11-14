@@ -581,12 +581,6 @@ class TaskPanelsMenu(Task):
                 logger.error(ex)
                 raise
 
-        if self.conf['panels'][COMMUNITY]:
-            self.panels_menu.append(COMMUNITY_MENU)
-
-        if self.conf['panels'][KAFKA]:
-            self.panels_menu.append(KAFKA_MENU)
-
         if self.conf['panels'][GITLAB_ISSUES]:
             self.panels_menu.append(GITLAB_ISSUES_MENU)
 
@@ -595,6 +589,12 @@ class TaskPanelsMenu(Task):
 
         if self.conf['panels'][MATTERMOST]:
             self.panels_menu.append(MATTERMOST_MENU)
+
+        if self.conf['panels'][COMMUNITY]:
+            self.panels_menu.append(COMMUNITY_MENU)
+
+        if self.conf['panels'][KAFKA]:
+            self.panels_menu.append(KAFKA_MENU)
 
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
