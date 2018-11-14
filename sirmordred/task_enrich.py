@@ -41,7 +41,6 @@ from grimoire_elk.utils import get_elastic
 from sirmordred.error import DataEnrichmentError
 from sirmordred.task import Task
 from sirmordred.task_manager import TasksManager
-from sirmordred.task_panels import TaskPanelsAliases
 from sirmordred.task_projects import TaskProjects
 
 from sortinghat import api
@@ -196,15 +195,6 @@ class TaskEnrich(Task):
                 raise DataEnrichmentError('Failed to produce enriched data for ' + self.backend_section)
 
             logger.info('[%s] enrichment finished for %s', self.backend_section, repo)
-
-            # Let's try to create the aliases for the enriched index
-            if not self.enrich_aliases:
-                logger.debug("Creating aliases after enrich")
-                task_aliases = TaskPanelsAliases(self.config)
-                task_aliases.set_backend_section(self.backend_section)
-                task_aliases.execute()
-                logger.debug("Done creating aliases after enrich")
-                self.enrich_aliases = True
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start))
         logger.info('[%s] enrichment phase finished in %s', self.backend_section, spent_time)
