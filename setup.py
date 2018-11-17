@@ -70,7 +70,7 @@ setup(name="sirmordred",
           'sirmordred'
       ],
       install_requires=[
-          'grimoire-elk>=0.31',
+          'grimoire-elk>=0.32',
           'kidash>=0.4.13',
           'manuscripts>=0.2.16',
           'sortinghat>=0.7',
