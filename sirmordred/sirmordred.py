@@ -50,7 +50,7 @@ from sirmordred.task_collection import TaskRawDataCollection, TaskRawDataArthurC
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
 from sirmordred.task_manager import TasksManager
-from sirmordred.task_panels import TaskPanels, TaskPanelsAliases, TaskPanelsMenu
+from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
 from sirmordred.task_report import TaskReport
 from sirmordred.task_track import TaskTrackItems
