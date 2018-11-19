@@ -70,7 +70,8 @@ class TaskEnrich(Task):
 
     def select_aliases(self, cfg, backend_section):
 
-        aliases = self.load_aliases_from_json()
+        aliases_file = cfg['general']['aliases_file']
+        aliases = self.load_aliases_from_json(aliases_file)
         if backend_section in aliases:
             found = aliases[backend_section]['enrich']
         else:
