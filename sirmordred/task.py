@@ -39,7 +39,6 @@ class Task():
                          'collect', 'pair-programming', 'fetch-archive', 'studies',
                          'node_regex']
     PARAMS_WITH_SPACES = ['blacklist-jobs']
-    ALIASES_JSON = 'aliases.json'
 
     def __init__(self, config):
         self.backend_section = None
@@ -51,9 +50,9 @@ class Task():
         self.db_host = self.conf['sortinghat']['host']
         self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
 
-    def load_aliases_from_json(self):
-
-        with open(self.ALIASES_JSON, 'r') as f:
+    @staticmethod
+    def load_aliases_from_json(aliases_json):
+        with open(aliases_json, 'r') as f:
             try:
                 aliases = json.load(f)
             except Exception as ex:
