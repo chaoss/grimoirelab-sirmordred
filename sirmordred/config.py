@@ -32,6 +32,10 @@ from grimoire_elk.utils import get_connectors
 logger = logging.getLogger(__name__)
 
 
+ALIASES_JSON = 'aliases.json'
+PROJECTS_JSON = 'projects.json'
+
+
 class Config():
     """Class aimed to manage sirmordred configuration"""
 
@@ -149,15 +153,20 @@ class Config():
                     "default": 100,
                     "type": int,
                     "description": "Number of items to read from Elasticsearch when scrolling"
+                },
+                "aliases_file": {
+                    "optional": True,
+                    "default": ALIASES_JSON,
+                    "type": str,
+                    "description": "JSON file to define aliases for raw and enriched indexes"
                 }
-
             }
         }
         params_projects = {
             "projects": {
                 "projects_file": {
                     "optional": True,
-                    "default": "projects.json",
+                    "default": PROJECTS_JSON,
                     "type": str,
                     "description": "Projects file path with repositories to be collected group by projects"
                 },
