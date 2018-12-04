@@ -60,11 +60,13 @@ ONION_PANEL_OVERALL = 'panels/json/onion_overall.json'
 ONION_PANEL_PROJECTS = 'panels/json/onion_projects.json'
 ONION_PANEL_ORGS = 'panels/json/onion_organizations.json'
 DEMOGRAPHICS = 'panels/json/demographics.json'
+AFFILIATIONS = 'panels/json/affiliations.json'
 
 ONION_PANEL_OVERALL_IP = 'panels/json/all_onion-index-pattern.json'
 ONION_PANEL_PROJECTS_IP = 'panels/json/all_onion-index-pattern.json'
 ONION_PANEL_ORGS_IP = 'panels/json/all_onion-index-pattern.json'
 DEMOGRAPHICS_IP = 'panels/json/demographics-index-pattern.json'
+AFFILIATIONS_IP = 'panels/json/affiliations-index-pattern.json'
 
 COMMUNITY_MENU = {
     'name': 'Community',
@@ -74,13 +76,15 @@ COMMUNITY_MENU = {
         ONION_PANEL_OVERALL_IP,
         ONION_PANEL_PROJECTS_IP,
         ONION_PANEL_ORGS_IP,
-        DEMOGRAPHICS_IP
+        DEMOGRAPHICS_IP,
+        AFFILIATIONS_IP
     ],
     'menu': [
         {'name': 'Overall', 'panel': ONION_PANEL_OVERALL},
         {'name': 'Projects', 'panel': ONION_PANEL_PROJECTS},
         {'name': 'Organizations', 'panel': ONION_PANEL_ORGS},
-        {'name': 'Demographics', 'panel': DEMOGRAPHICS}
+        {'name': 'Demographics', 'panel': DEMOGRAPHICS},
+        {'name': 'Affiliations', 'panel': AFFILIATIONS}
     ]
 }
 
@@ -178,9 +182,9 @@ class TaskPanels(Task):
 
         if self.conf['panels'][COMMUNITY]:
             self.panels[COMMUNITY] = [ONION_PANEL_OVERALL, ONION_PANEL_PROJECTS,
-                                      ONION_PANEL_ORGS, DEMOGRAPHICS,
+                                      ONION_PANEL_ORGS, DEMOGRAPHICS, AFFILIATIONS,
                                       ONION_PANEL_OVERALL_IP, ONION_PANEL_PROJECTS_IP,
-                                      ONION_PANEL_ORGS_IP, DEMOGRAPHICS_IP]
+                                      ONION_PANEL_ORGS_IP, DEMOGRAPHICS_IP, AFFILIATIONS_IP]
 
         if self.conf['panels'][KAFKA]:
             self.panels[KAFKA] = [KAFKA_PANEL, KAKFA_IP]
