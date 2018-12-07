@@ -32,6 +32,7 @@ from grimoire_elk.utils import get_connectors
 logger = logging.getLogger(__name__)
 
 
+MENU_YAML = 'menu.yaml'
 ALIASES_JSON = 'aliases.json'
 PROJECTS_JSON = 'projects.json'
 
@@ -159,6 +160,12 @@ class Config():
                     "default": ALIASES_JSON,
                     "type": str,
                     "description": "JSON file to define aliases for raw and enriched indexes"
+                },
+                "menu_file": {
+                    "optional": True,
+                    "default": MENU_YAML,
+                    "type": str,
+                    "description": "YAML file to define the menus to be shown in Kibiter"
                 }
             }
         }
