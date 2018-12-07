@@ -31,6 +31,8 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **scroll_size** (int: 100): Number of items to read from Elasticsearch when scrolling
  * **short_name** (str: Short name): Short name of the project (**Required**)
  * **update** (bool: False): Execute the tasks in loop (**Required**)
+ * **aliases_file** (str: ./aliases.json): JSON file to define aliases for raw and enriched indexes
+ * **menu_file** (str: ./menu.yaml): YAML file to define the menus to be shown in Kibiter
 ### [panels] 
 
  * **community** (bool: True): Include community section in dashboard
