@@ -154,7 +154,7 @@ class TaskPanels(Task):
     def __init__(self, conf):
         super().__init__(conf)
         # Read panels and menu description from yaml file
-        with open(TaskPanelsMenu.MENU_YAML, 'r') as f:
+        with open(self.conf['general']['menu_file'], 'r') as f:
             try:
                 self.panels_menu = yaml.load(f)
             except yaml.YAMLError as ex:
@@ -375,8 +375,6 @@ class TaskPanels(Task):
 class TaskPanelsMenu(Task):
     """Create the menu to access the panels"""
 
-    MENU_YAML = 'menu.yaml'
-
     menu_panels_common = {
         "Overview": {
             "title": "Overview",
@@ -404,7 +402,7 @@ class TaskPanelsMenu(Task):
     def __init__(self, conf):
         super().__init__(conf)
         # Read panels and menu description from yaml file """
-        with open(self.MENU_YAML, 'r') as f:
+        with open(self.conf['general']['menu_file'], 'r') as f:
             try:
                 self.panels_menu = yaml.load(f)
             except yaml.YAMLError as ex:
