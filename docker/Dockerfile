@@ -9,7 +9,7 @@ ENV DEPLOY_USER bitergia
 ENV DEPLOY_USER_DIR /home/${DEPLOY_USER}
 ENV CONF_DIR ${DEPLOY_USER_DIR}/conf
 ENV SCRIPTS_DIR ${DEPLOY_USER_DIR}/scripts
-ENV GRIMOIRELAB_RELEASE "0.2.1"
+ENV GRIMOIRELAB_RELEASE "0.2.2"
 
 # Initial user
 RUN useradd ${DEPLOY_USER} --create-home --shell /bin/bash
@@ -49,6 +49,12 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 ENV LANG C.UTF-8
+
+# Download basic configuration files
+ADD https://raw.githubusercontent.com/chaoss/grimoirelab-sirmordred/master/aliases.json ${DEPLOY_USER_DIR}/aliases.json
+RUN chmod 444 ${DEPLOY_USER_DIR}/aliases.json
+ADD https://raw.githubusercontent.com/chaoss/grimoirelab-sirmordred/master/menu.yaml ${DEPLOY_USER_DIR}/menu.yaml
+RUN chmod 444 ${DEPLOY_USER_DIR}/menu.yaml
 
 ADD stage ${DEPLOY_USER_DIR}/stage
 RUN chmod 755 ${DEPLOY_USER_DIR}/stage

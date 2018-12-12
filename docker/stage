@@ -16,7 +16,4 @@ echo "Starting two workers: collect and update tasks"
 (arthurw -g -d redis://$REDIS/8 > $HOME_DIR/logs/worker-collect.log 2>&1) &
 (arthurw -g -d redis://$REDIS/8 update > $HOME_DIR/logs/worker-update.log 2>&1) &
 
-# Hack to get the panels menu file: -N don't re-retrieve files unless newer than local
-wget -N https://raw.githubusercontent.com/grimoirelab/mordred/master/menu.yaml
-
 sirmordred -c $HOME_DIR/conf/setup.cfg
