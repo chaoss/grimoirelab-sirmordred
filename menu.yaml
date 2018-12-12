@@ -13,6 +13,8 @@
     panel: panels/json/git_demographics.json
   - name: Areas of code
     panel: panels/json/git_areas_of_code.json
+  - name: Lifecycle
+    panel: panels/json/lifecyle.json
 - name: Gerrit
   source: gerrit
   icon: default.png
