@@ -92,6 +92,7 @@ GITLAB_ISSUES = "gitlab-issues"
 GITLAB_ISSUES_PANEL_OVERALL = "panels/json/gitlab_issues.json"
 GITLAB_ISSUES_PANEL_BACKLOG = "panels/json/gitlab_issues_backlog.json"
 GITLAB_ISSUES_PANEL_TIMING = "panels/json/gitlab_issues_timing.json"
+GITLAB_ISSUES_PANEL_EFFICIENCY = "panels/json/gitlab_issues_efficiency.json"
 GITLAB_ISSUES_IP = "panels/json/gitlab_issues-index-pattern.json"
 
 GITLAB_ISSUES_MENU = {
@@ -102,7 +103,8 @@ GITLAB_ISSUES_MENU = {
     'menu': [
         {'name': 'Overview', 'panel': GITLAB_ISSUES_PANEL_OVERALL},
         {'name': 'Backlog', 'panel': GITLAB_ISSUES_PANEL_BACKLOG},
-        {'name': 'Timing', 'panel': GITLAB_ISSUES_PANEL_TIMING}
+        {'name': 'Timing', 'panel': GITLAB_ISSUES_PANEL_TIMING},
+        {'name': 'Efficiency', 'panel': GITLAB_ISSUES_PANEL_EFFICIENCY}
     ]
 }
 
@@ -110,6 +112,7 @@ GITLAB_MERGES = "gitlab-merges"
 GITLAB_MERGES_PANEL_OVERALL = "panels/json/gitlab_merge_requests.json"
 GITLAB_MERGES_PANEL_BACKLOG = "panels/json/gitlab_merge_requests_backlog.json"
 GITLAB_MERGES_PANEL_TIMING = "panels/json/gitlab_merge_requests_timing.json"
+GITLAB_MERGES_PANEL_EFFICIENCY = "panels/json/gitlab_merge_requests_efficiency.json"
 GITLAB_MERGES_IP = "panels/json/gitlab_merge_requests-index-pattern.json"
 
 GITLAB_MERGES_MENU = {
@@ -120,7 +123,8 @@ GITLAB_MERGES_MENU = {
     'menu': [
         {'name': 'Overview', 'panel': GITLAB_MERGES_PANEL_OVERALL},
         {'name': 'Backlog', 'panel': GITLAB_MERGES_PANEL_BACKLOG},
-        {'name': 'Timing', 'panel': GITLAB_MERGES_PANEL_TIMING}
+        {'name': 'Timing', 'panel': GITLAB_MERGES_PANEL_TIMING},
+        {'name': 'Efficiency', 'panel': GITLAB_MERGES_PANEL_EFFICIENCY}
     ]
 }
 
@@ -191,11 +195,13 @@ class TaskPanels(Task):
 
         if self.conf['panels'][GITLAB_ISSUES]:
             self.panels[GITLAB_ISSUES] = [GITLAB_ISSUES_PANEL_BACKLOG, GITLAB_ISSUES_PANEL_OVERALL,
-                                          GITLAB_ISSUES_PANEL_TIMING, GITLAB_ISSUES_IP]
+                                          GITLAB_ISSUES_PANEL_TIMING, GITLAB_ISSUES_PANEL_EFFICIENCY,
+                                          GITLAB_ISSUES_IP]
 
         if self.conf['panels'][GITLAB_MERGES]:
             self.panels[GITLAB_MERGES] = [GITLAB_MERGES_PANEL_BACKLOG, GITLAB_MERGES_PANEL_OVERALL,
-                                          GITLAB_MERGES_PANEL_TIMING, GITLAB_MERGES_IP]
+                                          GITLAB_MERGES_PANEL_TIMING, GITLAB_MERGES_PANEL_EFFICIENCY,
+                                          GITLAB_MERGES_IP]
 
         if self.conf['panels'][MATTERMOST]:
             self.panels[MATTERMOST] = [MATTERMOST_PANEL, MATTERMOST_IP]
