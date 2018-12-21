@@ -163,6 +163,7 @@ class TaskEnrich(Task):
             try:
                 es_col_url = self._get_collection_url()
                 enrich_backend(es_col_url, self.clean, backend, backend_args,
+                               self.backend_section,
                                cfg[self.backend_section]['raw_index'],
                                cfg[self.backend_section]['enriched_index'],
                                None,  # projects_db is deprecated
