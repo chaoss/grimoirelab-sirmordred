@@ -237,12 +237,16 @@ class TaskPanels(Task):
         kibana_url = self.conf['panels']['kibiter_url'] + KIBANA_SETTINGS_URL
         endpoint_url = kibana_url + '/' + endpoint
 
-        res = self.grimoire_con.post(endpoint_url, headers=kibana_headers,
-                                     data=json.dumps(data_value), verify=False)
         try:
+            res = self.grimoire_con.post(endpoint_url, headers=kibana_headers,
+                                         data=json.dumps(data_value), verify=False)
             res.raise_for_status()
         except requests.exceptions.HTTPError:
             logger.error("Impossible to set %s: %s", endpoint, str(res.json()))
+            return False
+        except requests.exceptions.ConnectionError as ex:
+            logger.error("Impossible to connect to kibiter %s: %s",
+                         self.anonymize_url(self.conf['panels']['kibiter_url']), ex)
             return False
 
         return True
