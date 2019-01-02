@@ -28,7 +28,7 @@ import logging
 import requests
 import yaml
 
-from urllib.parse import urljoin
+from grimoirelab_toolkit.uris import urijoin
 
 from kidash.kidash import import_dashboard, get_dashboard_name, check_kibana_index
 from sirmordred.task import Task
@@ -218,7 +218,7 @@ class TaskPanels(Task):
 
         es_url = self.conf['es_enrichment']['url']
         config_url = '.kibana/config/_search'
-        url = urljoin(es_url + "/", config_url)
+        url = urijoin(es_url, config_url)
         version = None
         try:
             res = self.grimoire_con.get(url)
@@ -303,7 +303,7 @@ class TaskPanels(Task):
         }
 
         es_url = self.conf['es_enrichment']['url']
-        url = urljoin(es_url + "/", config_resource)
+        url = urijoin(es_url, config_resource)
         res = self.grimoire_con.post(url, data=json.dumps(kibiter_config),
                                      headers=ES6_HEADER)
         res.raise_for_status()
@@ -466,8 +466,8 @@ class TaskPanelsMenu(Task):
             mapping_resource = ".kibana/_mapping/doc"
             mapping = {"dynamic": "true"}
 
-            url = urljoin(self.conf['es_enrichment']['url'] + "/", resource)
-            mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+            url = urijoin(self.conf['es_enrichment']['url'], resource)
+            mapping_url = urijoin(self.conf['es_enrichment']['url'],
                                   mapping_resource)
 
             logger.debug("Adding mapping for dashboard title")
@@ -505,10 +505,10 @@ class TaskPanelsMenu(Task):
             mapping_resource = ".kibana/_mapping/metadashboard"
             mapping = {"dynamic": "true"}
             menu = dash_menu
-        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+        menu_url = urijoin(self.conf['es_enrichment']['url'],
                            menu_resource)
 
-        mapping_url = urljoin(self.conf['es_enrichment']['url'] + "/",
+        mapping_url = urijoin(self.conf['es_enrichment']['url'],
                               mapping_resource)
         logger.debug("Adding mapping for metadashboard")
         res = self.grimoire_con.put(mapping_url, data=json.dumps(mapping),
@@ -538,7 +538,7 @@ class TaskPanelsMenu(Task):
             metadashboard = ".kibana/doc/metadashboard"
         else:
             metadashboard = ".kibana/metadashboard/main"
-        menu_url = urljoin(self.conf['es_enrichment']['url'] + "/", metadashboard)
+        menu_url = urijoin(self.conf['es_enrichment']['url'], metadashboard)
         self.grimoire_con.delete(menu_url)
 
     def __get_menu_entries(self, kibiter_major):
