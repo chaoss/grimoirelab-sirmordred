@@ -24,6 +24,7 @@
 
 import json
 import logging
+import re
 
 from grimoire_elk.elk import get_ocean_backend
 from grimoire_elk.utils import get_connector_from_name, get_elastic
@@ -49,6 +50,12 @@ class Task():
         self.db_password = self.conf['sortinghat']['password']
         self.db_host = self.conf['sortinghat']['host']
         self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
+
+    @staticmethod
+    def anonymize_url(url):
+        anonymized = re.sub('^http.*@', 'http://', url)
+
+        return anonymized
 
     @staticmethod
     def load_aliases_from_json(aliases_json):
