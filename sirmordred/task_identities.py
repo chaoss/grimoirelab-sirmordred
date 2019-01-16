@@ -266,6 +266,8 @@ class TaskIdentitiesLoad(Task):
         if 'load_orgs' in cfg['sortinghat'] and cfg['sortinghat']['load_orgs']:
             if 'orgs_file' not in cfg['sortinghat'] or not cfg['sortinghat']['orgs_file']:
                 logger.error("Load orgs active but no orgs_file configured")
+            elif not os.path.exists(cfg['sortinghat']['orgs_file']):
+                logger.error("Orgs file not found on disk")
             else:
                 logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
                 code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
