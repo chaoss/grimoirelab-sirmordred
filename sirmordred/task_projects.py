@@ -31,7 +31,6 @@ import requests
 
 from copy import deepcopy
 
-from sirmordred.config import Config
 from sirmordred.task import Task
 from sirmordred.eclipse_projects_lib import compose_title, compose_projects_json
 
@@ -69,7 +68,7 @@ class TaskProjects(Task):
         return cls.projects_last_diff
 
     @classmethod
-    def get_repos_by_backend_section(cls, backend_section):
+    def get_repos_by_backend_section(cls, global_data_sources, backend_section):
         """ return list with the repositories for a backend_section """
         repos = []
         projects = TaskProjects.get_projects()
@@ -77,7 +76,7 @@ class TaskProjects(Task):
         for pro in projects:
             if backend_section in projects[pro]:
                 backend = Task.get_backend(backend_section)
-                if backend in Config.get_global_data_sources() and cls.GLOBAL_PROJECT in projects \
+                if backend in global_data_sources and cls.GLOBAL_PROJECT in projects \
                         and pro != cls.GLOBAL_PROJECT:
                     logger.debug("Skip global data source %s for project %s",
                                  backend, pro)
