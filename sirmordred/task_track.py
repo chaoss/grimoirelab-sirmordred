@@ -53,7 +53,10 @@ class TaskTrackItems(Task):
 
         # We need to track the items in all git repositories from OPNFV
         git_repos = []
-        repos_raw = TaskProjects.get_repos_by_backend_section("git")
+
+        global_data_sources = self.config.get_global_data_sources()
+        repos_raw = TaskProjects.get_repos_by_backend_section(global_data_sources, "git")
+
         # git://git.opnfv.org/apex -> https://git.opnfv.org/apex/plain/UPSTREAM
         for repo in repos_raw:
             repo = repo.replace("git://", "https://")
