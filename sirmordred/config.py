@@ -173,7 +173,8 @@ class Config():
                     "optional": True,
                     "default": GLOBAL_DATA_SOURCES,
                     "type": list,
-                    "description": "List of data sources collected and enriched globally"
+                    "description": "List of data sources collected globally, they are declared in the "
+                                   "section 'unknown' of the projects.json"
                 }
             }
         }
@@ -666,7 +667,8 @@ class Config():
         return studies
 
     def get_global_data_sources(self):
-        """ Data sources that are collected and enriched globally """
+        """Data sources that are collected globally, they are declared
+        in the section 'unknown' of the projects.json"""
 
         return self.conf['general']['global_data_sources']
 
