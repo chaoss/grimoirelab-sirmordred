@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 MENU_YAML = 'menu.yaml'
 ALIASES_JSON = 'aliases.json'
 PROJECTS_JSON = 'projects.json'
+GLOBAL_DATA_SOURCES = ['bugzilla', 'bugzillarest', 'confluence',
+                       'discourse', 'gerrit', 'jenkins', 'jira']
 
 
 class Config():
@@ -166,6 +168,12 @@ class Config():
                     "default": MENU_YAML,
                     "type": str,
                     "description": "YAML file to define the menus to be shown in Kibiter"
+                },
+                "global_data_sources": {
+                    "optional": True,
+                    "default": GLOBAL_DATA_SOURCES,
+                    "type": list,
+                    "description": "List of data sources collected and enriched globally"
                 }
             }
         }
@@ -657,11 +665,10 @@ class Config():
 
         return studies
 
-    @classmethod
-    def get_global_data_sources(cls):
-        """ Data sources than are collected and enriched globally """
+    def get_global_data_sources(self):
+        """ Data sources that are collected and enriched globally """
 
-        return ['bugzilla', 'bugzillarest', 'confluence', 'discourse', 'gerrit', 'jenkins', 'jira']
+        return self.conf['general']['global_data_sources']
 
     def get_data_sources(self):
         data_sources = []
