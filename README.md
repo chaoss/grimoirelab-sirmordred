@@ -33,6 +33,7 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **update** (bool: False): Execute the tasks in loop (**Required**)
  * **aliases_file** (str: ./aliases.json): JSON file to define aliases for raw and enriched indexes
  * **menu_file** (str: ./menu.yaml): YAML file to define the menus to be shown in Kibiter
+ * **global_data_sources** (list: bugzilla, bugzillarest, confluence, discourse, gerrit, jenkins, jira): List of data sources collected globally, they are declared in the section 'unknown' of the projects.json
 ### [panels] 
 
  * **community** (bool: True): Include community section in dashboard
