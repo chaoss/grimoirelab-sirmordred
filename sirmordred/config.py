@@ -168,13 +168,6 @@ class Config():
                     "default": MENU_YAML,
                     "type": str,
                     "description": "YAML file to define the menus to be shown in Kibiter"
-                },
-                "global_data_sources": {
-                    "optional": True,
-                    "default": GLOBAL_DATA_SOURCES,
-                    "type": list,
-                    "description": "List of data sources collected globally, they are declared in the "
-                                   "section 'unknown' of the projects.json"
                 }
             }
         }
@@ -665,12 +658,6 @@ class Config():
                    "enrich_pull_requests")
 
         return studies
-
-    def get_global_data_sources(self):
-        """Data sources that are collected globally, they are declared
-        in the section 'unknown' of the projects.json"""
-
-        return self.conf['general']['global_data_sources']
 
     def get_data_sources(self):
         data_sources = []

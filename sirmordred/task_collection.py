@@ -96,8 +96,7 @@ class TaskRawDataCollection(Task):
             fetch_archive = True
 
         # repos could change between executions because changes in projects
-        global_data_sources = self.config.get_global_data_sources()
-        repos = TaskProjects.get_repos_by_backend_section(global_data_sources, self.backend_section)
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
 
         if not repos:
             logger.warning("No collect repositories for %s", self.backend_section)
@@ -393,8 +392,7 @@ class TaskRawDataArthurCollection(Task):
             fetch_archive = True
 
         # repos could change between executions because changes in projects
-        global_data_sources = self.config.get_global_data_sources()
-        repos = TaskProjects.get_repos_by_backend_section(global_data_sources, self.backend_section)
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
 
         if not repos:
             logger.warning("No collect repositories for %s", self.backend_section)

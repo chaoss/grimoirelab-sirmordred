@@ -237,8 +237,7 @@ class Task():
         clean = False
 
         from .task_projects import TaskProjects
-        global_data_sources = self.config.get_global_data_sources()
-        repos = TaskProjects.get_repos_by_backend_section(global_data_sources, self.backend_section)
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
         if len(repos) == 1:
             # Support for filter raw when we have one repo
             (filter_raw, filters_raw_prefix) = self.__filters_raw(repos[0])

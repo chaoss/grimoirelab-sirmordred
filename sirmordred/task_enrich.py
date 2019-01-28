@@ -136,8 +136,7 @@ class TaskEnrich(Task):
         only_identities = False
 
         # repos could change between executions because changes in projects
-        global_data_sources = self.config.get_global_data_sources()
-        repos = TaskProjects.get_repos_by_backend_section(global_data_sources, self.backend_section)
+        repos = TaskProjects.get_repos_by_backend_section(self.backend_section, raw=False)
 
         if not repos:
             logger.warning("No enrich repositories for %s", self.backend_section)
