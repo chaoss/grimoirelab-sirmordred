@@ -744,8 +744,8 @@ class Config():
                 elif val.lower() in ['true', 'false']:
                     typed_conf[s][option] = True if val.lower() == 'true' else False
                 # Check None
-                elif val.lower() is 'none':
-                    typed_conf[s][option] = None
+                elif val.lower() == 'none':
+                    typed_conf[s][option] = ''
                 else:
                     try:
                         # Check int
