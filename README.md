@@ -1,4 +1,4 @@
-# SirMordred 0.1.38 [![Build Status](https://travis-ci.org/chaoss/grimoirelab-sirmordred.svg?branch=master)](https://travis-ci.org/chaoss/grimoirelab-sirmordred)[![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)
+# SirMordred [![Build Status](https://travis-ci.org/chaoss/grimoirelab-sirmordred.svg?branch=master)](https://travis-ci.org/chaoss/grimoirelab-sirmordred)[![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)
 
 SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via a configuration file. Below you can find details about the different sections composing the configuration file.
 
@@ -133,3 +133,31 @@ A complete list of studies parameters is available at:
 * **study-param-1**: ..
 * **study-param-2**: ..
 * **study-param-n**: ..
+
+## Micro Mordred
+
+Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
+
+Micro Mordred is located in the [/utils](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/utils/micro.py) folder of this same repository. It can be executed via command line, its parameters are summarized below:
+```
+--debug: execute Micro Mordred in debug mode
+
+--raw: activate raw task
+--arthur: use Arthur to collect the raw data
+
+--enrich: activate enrich task
+
+--identities: activate merge identities task
+
+--panels: activate panels task
+
+--cfg: path of the onfiguration file
+--backends: list of cfg sections where the active tasks will be executed
+```
+
+Examples of possible executions are shown below:
+```
+cd .../grimoirelab-sirmordred/utils/
+micro.py --raw --enrich ./setup.cfg --backends git #  execute the Raw and Enrich tasks for the Git cfg section
+micro.py --panels # execute the Panels task to load the Sigils panels to Kibiter
+``` 

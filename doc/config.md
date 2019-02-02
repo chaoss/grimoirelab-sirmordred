@@ -1,4 +1,4 @@
-# Mordred 0.1.21 configuration params
+# Mordred configuration params
 
 This is an automatic generated doc. Don't modify it by hand.
 Use python mordred/config.py to generate it.
