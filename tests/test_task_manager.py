@@ -99,7 +99,7 @@ class TestTasksManager(unittest.TestCase):
         self.assertEqual(backend, 'git')
         self.assertEqual(self.backends[backend],
                          ["https://github.com/VizGrimoire/GrimoireLib "
-                          "--filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
+                          "--filter-raw-prefix=data.files.file:grimoirelib_alch,data.files.file:README.md",
                           "https://github.com/MetricsGrimoire/CMetrics"])
 
         backend = backends[9]
