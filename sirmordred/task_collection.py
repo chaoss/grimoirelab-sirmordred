@@ -106,8 +106,10 @@ class TaskRawDataCollection(Task):
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
 
             if filter_raw:
-                # If filter-raw exists the goal is to enrich already collected
-                # data, so don't collect anything
+                # If filter-raw exists it means that there is an equivalent URL
+                # in the `unknown` section of the projects.json. Thus the URL with
+                # filter-raw is ignored in the collection phase, while the URL
+                # in `unknown` is considered in this phase.
                 logging.warning("Not collecting filter raw repository: %s", repo)
                 continue
 
@@ -405,8 +407,10 @@ class TaskRawDataArthurCollection(Task):
                 p2o_args = self._compose_p2o_params(self.backend_section, repo)
                 filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
                 if filter_raw:
-                    # If filter-raw exists the goal is to enrich already collected
-                    # data, so don't collect anything
+                    # If filter-raw exists it means that there is an equivalent URL
+                    # in the `unknown` section of the projects.json. Thus the URL with
+                    # filter-raw is ignored in the collection phase, while the URL
+                    # in `unknown` is considered in this phase.
                     logging.warning("Not collecting filter raw repository: %s", repo)
                     continue
                 backend_args = self._compose_perceval_params(self.backend_section, repo)
