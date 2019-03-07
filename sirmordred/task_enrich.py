@@ -287,7 +287,7 @@ class TaskEnrich(Task):
 
         self.__autorefresh(aoc_backend, studies=True)
 
-    def __studies(self):
+    def __studies(self, retention_hours):
         """ Execute the studies configured for the current backend """
 
         cfg = self.config.get_conf()
@@ -328,7 +328,7 @@ class TaskEnrich(Task):
 
         studies_args = self.__load_studies()
 
-        do_studies(ocean_backend, enrich_backend, studies_args)
+        do_studies(ocean_backend, enrich_backend, studies_args, retention_hours=retention_hours)
         # Return studies to its original value
         enrich_backend.studies = all_studies
 
@@ -360,6 +360,11 @@ class TaskEnrich(Task):
         try:
             self.__enrich_items()
 
+            retention_hours = cfg['general']['retention_hours']
+            self.retain_data(retention_hours,
+                             self.conf['es_enrichment']['url'],
+                             self.conf[self.backend_section]['enriched_index'])
+
             autorefresh = cfg['es_enrichment']['autorefresh']
 
             if autorefresh:
@@ -368,7 +373,7 @@ class TaskEnrich(Task):
             else:
                 logger.debug("Not doing autorefresh for %s", self.backend_section)
 
-            self.__studies()
+            self.__studies(retention_hours)
 
             if autorefresh:
                 self.__autorefresh_studies(cfg)
