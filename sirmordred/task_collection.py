@@ -142,6 +142,10 @@ class TaskRawDataCollection(Task):
         print("Collection for {}: finished after {} hours".format(self.backend_section,
                                                                   spent_time))
 
+        self.retain_data(cfg['general']['retention_hours'],
+                         self.conf['es_collection']['url'],
+                         self.conf[self.backend_section]['raw_index'])
+
 
 class TaskRawDataArthurCollection(Task):
     """ Basic class to control arthur for data collection """
