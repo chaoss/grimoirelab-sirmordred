@@ -707,7 +707,8 @@ class Config():
                 else:
                     ptype = type(config[section][param])
                     ptype_ok = check_params[section][param]["type"]
-                    if ptype != ptype_ok:
+                    ptype_default = check_params[section][param]["default"]
+                    if ptype != ptype_ok and ptype_default is not None:
                         msg = "Wrong type for section param: %s %s %s should be %s" % \
                               (section, param, ptype, ptype_ok)
                         raise RuntimeError(msg)
