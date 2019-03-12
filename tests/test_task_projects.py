@@ -43,6 +43,8 @@ PROJECTS_URL = 'http://localhost/projects.json'
 URL_PROJECTS_FILE = 'data/url-projects.json'
 URL_PROJECTS_MAIN = 'grimoire'
 
+CONF_FILE_UNKNOWN = 'test-repos.cfg'
+
 
 def read_file(filename, mode='r'):
     with open(filename, mode) as f:
@@ -91,6 +93,50 @@ class TestTaskProjects(unittest.TestCase):
         task = TaskProjects(config)
 
         self.assertEqual(task.config, config)
+
+    def test_get_repos_by_backend_sections_unknown(self):
+        """Test whether the repos of each section are properly loaded when the unknown section is present"""
+
+        config = Config(CONF_FILE_UNKNOWN)
+        task = TaskProjects(config)
+        self.assertEqual(task.execute(), None)
+
+        # repos not in unknown
+        expected_list = ["https://github.com/chaoss/grimoirelab-perceval"]
+
+        repos = task.get_repos_by_backend_section("git")
+        self.assertListEqual(repos, expected_list)
+
+        repos = task.get_repos_by_backend_section("git", raw=False)
+        self.assertListEqual(repos, expected_list)
+
+        # repos only in unknown
+        expected_list = ["https://bugzilla.mozilla.org"]
+
+        repos = task.get_repos_by_backend_section("bugzillarest")
+        self.assertListEqual(repos, expected_list)
+
+        repos = task.get_repos_by_backend_section("bugzillarest", raw=False)
+        self.assertListEqual(repos, expected_list)
+
+        # repos in unknown and other section
+        expected_list = ["gerrit.onosproject.org"]
+
+        repos = task.get_repos_by_backend_section("gerrit:onos")
+        self.assertListEqual(repos, expected_list)
+
+        expected_list = [
+            "gerrit.onosproject.org --filter-raw=data.project:OnosSystemTest",
+            "gerrit.onosproject.org --filter-raw=data.project:OnosSystemTestJenkins",
+            "gerrit.onosproject.org --filter-raw=data.project:cord-openwrt",
+            "gerrit.onosproject.org --filter-raw=data.project:fabric-control",
+            "gerrit.onosproject.org --filter-raw=data.project:manifest"
+        ]
+
+        repos = task.get_repos_by_backend_section("gerrit:onos", raw=False)
+        repos.sort()
+        expected_list.sort()
+        self.assertListEqual(repos, expected_list)
 
     def test_get_repos_by_backend_section(self):
         """Test whether the repos of each section are properly loaded"""
@@ -147,11 +193,14 @@ class TestTaskProjects(unittest.TestCase):
 
         backend = backend_sections[8]
         repos = task.get_repos_by_backend_section(backend)
+        repos.sort()
+        expected_list = [
+            "https://github.com/VizGrimoire/GrimoireLib "
+            "--filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
+            "https://github.com/MetricsGrimoire/CMetrics"]
+        expected_list.sort()
         self.assertEqual(backend, 'git')
-        self.assertEqual(repos,
-                         ["https://github.com/VizGrimoire/GrimoireLib "
-                          "--filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
-                          "https://github.com/MetricsGrimoire/CMetrics"])
+        self.assertEqual(repos, expected_list)
 
         backend = backend_sections[9]
         repos = task.get_repos_by_backend_section(backend)
@@ -274,10 +323,15 @@ class TestTaskProjects(unittest.TestCase):
         backend = backend_sections[32]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'stackexchange')
-        self.assertEqual(repos,
-                         ["https://stackoverflow.com/questions/tagged/ovirt",
-                          "https://stackoverflow.com/questions/tagged/rdo",
-                          "https://stackoverflow.com/questions/tagged/kibana"])
+
+        repos.sort()
+        expected_list = [
+            "https://stackoverflow.com/questions/tagged/ovirt",
+            "https://stackoverflow.com/questions/tagged/rdo",
+            "https://stackoverflow.com/questions/tagged/kibana"
+        ]
+        expected_list.sort()
+        self.assertEqual(repos, expected_list)
 
         backend = backend_sections[33]
         repos = task.get_repos_by_backend_section(backend)
