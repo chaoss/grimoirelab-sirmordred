@@ -1,0 +1,22 @@
+{
+    "grimoire": {
+        "gerrit:onos": [
+            "gerrit.onosproject.org --filter-raw=data.project:OnosSystemTest",
+            "gerrit.onosproject.org --filter-raw=data.project:OnosSystemTestJenkins",
+            "gerrit.onosproject.org --filter-raw=data.project:cord-openwrt",
+            "gerrit.onosproject.org --filter-raw=data.project:fabric-control",
+            "gerrit.onosproject.org --filter-raw=data.project:manifest"
+        ],
+        "git": [
+            "https://github.com/chaoss/grimoirelab-perceval"
+        ]
+    },
+    "unknown": {
+        "gerrit:onos": [
+            "gerrit.onosproject.org"
+        ],
+        "bugzillarest": [
+            "https://bugzilla.mozilla.org"
+        ]
+    }
+}
