@@ -30,6 +30,10 @@
       "raw": ["dockerhub-raw"],
       "enrich": ["dockerhub"]
   },
+  "finosmeetings": {
+      "raw": ["finosmeetings-raw"],
+      "enrich": ["finosmeetings", "affiliations"]
+  },
   "functest": {
       "raw": ["functest-raw"],
       "enrich": ["functest"]
