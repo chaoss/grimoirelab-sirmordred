@@ -162,3 +162,75 @@ cd .../grimoirelab-sirmordred/utils/
 micro.py --raw --enrich ./setup.cfg --backends git #  execute the Raw and Enrich tasks for the Git cfg section
 micro.py --panels # execute the Panels task to load the Sigils panels to Kibiter
 ``` 
+
+## Getting started
+
+There are 3 options to get started with SirMordred:
+
+#### Source code
+
+You will need to install ElasticSearch (6.1.0), Kibana (6.1.4) and a MySQL/MariaDB database, and the following components:
+
+- [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
+- [ELK](https://github.com/chaoss/grimoirelab-elk)
+- [King Arthur](https://github.com/chaoss/grimoirelab-kingarthur)
+- [Perceval](https://github.com/chaoss/grimoirelab-perceval)
+- [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
+- [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
+- [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
+- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
+- [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
+- [Sigils](https://github.com/chaoss/grimoirelab-sigils)
+- [Kidash](https://github.com/chaoss/grimoirelab-kidash)
+- [Toolkit](https://github.com/chaoss/grimoirelab-toolkit)
+- [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
+- [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
+
+### Source code and docker
+
+You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibana and MariaDB.
+Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
+
+```buildoutcfg
+elasticsearch:
+  restart: on-failure:5
+  image: bitergia/elasticsearch:6.1.0-secured
+  command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
+  environment:
+    - ES_JAVA_OPTS=-Xms2g -Xmx2g
+  ports:
+    - 9200:9200
+
+kibiter:
+  restart: on-failure:5
+  image: bitergia/kibiter:secured-v6.1.4-2
+  environment:
+    - PROJECT_NAME=Development
+    - NODE_OPTIONS=--max-old-space-size=1000
+    - ELASTICSEARCH_URL=https://elasticsearch:9200
+  links:
+    - elasticsearch
+  ports:
+    - 5601:5601
+    
+mariadb:
+  restart: on-failure:5
+  image: mariadb:10.0
+  expose:
+    - "3306"
+  ports:
+    - "3306:3306"
+  environment:
+    - MYSQL_ROOT_PASSWORD=
+    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    - MYSQL_DATABASE=test_sh
+  command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
+  log_driver: "json-file"
+  log_opt:
+      max-size: "100m"
+      max-file: "3"
+```
+
+#### Only docker
+
+Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/sirmordred/container.html)
