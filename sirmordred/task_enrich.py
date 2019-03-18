@@ -36,6 +36,7 @@ from grimoire_elk.elk import (do_studies,
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elastic import ElasticSearch
 from grimoire_elk.enriched.git import GitEnrich
+from grimoire_elk.enriched.sortinghat_gelk import SortingHat
 from grimoire_elk.utils import get_elastic
 
 from sirmordred.error import DataEnrichmentError
@@ -332,6 +333,17 @@ class TaskEnrich(Task):
         # Return studies to its original value
         enrich_backend.studies = all_studies
 
+    def retain_identities(self, hours_to_retain):
+
+        sh_section = self.conf['sortinghat']
+        sh_user = sh_section['user']
+        sh_pwd = sh_section['password']
+        sh_db = sh_section['database']
+        sh_host = sh_section['host']
+
+        sh = SortingHat()
+        sh.remove_uidentities(hours_to_retain, sh_user, sh_pwd, sh_db, sh_host)
+
     def execute(self):
         cfg = self.config.get_conf()
 
@@ -358,9 +370,11 @@ class TaskEnrich(Task):
         #  ** END SYNC LOGIC **
 
         try:
+            retention_hours = cfg['general']['retention_hours']
+            self.retain_identities(retention_hours)
+
             self.__enrich_items()
 
-            retention_hours = cfg['general']['retention_hours']
             self.retain_data(retention_hours,
                              self.conf['es_enrichment']['url'],
                              self.conf[self.backend_section]['enriched_index'])
