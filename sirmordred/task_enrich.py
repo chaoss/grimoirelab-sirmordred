@@ -141,6 +141,15 @@ class TaskEnrich(Task):
         if not repos:
             logger.warning("No enrich repositories for %s", self.backend_section)
 
+        # Get the metadata__timestamp value of the last item inserted in the enriched index before
+        # looping over the repos which data is stored in the same index. This is needed to make sure
+        # that the incremental enrichment works for data sources that are collected globally but only
+        # partially enriched.
+        elastic_enrich = get_elastic(cfg['es_enrichment']['url'], cfg[self.backend_section]['enriched_index'])
+        last_enrich_date = elastic_enrich.get_last_item_field("metadata__timestamp")
+        if last_enrich_date:
+            last_enrich_date = last_enrich_date.replace(second=0, microsecond=0, tzinfo=None)
+
         for repo in repos:
             # First process p2o params from repo
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
@@ -189,7 +198,8 @@ class TaskEnrich(Task):
                                pair_programming=pair_programming,
                                node_regex=node_regex,
                                studies_args=studies_args,
-                               es_enrich_aliases=es_enrich_aliases)
+                               es_enrich_aliases=es_enrich_aliases,
+                               last_enrich_date=last_enrich_date)
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . "
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
