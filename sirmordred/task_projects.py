@@ -112,8 +112,10 @@ class TaskProjects(Task):
                         else:
                             # if the backend section is only in the `unknown` project,
                             # add the repo in the bck section under `unknown`
-                            not_in_unknown = [projects[pro] for pro in projects if pro != cls.GLOBAL_PROJECT][0]
-                            if backend_section not in not_in_unknown:
+                            not_in_unknown_prj = [projects[prj] for prj in projects if prj != cls.GLOBAL_PROJECT]
+                            not_in_unknown_sections = list(set([section for prj in not_in_unknown_prj
+                                                                for section in list(prj.keys())]))
+                            if backend_section not in not_in_unknown_sections:
                                 repos += projects[pro][backend_section]
 
         logger.debug("List of repos for %s: %s (raw=%s)", backend_section, repos, raw)
