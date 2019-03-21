@@ -35,7 +35,7 @@ Use python mordred/config.py to generate it.
  * **aliases_file** (str: ./aliases.json): JSON file to define aliases for raw and enriched indexes
  * **menu_file** (str: ./menu.yaml): YAML file to define the menus to be shown in Kibiter
  * **global_data_sources** (list: bugzilla, bugzillarest, confluence, discourse, gerrit, jenkins, jira): List of data sources collected globally, they are declared in the section 'unknown' of the projects.json
- * **retention_hours** (int: None): the maximum number of hours wrt the current date to retain the data
+ * **retention_time** (int: None): the maximum number of minutes wrt the current date to retain the data
 ### [panels] 
 
  * **community** (bool: True): Include community section in dashboard
