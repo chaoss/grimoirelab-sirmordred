@@ -47,6 +47,10 @@
       "enrich": ["github_issues", "github_issues_enrich", "issues_closed",
                  "issues_created", "issues_updated", "affiliations"]
   },
+  "github:repo": {
+      "raw": ["github_repositories-raw"],
+      "enrich": ["github_repositories"]
+  },
   "gitlab:issue": {
       "raw": ["gitlab_issue-raw"],
       "enrich": ["gitlab", "gitlab_issue", "affiliations"]
