@@ -169,11 +169,11 @@ class Config():
                     "type": str,
                     "description": "YAML file to define the menus to be shown in Kibiter"
                 },
-                "retention_hours": {
+                "retention_time": {
                     "optional": True,
                     "default": None,
                     "type": int,
-                    "description": "The maximum number of hours wrt the current date to retain the data"
+                    "description": "The maximum number of minutes wrt the current date to retain the data"
                 }
             }
         }

@@ -142,7 +142,7 @@ class TaskRawDataCollection(Task):
         print("Collection for {}: finished after {} hours".format(self.backend_section,
                                                                   spent_time))
 
-        self.retain_data(cfg['general']['retention_hours'],
+        self.retain_data(cfg['general']['retention_time'],
                          self.conf['es_collection']['url'],
                          self.conf[self.backend_section]['raw_index'])
 

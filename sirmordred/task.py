@@ -254,6 +254,6 @@ class Task():
         return major
 
     @staticmethod
-    def retain_data(hours_to_retain, es_url, index):
+    def retain_data(retention_time, es_url, index):
         elastic = get_elastic(es_url, index)
-        elastic.delete_items(hours_to_retain)
+        elastic.delete_items(retention_time)

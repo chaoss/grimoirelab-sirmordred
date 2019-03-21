@@ -297,7 +297,7 @@ class TaskEnrich(Task):
 
         self.__autorefresh(aoc_backend, studies=True)
 
-    def __studies(self, retention_hours):
+    def __studies(self, retention_time):
         """ Execute the studies configured for the current backend """
 
         cfg = self.config.get_conf()
@@ -338,9 +338,27 @@ class TaskEnrich(Task):
 
         studies_args = self.__load_studies()
 
-        do_studies(ocean_backend, enrich_backend, studies_args, retention_hours=retention_hours)
+        do_studies(ocean_backend, enrich_backend, studies_args, retention_time=retention_time)
         # Return studies to its original value
         enrich_backend.studies = all_studies
+
+    def retain_identities(self, retention_time, enrich_es, sortinghat_db):
+        """Retain the identities in SortingHat based on the `retention_time`
+        value declared in the setup.cfg.
+
+        :param retention_time: maximum number of hours wrt the current date to retain the SortingHat data
+        :param enrich_es: URL of the ElasticSearch where the enriched data is stored
+        :param sortinghat_db: instance of the SortingHat database
+        """
+        if retention_time is None:
+            logger.debug("[identities retention] Retention policy disabled, no identities will be deleted.")
+            return
+
+        if retention_time <= 0:
+            logger.debug("[identities retention] Hours to retain must be greater than 0.")
+            return
+
+        retain_identities(retention_time, enrich_es, sortinghat_db)
 
     def execute(self):
         cfg = self.config.get_conf()
@@ -370,10 +388,14 @@ class TaskEnrich(Task):
         try:
             self.__enrich_items()
 
-            retention_hours = cfg['general']['retention_hours']
-            self.retain_data(retention_hours,
+            retention_time = cfg['general']['retention_time']
+            self.retain_data(retention_time,
                              self.conf['es_enrichment']['url'],
                              self.conf[self.backend_section]['enriched_index'])
+
+            self.retain_identities(retention_time,
+                                   self.conf['es_enrichment']['url'],
+                                   self.db)
 
             autorefresh = cfg['es_enrichment']['autorefresh']
 
@@ -383,7 +405,7 @@ class TaskEnrich(Task):
             else:
                 logger.debug("Not doing autorefresh for %s", self.backend_section)
 
-            self.__studies(retention_hours)
+            self.__studies(retention_time)
 
             if autorefresh:
                 self.__autorefresh_studies(cfg)
