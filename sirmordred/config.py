@@ -367,6 +367,12 @@ class Config():
                     "type": bool,
                     "description": "Enable kafka menu"
                 },
+                "github-repos": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable GitHub repo stats menu"
+                },
                 "gitlab-issues": {
                     "optional": True,
                     "default": False,
