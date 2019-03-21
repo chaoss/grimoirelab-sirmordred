@@ -46,6 +46,10 @@
       "raw": ["git-raw"],
       "enrich": ["git", "git_author", "git_enrich", "affiliations"]
   },
+  "github:repo": {
+      "raw": ["github_repositories-raw"],
+      "enrich": ["github_repositories"]
+  },
   "github": {
       "raw": ["github-raw"],
       "enrich": ["github_issues", "github_issues_enrich", "issues_closed",
