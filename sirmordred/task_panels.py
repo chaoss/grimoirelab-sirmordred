@@ -25,6 +25,7 @@
 import copy
 import json
 import logging
+import operator
 import requests
 import yaml
 
@@ -41,13 +42,14 @@ KIBANA_SETTINGS_URL = '/api/kibana/settings'
 
 STRICT_LOADING = "strict"
 
-KAFKA = "kafka"
+KAFKA_NAME = 'KIP'
+KAFKA_SOURCE = "kafka"
 KAFKA_PANEL = "panels/json/kip.json"
 KAKFA_IP = "panels/json/kafka-index-pattern.json"
 
 KAFKA_MENU = {
-    'name': 'KIP',
-    'source': KAFKA,
+    'name': KAFKA_NAME,
+    'source': KAFKA_SOURCE,
     'icon': 'default.png',
     'index-patterns': [KAKFA_IP],
     'menu': [
@@ -55,7 +57,8 @@ KAFKA_MENU = {
     ]
 }
 
-COMMUNITY = 'community'
+COMMUNITY_NAME = 'Community'
+COMMUNITY_SOURCE = 'community'
 ONION_PANEL_OVERALL = 'panels/json/onion_overall.json'
 ONION_PANEL_PROJECTS = 'panels/json/onion_projects.json'
 ONION_PANEL_ORGS = 'panels/json/onion_organizations.json'
@@ -69,8 +72,8 @@ DEMOGRAPHICS_IP = 'panels/json/demographics-index-pattern.json'
 AFFILIATIONS_IP = 'panels/json/affiliations-index-pattern.json'
 
 COMMUNITY_MENU = {
-    'name': 'Community',
-    'source': COMMUNITY,
+    'name': COMMUNITY_NAME,
+    'source': COMMUNITY_SOURCE,
     'icon': 'default.png',
     'index-patterns': [
         ONION_PANEL_OVERALL_IP,
@@ -198,14 +201,14 @@ class TaskPanels(Task):
                 for index_pattern in ds['index-patterns']:
                     self.panels[ds['source']].append(index_pattern)
 
-        if self.conf['panels'][COMMUNITY]:
-            self.panels[COMMUNITY] = [ONION_PANEL_OVERALL, ONION_PANEL_PROJECTS,
-                                      ONION_PANEL_ORGS, DEMOGRAPHICS, AFFILIATIONS,
-                                      ONION_PANEL_OVERALL_IP, ONION_PANEL_PROJECTS_IP,
-                                      ONION_PANEL_ORGS_IP, DEMOGRAPHICS_IP, AFFILIATIONS_IP]
+        if self.conf['panels'][COMMUNITY_SOURCE]:
+            self.panels[COMMUNITY_SOURCE] = [ONION_PANEL_OVERALL, ONION_PANEL_PROJECTS,
+                                             ONION_PANEL_ORGS, DEMOGRAPHICS, AFFILIATIONS,
+                                             ONION_PANEL_OVERALL_IP, ONION_PANEL_PROJECTS_IP,
+                                             ONION_PANEL_ORGS_IP, DEMOGRAPHICS_IP, AFFILIATIONS_IP]
 
-        if self.conf['panels'][KAFKA]:
-            self.panels[KAFKA] = [KAFKA_PANEL, KAKFA_IP]
+        if self.conf['panels'][KAFKA_SOURCE]:
+            self.panels[KAFKA_SOURCE] = [KAFKA_PANEL, KAKFA_IP]
 
         if self.conf['panels'][GITHUB_REPOS]:
             self.panels[GITHUB_REPOS] = [GITHUB_REPOS_PANEL_OVERALL, GITHUB_REPOS_IP]
@@ -448,10 +451,10 @@ class TaskPanelsMenu(Task):
         if self.conf['panels'][MATTERMOST]:
             self.panels_menu.append(MATTERMOST_MENU)
 
-        if self.conf['panels'][COMMUNITY]:
+        if self.conf['panels'][COMMUNITY_SOURCE]:
             self.panels_menu.append(COMMUNITY_MENU)
 
-        if self.conf['panels'][KAFKA]:
+        if self.conf['panels'][KAFKA_SOURCE]:
             self.panels_menu.append(KAFKA_MENU)
 
         # Get the active data sources
@@ -468,7 +471,7 @@ class TaskPanelsMenu(Task):
         active_ds = []
         for entry in self.panels_menu:
             ds = entry['source']
-            if ds in self.conf.keys() or ds in [COMMUNITY, KAFKA, GITLAB_ISSUES, GITLAB_MERGES,
+            if ds in self.conf.keys() or ds in [COMMUNITY_SOURCE, KAFKA_SOURCE, GITLAB_ISSUES, GITLAB_MERGES,
                                                 MATTERMOST, GITHUB_REPOS]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
@@ -608,7 +611,28 @@ class TaskPanelsMenu(Task):
 
         # Now the data _getsources
         ds_menu = self.__get_menu_entries(kibiter_major)
+
+        # Remove the kafka and community menus, they will be included at the end
+        kafka_menu = None
+        community_menu = None
+
+        found_kafka = [pos for pos, menu in enumerate(ds_menu) if menu['name'] == KAFKA_NAME]
+        if found_kafka:
+            kafka_menu = ds_menu.pop(found_kafka[0])
+
+        found_community = [pos for pos, menu in enumerate(ds_menu) if menu['name'] == COMMUNITY_NAME]
+        if found_community:
+            community_menu = ds_menu.pop(found_community[0])
+
+        ds_menu.sort(key=operator.itemgetter('name'))
         omenu += ds_menu
+
+        # If kafka and community are present add them before the Data Status and About
+        if kafka_menu:
+            omenu.append(kafka_menu)
+
+        if community_menu:
+            omenu.append(community_menu)
 
         # At the end Data Status, About
         omenu.append(self.menu_panels_common['Data Status'])
