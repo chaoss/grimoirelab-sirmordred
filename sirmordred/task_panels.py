@@ -88,6 +88,20 @@ COMMUNITY_MENU = {
     ]
 }
 
+GITHUB_REPOS = "github-repos"
+GITHUB_REPOS_PANEL_OVERALL = "panels/json/github_repositories.json"
+GITHUB_REPOS_IP = "panels/json/github_repositories-index-pattern.json"
+
+GITHUB_REPOS_MENU = {
+    'name': 'GitHub Repositories',
+    'source': GITHUB_REPOS,
+    'icon': 'default.png',
+    'index-patterns': [GITHUB_REPOS_IP],
+    'menu': [
+        {'name': 'Overview', 'panel': GITHUB_REPOS_PANEL_OVERALL}
+    ]
+}
+
 GITLAB_ISSUES = "gitlab-issues"
 GITLAB_ISSUES_PANEL_OVERALL = "panels/json/gitlab_issues.json"
 GITLAB_ISSUES_PANEL_BACKLOG = "panels/json/gitlab_issues_backlog.json"
@@ -192,6 +206,9 @@ class TaskPanels(Task):
 
         if self.conf['panels'][KAFKA]:
             self.panels[KAFKA] = [KAFKA_PANEL, KAKFA_IP]
+
+        if self.conf['panels'][GITHUB_REPOS]:
+            self.panels[GITHUB_REPOS] = [GITHUB_REPOS_PANEL_OVERALL, GITHUB_REPOS_IP]
 
         if self.conf['panels'][GITLAB_ISSUES]:
             self.panels[GITLAB_ISSUES] = [GITLAB_ISSUES_PANEL_BACKLOG, GITLAB_ISSUES_PANEL_OVERALL,
@@ -419,6 +436,9 @@ class TaskPanelsMenu(Task):
                 logger.error(ex)
                 raise
 
+        if self.conf['panels'][GITHUB_REPOS]:
+            self.panels_menu.append(GITHUB_REPOS_MENU)
+
         if self.conf['panels'][GITLAB_ISSUES]:
             self.panels_menu.append(GITLAB_ISSUES_MENU)
 
@@ -448,7 +468,8 @@ class TaskPanelsMenu(Task):
         active_ds = []
         for entry in self.panels_menu:
             ds = entry['source']
-            if ds in self.conf.keys() or ds in [COMMUNITY, KAFKA, GITLAB_ISSUES, GITLAB_MERGES, MATTERMOST]:
+            if ds in self.conf.keys() or ds in [COMMUNITY, KAFKA, GITLAB_ISSUES, GITLAB_MERGES,
+                                                MATTERMOST, GITHUB_REPOS]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
 
