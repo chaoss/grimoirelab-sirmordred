@@ -43,12 +43,12 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **kibiter_url** (str): Kibiter URL (**Required**)
  * **kibiter_version** (str: None): Kibiter version
  * **kafka** (bool: False): Include KIP section in dashboard
+ * **github-repos** (bool: False): Enable GitHub repo stats menu
  * **gitlab-issues** (bool: False): Enable GitLab issues menu
  * **gitlab-merges** (bool: False): Enable GitLab merge requests menu
  * **mattermost** (bool: False): Enable Mattermost menu
  * **strict** (bool: True): Enable strict panels loading
- 
-### [phases] 
+### [phases]
 
  * **collection** (bool: True): Activate collection of items (**Required**)
  * **enrichment** (bool: True): Activate enrichment of items (**Required**)

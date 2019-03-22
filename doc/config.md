@@ -44,6 +44,7 @@ Use python mordred/config.py to generate it.
  * **kibiter_url** (str): Kibiter URL (**Required**)
  * **kibiter_version** (str: None): Kibiter version
  * **kafka** (bool: False): Include KIP section in dashboard
+ * **github-repos** (bool: False): Enable GitHub repo stats menu
  * **gitlab-issues** (bool: False): Enable GitLab issues menu
  * **gitlab-merges** (bool: False): Enable GitLab merge requests menu
  * **mattermost** (bool: False): Enable Mattermost menu
