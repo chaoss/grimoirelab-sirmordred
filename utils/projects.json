@@ -3,10 +3,13 @@
         "git": [
             "https://github.com/chaoss/grimoirelab-perceval"
         ],
-        "*github:issue": [
+        "*github": [
             "https://github.com/chaoss/grimoirelab-perceval"
         ],
         "*github:pull": [
+            "https://github.com/chaoss/grimoirelab-perceval"
+        ],
+        "github:repo": [
             "https://github.com/chaoss/grimoirelab-perceval"
         ],
         "jenkins": [
