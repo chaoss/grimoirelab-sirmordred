@@ -177,7 +177,7 @@ class TaskPanels(Task):
         # Read panels and menu description from yaml file
         with open(self.conf['general']['menu_file'], 'r') as f:
             try:
-                self.panels_menu = yaml.load(f)
+                self.panels_menu = yaml.load(f, Loader=yaml.SafeLoader)
             except yaml.YAMLError as ex:
                 logger.error(ex)
                 raise
@@ -434,7 +434,7 @@ class TaskPanelsMenu(Task):
         # Read panels and menu description from yaml file """
         with open(self.conf['general']['menu_file'], 'r') as f:
             try:
-                self.panels_menu = yaml.load(f)
+                self.panels_menu = yaml.load(f, Loader=yaml.SafeLoader)
             except yaml.YAMLError as ex:
                 logger.error(ex)
                 raise
