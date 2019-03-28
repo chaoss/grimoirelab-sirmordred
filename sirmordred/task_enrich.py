@@ -32,7 +32,9 @@ from elasticsearch import Elasticsearch
 from grimoire_elk.elk import (do_studies,
                               enrich_backend,
                               refresh_projects,
-                              refresh_identities)
+                              refresh_identities,
+                              retain_identities,
+                              populate_identities_index)
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elastic import ElasticSearch
 from grimoire_elk.enriched.git import GitEnrich
@@ -67,6 +69,7 @@ class TaskEnrich(Task):
         autorefresh_interval = self.conf['es_enrichment']['autorefresh_interval']
         self.last_autorefresh = self.__update_last_autorefresh(days=autorefresh_interval)
         self.last_autorefresh_studies = self.last_autorefresh
+        self.last_sortinghat_import = None
 
     def select_aliases(self, cfg, backend_section):
 
@@ -342,23 +345,26 @@ class TaskEnrich(Task):
         # Return studies to its original value
         enrich_backend.studies = all_studies
 
-    def retain_identities(self, retention_time, enrich_es, sortinghat_db):
+    def retain_identities(self, retention_time):
         """Retain the identities in SortingHat based on the `retention_time`
         value declared in the setup.cfg.
 
-        :param retention_time: maximum number of hours wrt the current date to retain the SortingHat data
-        :param enrich_es: URL of the ElasticSearch where the enriched data is stored
-        :param sortinghat_db: instance of the SortingHat database
+        :param retention_time: maximum number of minutes wrt the current date to retain the SortingHat data
         """
+        enrich_es = self.conf['es_enrichment']['url']
+        sortinghat_db = self.db
+        current_data_source = self.get_backend(self.backend_section)
+        active_data_sources = self.config.get_active_data_sources()
+
         if retention_time is None:
             logger.debug("[identities retention] Retention policy disabled, no identities will be deleted.")
             return
 
         if retention_time <= 0:
-            logger.debug("[identities retention] Hours to retain must be greater than 0.")
+            logger.debug("[identities retention] Retention time must be greater than 0.")
             return
 
-        retain_identities(retention_time, enrich_es, sortinghat_db)
+        retain_identities(retention_time, enrich_es, sortinghat_db, current_data_source, active_data_sources)
 
     def execute(self):
         cfg = self.config.get_conf()
@@ -389,13 +395,18 @@ class TaskEnrich(Task):
             self.__enrich_items()
 
             retention_time = cfg['general']['retention_time']
+            # Delete the items updated before a given date
             self.retain_data(retention_time,
                              self.conf['es_enrichment']['url'],
                              self.conf[self.backend_section]['enriched_index'])
 
-            self.retain_identities(retention_time,
-                                   self.conf['es_enrichment']['url'],
-                                   self.db)
+            # Upload the unique identities seen in the items to the index `grimoirelab_identities_cache`
+            populate_identities_index(self.conf['es_enrichment']['url'],
+                                      self.conf[self.backend_section]['enriched_index'])
+            # Delete the unique identities in SortingHat which have not been seen in
+            # `grimoirelab_identities_cache` during the retention time, and delete the orphan
+            # unique identities (those ones in SortingHat but not in `grimoirelab_identities_cache`)
+            self.retain_identities(retention_time)
 
             autorefresh = cfg['es_enrichment']['autorefresh']
 
