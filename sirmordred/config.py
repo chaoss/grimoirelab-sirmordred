@@ -671,6 +671,17 @@ class Config():
 
         return studies
 
+    def get_active_data_sources(self):
+        data_sources = []
+        backend_sections = self.get_backend_sections()
+
+        for section in self.conf.keys():
+            data_source = section.split(":")[0]
+            if data_source in backend_sections:
+                data_sources.append(data_source)
+
+        return data_sources
+
     def get_data_sources(self):
         data_sources = []
         backend_sections = self.get_backend_sections()
