@@ -159,7 +159,7 @@ Micro Mordred is located in the [/utils](https://github.com/chaoss/grimoirelab-s
 Examples of possible executions are shown below:
 ```
 cd .../grimoirelab-sirmordred/utils/
-micro.py --raw --enrich ./setup.cfg --backends git #  execute the Raw and Enrich tasks for the Git cfg section
+micro.py --raw --enrich --cfg ./setup.cfg --backends git #  execute the Raw and Enrich tasks for the Git cfg section
 micro.py --panels # execute the Panels task to load the Sigils panels to Kibiter
 ``` 
 
