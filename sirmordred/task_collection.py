@@ -127,7 +127,7 @@ class TaskRawDataCollection(Task):
             try:
                 feed_backend(es_col_url, clean, fetch_archive, backend, backend_args,
                              cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project,
-                             es_aliases=es_aliases)
+                             es_aliases=es_aliases, projects_json_repo=repo)
             except Exception:
                 logger.error("Something went wrong collecting data from this %s repo: %s . "
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))
