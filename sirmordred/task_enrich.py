@@ -202,7 +202,8 @@ class TaskEnrich(Task):
                                node_regex=node_regex,
                                studies_args=studies_args,
                                es_enrich_aliases=es_enrich_aliases,
-                               last_enrich_date=last_enrich_date)
+                               last_enrich_date=last_enrich_date,
+                               projects_json_repo=repo)
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . "
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
