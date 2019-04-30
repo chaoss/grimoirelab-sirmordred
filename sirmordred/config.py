@@ -667,7 +667,7 @@ class Config():
         # a study name could include and extra ":<param>"
         # to have several backend entries with different configs
         studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion", "kafka_kip",
-                   "enrich_pull_requests")
+                   "enrich_pull_requests", "enrich_git_branches")
 
         return studies
 
