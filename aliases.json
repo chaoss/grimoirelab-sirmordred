@@ -56,8 +56,8 @@
                  "issues_created", "issues_updated", "affiliations"]
   },
   "gitlab:issue": {
-      "raw": ["gitlab_issue-raw"],
-      "enrich": ["gitlab", "gitlab_issue", "affiliations"]
+      "raw": ["gitlab_issues-raw"],
+      "enrich": ["gitlab", "gitlab_issues", "affiliations"]
   },
   "gitlab:merge": {
       "raw": ["gitlab_merge_requests-raw"],
