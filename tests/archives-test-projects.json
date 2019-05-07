@@ -22,10 +22,10 @@
           "example.org"
       ],
       "github:issue": [
-          "https://github.com/grimoirelab/perceval"
+          "https://github.com/chaoss/grimoirelab-perceval"
       ],
       "github:pull": [
-          "https://github.com/grimoirelab/perceval"
+          "https://github.com/chaoss/grimoirelab-perceval"
       ],
       "gitlab:issue": [
           "https://gitlab.com/coldnight/ci-test"
