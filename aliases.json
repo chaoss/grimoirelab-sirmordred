@@ -57,7 +57,7 @@
   },
   "gitlab:issue": {
       "raw": ["gitlab_issues-raw"],
-      "enrich": ["gitlab", "gitlab_issues", "affiliations"]
+      "enrich": ["gitlab_issues", "affiliations"]
   },
   "gitlab:merge": {
       "raw": ["gitlab_merge_requests-raw"],
