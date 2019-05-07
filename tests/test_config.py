@@ -63,7 +63,7 @@ class TestConfig(unittest.TestCase):
         enrich_onion_git_params = config.conf['enrich_onion:git'].keys()
         enrich_onion_github_params = config.conf['enrich_onion:github'].keys()
 
-        self.assertEqual(len(config.conf.keys()), 18)
+        self.assertEqual(len(config.conf.keys()), 19)
 
         self.assertIn('general', top_sections)
         self.assertIn('projects', top_sections)
