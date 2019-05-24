@@ -32,11 +32,6 @@ from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
 
-DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
-
-logging.basicConfig(level=logging.DEBUG, format=DEBUG_LOG_FORMAT)
-logging.getLogger('elasticsearch').setLevel(logging.INFO)
-
 
 def micro_mordred(cfg_path, backend_sections, raw, arthur, identities, enrich, panels):
     """Execute the raw and/or the enrich phases of a given backend section defined in a Mordred configuration file.
@@ -137,10 +132,13 @@ def config_logging(debug):
     """Config logging level output output"""
 
     if debug:
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
+        logging.basicConfig(level=logging.DEBUG,
+                            format="[%(asctime)s - %(name)s - %(levelname)s] - %(message)s")
         logging.debug("Debug mode activated")
     else:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+
+    logging.getLogger('elasticsearch').setLevel(logging.INFO)
 
 
 def get_params_parser():
