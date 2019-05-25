@@ -27,22 +27,27 @@ import sys
 
 from sirmordred.config import Config
 from sirmordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
-from sirmordred.task_identities import TaskIdentitiesMerge
+from sirmordred.task_identities import TaskIdentitiesMerge, TaskIdentitiesLoad
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
 
 
-def micro_mordred(cfg_path, backend_sections, raw, arthur, identities, enrich, panels):
-    """Execute the raw and/or the enrich phases of a given backend section defined in a Mordred configuration file.
+DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
+INFO_LOG_FORMAT = "%(asctime)s %(message)s"
+
+
+def micro_mordred(cfg_path, backend_sections, raw, arthur, identities_load, identities_merge, enrich, panels):
+    """Execute the Mordred tasks using the configuration file (`cfg_path`).
 
     :param cfg_path: the path of a Mordred configuration file
-    :param backend_sections: the backend sections where the raw and/or enrich phases will be executed
+    :param backend_sections: the backend sections where the raw/enrich/identities phases will be executed
     :param raw: if true, it activates the collection of raw data
     :param arthur: if true, it enables Arthur to collect the raw data
-    :param identities: if true, it activates the identities merge in SortingHat
-    :param enrich: if true, it activates the collection of enrich data
-    :param panels: if true, it activates the upload of panels
+    :param identities_load: if true, it activates the identities loading process
+    :param identities_merge: if true, it activates the identities merging process
+    :param enrich: if true, it activates the enrichment of the raw data
+    :param panels: if true, it activates the upload of all panels declared in the configuration file
     """
 
     config = Config(cfg_path)
@@ -51,8 +56,11 @@ def micro_mordred(cfg_path, backend_sections, raw, arthur, identities, enrich, p
         for backend in backend_sections:
             get_raw(config, backend, arthur)
 
-    if identities:
-        get_identities(config)
+    if identities_load:
+        get_identities_load(config)
+
+    if identities_merge:
+        get_identities_merge(config)
 
     if enrich:
         for backend in backend_sections:
@@ -84,16 +92,26 @@ def get_raw(config, backend_section, arthur):
         sys.exit(-1)
 
 
-def get_identities(config):
+def get_identities_merge(config):
     """Execute the merge identities phase
 
     :param config: a Mordred config object
     """
-
     TaskProjects(config).execute()
     task = TaskIdentitiesMerge(config)
     task.execute()
     logging.info("Merging identities finished!")
+
+
+def get_identities_load(config):
+    """Execute the load identities phase
+
+    :param config: a Mordred config object
+    """
+    TaskProjects(config).execute()
+    task = TaskIdentitiesLoad(config)
+    task.execute()
+    logging.info("Loading identities finished!")
 
 
 def get_enrich(config, backend_section):
@@ -133,11 +151,12 @@ def config_logging(debug):
 
     if debug:
         logging.basicConfig(level=logging.DEBUG,
-                            format="[%(asctime)s - %(name)s - %(levelname)s] - %(message)s")
+                            format=DEBUG_LOG_FORMAT)
         logging.debug("Debug mode activated")
     else:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+        logging.basicConfig(level=logging.INFO, format=INFO_LOG_FORMAT)
 
+    # ES logger is set to INFO since, it produces a really verbose output if set to DEBUG
     logging.getLogger('elasticsearch').setLevel(logging.INFO)
 
 
@@ -155,7 +174,9 @@ def get_params_parser():
                         help="Activate raw task")
     parser.add_argument("--enrich", action='store_true', dest='enrich',
                         help="Activate enrich task")
-    parser.add_argument("--identities", action='store_true', dest='identities',
+    parser.add_argument("--identities-load", action='store_true', dest='identities_load',
+                        help="Activate load identities task")
+    parser.add_argument("--identities-merge", action='store_true', dest='identities_merge',
                         help="Activate merge identities task")
     parser.add_argument("--panels", action='store_true', dest='panels',
                         help="Activate panels task")
@@ -173,12 +194,14 @@ def get_params_parser():
 
 
 def get_params():
-    """Get params to execute the micro-mordred"""
+    """Get params to execute micro-mordred"""
 
     parser = get_params_parser()
     args = parser.parse_args()
 
-    if not args.raw and not args.enrich and not args.identities and not args.panels:
+    tasks = [args.raw, args.enrich, args.identities_load, args.identities_merge, args.panels]
+
+    if not any(tasks):
         print("No tasks enabled")
         sys.exit(1)
 
@@ -192,6 +215,7 @@ if __name__ == '__main__':
 
     micro_mordred(args.cfg_path, args.backend_sections,
                   args.raw, args.arthur,
-                  args.identities,
+                  args.identities_load,
+                  args.identities_merge,
                   args.enrich,
                   args.panels)
