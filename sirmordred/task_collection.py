@@ -102,6 +102,7 @@ class TaskRawDataCollection(Task):
             logger.warning("No collect repositories for %s", self.backend_section)
 
         for repo in repos:
+            repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
 
@@ -127,7 +128,7 @@ class TaskRawDataCollection(Task):
             try:
                 feed_backend(es_col_url, clean, fetch_archive, backend, backend_args,
                              cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project,
-                             es_aliases=es_aliases, projects_json_repo=repo)
+                             es_aliases=es_aliases, projects_json_repo=repo, repo_labels=repo_labels)
             except Exception:
                 logger.error("Something went wrong collecting data from this %s repo: %s . "
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))
@@ -408,6 +409,7 @@ class TaskRawDataArthurCollection(Task):
             tag = self.backend_tag(repo)
             if tag not in self.arthur_items:
                 self.arthur_items[tag] = []
+                repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
                 p2o_args = self._compose_p2o_params(self.backend_section, repo)
                 filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
                 if filter_raw:
