@@ -154,7 +154,7 @@ class TaskEnrich(Task):
             last_enrich_date = last_enrich_date.replace(second=0, microsecond=0, tzinfo=None)
 
         for repo in repos:
-            # First process p2o params from repo
+            repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
             filters_raw_prefix = p2o_args['filter-raw-prefix'] if 'filter-raw-prefix' in p2o_args else None
@@ -203,7 +203,8 @@ class TaskEnrich(Task):
                                studies_args=studies_args,
                                es_enrich_aliases=es_enrich_aliases,
                                last_enrich_date=last_enrich_date,
-                               projects_json_repo=repo)
+                               projects_json_repo=repo,
+                               repo_labels=repo_labels)
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . "
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
