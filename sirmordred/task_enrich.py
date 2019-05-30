@@ -113,9 +113,7 @@ class TaskEnrich(Task):
 
         time_start = time.time()
 
-        # logger.info('%s starts for %s ', 'enrichment', self.backend_section)
         logger.info('[%s] enrichment phase starts', self.backend_section)
-        print("Enrichment for {}: starting...".format(self.backend_section))
 
         cfg = self.config.get_conf()
 
@@ -215,8 +213,6 @@ class TaskEnrich(Task):
 
         spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start))
         logger.info('[%s] enrichment phase finished in %s', self.backend_section, spent_time)
-        print("Enrichment for {}: finished after {} hours".format(self.backend_section,
-                                                                  spent_time))
 
     def __autorefresh(self, enrich_backend, studies=False):
         # Refresh projects
@@ -309,15 +305,15 @@ class TaskEnrich(Task):
         cfg = self.config.get_conf()
         if 'studies' not in cfg[self.backend_section] or not \
            cfg[self.backend_section]['studies']:
-            logger.debug('No studies for %s' % self.backend_section)
+            logger.info('[%s] no studies', self.backend_section)
             return
 
         studies = [study for study in cfg[self.backend_section]['studies'] if study.strip() != ""]
         if not studies:
-            logger.debug('No studies for %s' % self.backend_section)
+            logger.info('[%s] no studies active', self.backend_section)
             return
 
-        logger.debug("Executing studies for %s: %s" % (self.backend_section, studies))
+        logger.info('[%s] studies start', self.backend_section)
         time.sleep(2)  # Wait so enrichment has finished in ES
         enrich_backend = self._get_enrich_backend()
         ocean_backend = self._get_ocean_backend(enrich_backend)
@@ -347,6 +343,8 @@ class TaskEnrich(Task):
         do_studies(ocean_backend, enrich_backend, studies_args, retention_time=retention_time)
         # Return studies to its original value
         enrich_backend.studies = all_studies
+
+        logger.info('[%s] studies end', self.backend_section)
 
     def retain_identities(self, retention_time):
         """Retain the identities in SortingHat based on the `retention_time`
@@ -397,34 +395,44 @@ class TaskEnrich(Task):
         try:
             self.__enrich_items()
 
+            logger.info('[%s] data retention start', self.backend_section)
             retention_time = cfg['general']['retention_time']
             # Delete the items updated before a given date
             self.retain_data(retention_time,
                              self.conf['es_enrichment']['url'],
                              self.conf[self.backend_section]['enriched_index'])
+            logger.info('[%s] data retention end', self.backend_section)
 
+            logger.info('[%s] populate identities index start', self.backend_section)
             # Upload the unique identities seen in the items to the index `grimoirelab_identities_cache`
             populate_identities_index(self.conf['es_enrichment']['url'],
                                       self.conf[self.backend_section]['enriched_index'])
+            logger.info('[%s] populate identities index end', self.backend_section)
+
+            logger.info('[%s] identities retention start', self.backend_section)
             # Delete the unique identities in SortingHat which have not been seen in
             # `grimoirelab_identities_cache` during the retention time, and delete the orphan
             # unique identities (those ones in SortingHat but not in `grimoirelab_identities_cache`)
             self.retain_identities(retention_time)
+            logger.info('[%s] identities retention end', self.backend_section)
 
             autorefresh = cfg['es_enrichment']['autorefresh']
 
             if autorefresh:
-                logger.debug("Doing autorefresh for %s", self.backend_section)
+                logger.info('[%s] autorefresh start', self.backend_section)
                 self.__autorefresh(self._get_enrich_backend())
+                logger.info('[%s] autorefresh end', self.backend_section)
             else:
-                logger.debug("Not doing autorefresh for %s", self.backend_section)
+                logger.info('[%s] autorefresh not active', self.backend_section)
 
             self.__studies(retention_time)
 
             if autorefresh:
+                logger.info('[%s] autorefresh for studies start', self.backend_section)
                 self.__autorefresh_studies(cfg)
+                logger.info('[%s] autorefresh for studies end', self.backend_section)
             else:
-                logger.debug("Not doing autorefresh for %s studies", self.backend_section)
+                logger.info('[%s] autorefresh for studies not active', self.backend_section)
 
         except Exception as e:
             raise e
