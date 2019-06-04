@@ -1,0 +1,10 @@
+*.pyc
+*.pyo
+build
+dist
+.project
+.pydevproject
+.settings
+__pycache__
+utils/projects.json
+utils/setup.cfg
