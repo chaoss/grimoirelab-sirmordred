@@ -365,6 +365,17 @@ class TaskEnrich(Task):
             logger.debug("[identities retention] Retention time must be greater than 0.")
             return
 
+        logger.info('[%s] identities retention start', self.backend_section)
+
+        logger.info('[%s] populate identities index start', self.backend_section)
+        # Upload the unique identities seen in the items to the index `grimoirelab_identities_cache`
+        populate_identities_index(self.conf['es_enrichment']['url'],
+                                  self.conf[self.backend_section]['enriched_index'])
+        logger.info('[%s] populate identities index end', self.backend_section)
+
+        # Delete the unique identities in SortingHat which have not been seen in
+        # `grimoirelab_identities_cache` during the retention time, and delete the orphan
+        # unique identities (those ones in SortingHat but not in `grimoirelab_identities_cache`)
         retain_identities(retention_time, enrich_es, sortinghat_db, current_data_source, active_data_sources)
 
     def execute(self):
@@ -403,16 +414,6 @@ class TaskEnrich(Task):
                              self.conf[self.backend_section]['enriched_index'])
             logger.info('[%s] data retention end', self.backend_section)
 
-            logger.info('[%s] populate identities index start', self.backend_section)
-            # Upload the unique identities seen in the items to the index `grimoirelab_identities_cache`
-            populate_identities_index(self.conf['es_enrichment']['url'],
-                                      self.conf[self.backend_section]['enriched_index'])
-            logger.info('[%s] populate identities index end', self.backend_section)
-
-            logger.info('[%s] identities retention start', self.backend_section)
-            # Delete the unique identities in SortingHat which have not been seen in
-            # `grimoirelab_identities_cache` during the retention time, and delete the orphan
-            # unique identities (those ones in SortingHat but not in `grimoirelab_identities_cache`)
             self.retain_identities(retention_time)
             logger.info('[%s] identities retention end', self.backend_section)
 
