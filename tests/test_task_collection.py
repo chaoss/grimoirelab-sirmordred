@@ -97,7 +97,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
         task = TaskRawDataCollection(config, backend_section=backend_section)
         # We need to load the projects
         TaskProjects(config).execute()
-        self.assertEqual(task.execute(), None)
+        self.assertIsNotNone(task.execute())
 
     def test_execute_from_archive(self):
         """Test fetching data from archives"""
@@ -116,7 +116,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
             task = TaskRawDataCollection(config, backend_section=backend_section)
             # We need to load the projects
             TaskProjects(config).execute()
-            self.assertEqual(task.execute(), None)
+            self.assertIsNotNone(task.execute())
 
 
 if __name__ == "__main__":

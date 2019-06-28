@@ -74,6 +74,8 @@ class TaskRawDataCollection(Task):
         return found
 
     def execute(self):
+
+        errors = []
         cfg = self.config.get_conf()
 
         if 'scroll_size' in cfg['general']:
@@ -84,7 +86,7 @@ class TaskRawDataCollection(Task):
 
         if 'collect' in cfg[self.backend_section] and not cfg[self.backend_section]['collect']:
             logging.info('%s collect disabled', self.backend_section)
-            return
+            return errors
 
         t2 = time.time()
         logger.info('[%s] collection phase starts', self.backend_section)
@@ -126,9 +128,17 @@ class TaskRawDataCollection(Task):
             es_aliases = self.select_aliases(cfg, self.backend_section)
 
             try:
-                feed_backend(es_col_url, clean, fetch_archive, backend, backend_args,
-                             cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project,
-                             es_aliases=es_aliases, projects_json_repo=repo, repo_labels=repo_labels)
+                error_msg = feed_backend(es_col_url, clean, fetch_archive, backend, backend_args,
+                                         cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project,
+                                         es_aliases=es_aliases, projects_json_repo=repo,
+                                         repo_labels=repo_labels)
+                error = {
+                    'backend': backend,
+                    'repo': repo,
+                    'error': error_msg
+                }
+
+                errors.append(error)
             except Exception:
                 logger.error("Something went wrong collecting data from this %s repo: %s . "
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))
@@ -146,6 +156,8 @@ class TaskRawDataCollection(Task):
         self.retain_data(cfg['general']['retention_time'],
                          self.conf['es_collection']['url'],
                          self.conf[self.backend_section]['raw_index'])
+
+        return errors
 
 
 class TaskRawDataArthurCollection(Task):
