@@ -7,7 +7,7 @@ sudo: false
 
 services:
   - elasticsearch
-#  - mysql
+  - mysql
 
 # addons:
 #    mariadb: '10.0'
