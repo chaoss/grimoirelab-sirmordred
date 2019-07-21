@@ -1,8 +1,6 @@
-PyMySQL
-pyyaml
-redis
 elasticsearch==6.3.1
 elasticsearch-dsl==6.3.1
+redis>=2.10.0, <=2.10.6
 -e git+https://github.com/chaoss/grimoirelab-toolkit/#egg=grimoirelab-toolkit
 -e git+https://github.com/chaoss/grimoirelab-sortinghat/#egg=grimoirelab-sortinghat
 -e git+https://github.com/chaoss/grimoirelab-manuscripts/#egg=grimoirelab-manuscripts
