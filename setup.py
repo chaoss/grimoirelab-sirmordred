@@ -65,10 +65,10 @@ setup(name="sirmordred",
           'kidash>=0.4.13',
           'manuscripts>=0.2.16',
           'sortinghat>=0.7',
-          'PyMySQL',
-          'pyyaml',
-          'redis',
-          'kingarthur>=0.1.12'
+          'kingarthur>=0.1.12',
+          'elasticsearch==6.3.1',
+          'elasticsearch-dsl==6.3.1',
+          'redis>=2.10.0, <=2.10.6'
       ],
       scripts=[
           'bin/sirmordred'
