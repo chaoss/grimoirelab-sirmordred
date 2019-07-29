@@ -68,7 +68,7 @@ setup(name="sirmordred",
           'kingarthur>=0.1.12',
           'elasticsearch==6.3.1',
           'elasticsearch-dsl==6.3.1',
-          'redis>=2.10.0, <=2.10.6'
+          'redis==3.0.0'
       ],
       scripts=[
           'bin/sirmordred'
