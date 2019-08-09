@@ -165,11 +165,15 @@ micro.py --panels # execute the Panels task to load the Sigils panels to Kibiter
 
 ## Getting started
 
+SirModred relies on ElasticSearch, Kibiter and MySQL/MariaDB. The current versions used are:
+- ElasticSearch 6.1.0
+- Kibiter 6.1.4
+- MySQL/MariaDB (5.7.24/10.0)
 There are 3 options to get started with SirMordred:
 
 ### Source code
 
-You will need to install ElasticSearch (6.1.0), Kibana (6.1.4) and a MySQL/MariaDB database, and the following components:
+You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/MariaDB database (5.7.24/10.0), and the following components:
 
 - [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
 - [ELK](https://github.com/chaoss/grimoirelab-elk)
@@ -188,7 +192,7 @@ You will need to install ElasticSearch (6.1.0), Kibana (6.1.4) and a MySQL/Maria
 
 ### Source code and docker
 
-You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibana and MariaDB.
+You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibiter and MariaDB.
 Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
 
 ```
