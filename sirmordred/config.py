@@ -389,6 +389,18 @@ class Config():
                     "default": False,
                     "type": bool,
                     "description": "Enable Mattermost menu"
+                },
+                "code-license": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable Code License menu"
+                },
+                "code-complexity": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable Code Complexity menu"
                 }
             }
         }
@@ -666,7 +678,8 @@ class Config():
         # a study name could include and extra ":<param>"
         # to have several backend entries with different configs
         studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion", "kafka_kip",
-                   "enrich_pull_requests", "enrich_git_branches")
+                   "enrich_pull_requests", "enrich_git_branches", "enrich_cocom_analysis",
+                   "enrich_colic_analysis")
 
         return studies
 
