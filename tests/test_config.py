@@ -64,7 +64,7 @@ class TestConfig(unittest.TestCase):
         enrich_onion_gerrit_params = config.conf['enrich_onion:gerrit'].keys()
         enrich_demography_gerrit_params = config.conf['enrich_demography:gerrit'].keys()
 
-        self.assertEqual(len(config.conf.keys()), 22)
+        self.assertEqual(len(config.conf.keys()), 26)
 
         self.assertIn('general', top_sections)
         self.assertIn('projects', top_sections)

@@ -158,6 +158,48 @@ MATTERMOST_MENU = {
     ]
 }
 
+MATTERMOST = "mattermost"
+MATTERMOST_PANEL = "panels/json/mattermost.json"
+MATTERMOST_IP = "panels/json/mattermost-index-pattern.json"
+
+COCOM_NAME = 'Code Complexity'
+COCOM_SOURCE = 'code-complexity'
+COCOM_PANEL = "panels/json/cocom.json"
+COCOM_IP = "panels/json/cocom-index-pattern.json"
+COCOM_STUDY_IP = "panels/json/cocom_study-index-pattern.json"
+
+COCOM_MENU = {
+    'name': COCOM_NAME,
+    'source': COCOM_SOURCE,
+    'icon': 'default.png',
+    'index-patterns': [
+        COCOM_IP,
+        COCOM_STUDY_IP
+    ],
+    'menu': [
+        {'name': 'Overview', 'panel': COCOM_PANEL}
+    ]
+}
+
+COLIC_NAME = 'Code License'
+COLIC_SOURCE = 'code-license'
+COLIC_PANEL = "panels/json/colic.json"
+COLIC_IP = "panels/json/colic-index-pattern.json"
+COLIC_STUDY_IP = "panels/json/colic_study-index-pattern.json"
+
+COLIC_MENU = {
+    'name': COLIC_NAME,
+    'source': COLIC_SOURCE,
+    'icon': 'default.png',
+    'index-patterns': [
+        COLIC_IP,
+        COLIC_STUDY_IP
+    ],
+    'menu': [
+        {'name': 'Overview', 'panel': COLIC_PANEL}
+    ]
+}
+
 
 class TaskPanels(Task):
     """
@@ -224,6 +266,12 @@ class TaskPanels(Task):
 
         if self.conf['panels'][MATTERMOST]:
             self.panels[MATTERMOST] = [MATTERMOST_PANEL, MATTERMOST_IP]
+
+        if self.conf['panels'][COCOM_SOURCE]:
+            self.panels[COCOM_SOURCE] = [COCOM_PANEL, COCOM_IP, COCOM_STUDY_IP]
+
+        if self.conf['panels'][COLIC_SOURCE]:
+            self.panels[COLIC_SOURCE] = [COLIC_PANEL, COLIC_IP, COLIC_STUDY_IP]
 
     def is_backend_task(self):
         return False
@@ -456,6 +504,12 @@ class TaskPanelsMenu(Task):
         if self.conf['panels'][KAFKA_SOURCE]:
             self.panels_menu.append(KAFKA_MENU)
 
+        if self.conf['panels'][COCOM_SOURCE]:
+            self.panels_menu.append(COCOM_MENU)
+
+        if self.conf['panels'][COLIC_SOURCE]:
+            self.panels_menu.append(COLIC_MENU)
+
         # Get the active data sources
         self.data_sources = self.__get_active_data_sources()
         if 'short_name' in self.conf['general']:
@@ -471,7 +525,7 @@ class TaskPanelsMenu(Task):
         for entry in self.panels_menu:
             ds = entry['source']
             if ds in self.conf.keys() or ds in [COMMUNITY_SOURCE, KAFKA_SOURCE, GITLAB_ISSUES, GITLAB_MERGES,
-                                                MATTERMOST, GITHUB_REPOS]:
+                                                MATTERMOST, GITHUB_REPOS, COCOM_SOURCE, COLIC_SOURCE]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
 
@@ -614,6 +668,16 @@ class TaskPanelsMenu(Task):
         # Remove the kafka and community menus, they will be included at the end
         kafka_menu = None
         community_menu = None
+        cocom_menu = None
+        colic_menu = None
+
+        found_cocom = [pos for pos, menu in enumerate(ds_menu) if menu['name'] == COCOM_NAME]
+        if found_cocom:
+            cocom_menu = ds_menu.pop(found_cocom[0])
+
+        found_colic = [pos for pos, menu in enumerate(ds_menu) if menu['name'] == COLIC_NAME]
+        if found_colic:
+            colic_menu = ds_menu.pop(found_colic[0])
 
         found_kafka = [pos for pos, menu in enumerate(ds_menu) if menu['name'] == KAFKA_NAME]
         if found_kafka:
@@ -629,6 +693,12 @@ class TaskPanelsMenu(Task):
         # If kafka and community are present add them before the Data Status and About
         if kafka_menu:
             omenu.append(kafka_menu)
+
+        if cocom_menu:
+            omenu.append(cocom_menu)
+
+        if colic_menu:
+            omenu.append(colic_menu)
 
         if community_menu:
             omenu.append(community_menu)
