@@ -43,7 +43,7 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **kibiter_url** (str): Kibiter URL (**Required**)
  * **kibiter_version** (str: None): Kibiter version
  * **kafka** (bool: False): Include KIP section in dashboard
- * **github-repos** (bool: False): Enable GitHub repo stats menu
+ * **github-repos** (bool: False): Enable GitHub repo stats menu. Note that if enabled, github:repo sections in the setup.cfg and projects.json should be declared
  * **gitlab-issues** (bool: False): Enable GitLab issues menu
  * **gitlab-merges** (bool: False): Enable GitLab merge requests menu
  * **mattermost** (bool: False): Enable Mattermost menu
