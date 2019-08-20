@@ -61,8 +61,10 @@ class TestConfig(unittest.TestCase):
         enrich_areas_of_code_params = config.conf['enrich_areas_of_code:git'].keys()
         enrich_onion_git_params = config.conf['enrich_onion:git'].keys()
         enrich_onion_github_params = config.conf['enrich_onion:github'].keys()
+        enrich_onion_gerrit_params = config.conf['enrich_onion:gerrit'].keys()
+        enrich_demography_gerrit_params = config.conf['enrich_demography:gerrit'].keys()
 
-        self.assertEqual(len(config.conf.keys()), 19)
+        self.assertEqual(len(config.conf.keys()), 22)
 
         self.assertIn('general', top_sections)
         self.assertIn('projects', top_sections)
@@ -91,6 +93,7 @@ class TestConfig(unittest.TestCase):
         self.assertIn('timeframe_field', enrich_onion_git_params)
         self.assertIn('sort_on_field', enrich_onion_git_params)
         self.assertIn('no_incremental', enrich_onion_git_params)
+        self.assertIn('seconds', enrich_onion_git_params)
 
         self.assertIn('github:issues', top_sections)
         self.assertIn('github:pulls', top_sections)
@@ -105,6 +108,22 @@ class TestConfig(unittest.TestCase):
         self.assertIn('timeframe_field', enrich_onion_github_params)
         self.assertIn('sort_on_field', enrich_onion_github_params)
         self.assertIn('no_incremental', enrich_onion_github_params)
+        self.assertIn('seconds', enrich_onion_github_params)
+
+        self.assertIn('gerrit', top_sections)
+        self.assertIn('enrich_demography:gerrit', top_sections)
+        self.assertIn('date_field', enrich_demography_gerrit_params)
+        self.assertIn('author_field', enrich_demography_gerrit_params)
+
+        self.assertIn('enrich_onion:gerrit', top_sections)
+        self.assertIn('in_index', enrich_onion_gerrit_params)
+        self.assertIn('out_index', enrich_onion_gerrit_params)
+        self.assertIn('data_source', enrich_onion_gerrit_params)
+        self.assertIn('contribs_field', enrich_onion_gerrit_params)
+        self.assertIn('timeframe_field', enrich_onion_gerrit_params)
+        self.assertIn('sort_on_field', enrich_onion_gerrit_params)
+        self.assertIn('no_incremental', enrich_onion_gerrit_params)
+        self.assertIn('seconds', enrich_onion_gerrit_params)
 
     def test_create_config_file(self):
         """Test whether a config file is correctly created"""
