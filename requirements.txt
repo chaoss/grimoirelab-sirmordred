@@ -6,6 +6,7 @@ redis>=2.10.0, <=2.10.6
 -e git+https://github.com/chaoss/grimoirelab-manuscripts/#egg=grimoirelab-manuscripts
 -e git+https://github.com/chaoss/grimoirelab-kidash/#egg=grimoirelab-kidash
 -e git+https://github.com/chaoss/grimoirelab-elk/#egg=grimoirelab-elk
+-e git+https://github.com/chaoss/grimoirelab-graal/#egg=grimoirelab-graal
 -e git+https://github.com/chaoss/grimoirelab-perceval/#egg=grimoirelab-perceval
 -e git+https://github.com/chaoss/grimoirelab-perceval-puppet/#egg=grimoirelab-perceval-puppet
 -e git+https://github.com/chaoss/grimoirelab-perceval-opnfv/#egg=grimoirelab-perceval-opnfv
