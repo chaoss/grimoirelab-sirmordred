@@ -178,6 +178,7 @@ You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/Mari
 - [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
 - [ELK](https://github.com/chaoss/grimoirelab-elk)
 - [King Arthur](https://github.com/chaoss/grimoirelab-kingarthur)
+- [Graal](https://github.com/chaoss/grimoirelab-graal)
 - [Perceval](https://github.com/chaoss/grimoirelab-perceval)
 - [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
 - [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
