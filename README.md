@@ -238,3 +238,66 @@ mariadb:
 ### Only docker
 
 Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/sirmordred/container.html)
+
+
+### Setting up a Pycharm dev environment
+
+This section provides details about how to set up a dev environment using PyCharm. The first step consists in forking
+the GitHub repos below and cloning them to a target local folder (e.g., `sources`).
+
+- [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
+- [ELK](https://github.com/chaoss/grimoirelab-elk)
+- [King Arthur](https://github.com/chaoss/grimoirelab-kingarthur)
+- [Graal](https://github.com/chaoss/grimoirelab-graal)
+- [Perceval](https://github.com/chaoss/grimoirelab-perceval)
+- [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
+- [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
+- [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
+- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
+- [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
+- [Sigils](https://github.com/chaoss/grimoirelab-sigils)
+- [Kidash](https://github.com/chaoss/grimoirelab-kidash)
+- [Toolkit](https://github.com/chaoss/grimoirelab-toolkit)
+- [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
+- [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
+
+
+Each local repo should have two `remotes`: `origin` points to the forked repo, while `upstream` points to the original CHAOSS repo. An example
+is provided below.
+```
+~/sources/perceval$ git remote -v
+origin	https://github.com/valeriocos/perceval (fetch)
+origin	https://github.com/valeriocos/perceval (push)
+upstream	https://github.com/chaoss/grimoirelab-perceval (fetch)
+upstream	https://github.com/chaoss/grimoirelab-perceval (push)
+```
+
+In order to add a remote to a Git repository, you can use the following command:
+```
+~/sources/perceval$ git remote add upstream https://github.com/chaoss/grimoirelab-perceval
+```
+
+Then, you can download the [PyCharm community edition](https://www.jetbrains.com/pycharm/download/#section=linux), and create a project in the 
+grimoirelab-sirmordred directory. PyCharm will automatically create a virtual env, where you should install the dependencies listed in each 
+requirements.txt, excluding the ones concerning the grimoirelab components.
+
+To install the dependencies, you can click on `File` -> `Settings` -> `Project` -> `Project Interpreter`, and then the `+` located on the top right corner (see figure below).
+
+![captura_22](https://user-images.githubusercontent.com/6515067/63195511-12299d80-c073-11e9-9774-5f274891720a.png)
+
+Later, you can add the dependencies to the grimoirelab components via `File` -> `Settings` -> `Project` -> `Project Structure`. 
+The final results should be something similar to the image below.
+
+![captura_23](https://user-images.githubusercontent.com/6515067/63195579-4b620d80-c073-11e9-888b-3cdb67c04523.png)
+
+Finally, you can use the docker-compose shown at Section [source-code-and-docker](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/README.md#source-code-and-docker), define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/projects.json), and
+run the following commands, which will collect and enrich the data coming from the git and cocom sections and upload the corresponding panels to Kibiter:
+```
+micro.py --raw --enrich --cfg ./setup.cfg --backends git cocom
+micro.py --panels --cfg ./setup.cfg
+```
+
+Optionally, you can create a configuration in PyCharm to speed up the executions (`Run` -> `Edit configuration` -> `+`). The final results should be something similar to the image below.
+
+![captura_24](https://user-images.githubusercontent.com/6515067/63195767-ccb9a000-c073-11e9-805a-e828a3ce1dc9.png)
+ 
