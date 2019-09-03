@@ -3,6 +3,12 @@
         "git": [
             "https://github.com/chaoss/grimoirelab-perceval"
         ],
+        "cocom": [
+            "https://github.com/chaoss/grimoirelab-toolkit"
+        ],
+        "colic": [
+            "https://github.com/chaoss/grimoirelab-toolkit"
+        ],
         "*github": [
             "https://github.com/chaoss/grimoirelab-perceval"
         ],
