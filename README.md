@@ -47,6 +47,8 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **gitlab-issues** (bool: False): Enable GitLab issues menu
  * **gitlab-merges** (bool: False): Enable GitLab merge requests menu
  * **mattermost** (bool: False): Enable Mattermost menu
+ * **code-license** (bool: False): Enable code license menu. Note that if enabled, colic sections in the setup.cfg and projects.json should be declared
+ * **code-complexity** (bool: False): Enable code complexity menu. Note that if enabled, cocom sections in the setup.cfg and projects.json should be declared
  * **strict** (bool: True): Enable strict panels loading
 ### [phases]
 
