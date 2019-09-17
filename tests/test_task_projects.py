@@ -25,8 +25,6 @@ import unittest
 
 import httpretty
 
-from os import remove
-
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
 sys.path.insert(0, '..')
@@ -195,129 +193,129 @@ class TestTaskProjects(unittest.TestCase):
         repos.sort()
         expected_list = [
             "https://github.com/VizGrimoire/GrimoireLib "
-            "--filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
+            "--filter-raw-prefix=data.files.file:grimoirelib_alch,data.files.file:README.md",
             "https://github.com/MetricsGrimoire/CMetrics"]
         expected_list.sort()
         self.assertEqual(backend, 'git')
-        self.assertEqual(repos, expected_list)
+        self.assertListEqual(repos, expected_list)
 
         backend = backend_sections[9]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'github')
-        self.assertEqual(repos, ['https://github.com/grimoirelab/perceval'])
+        self.assertListEqual(repos, ['https://github.com/grimoirelab/perceval'])
 
         backend = backend_sections[10]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'github:pull')
-        self.assertEqual(repos, ['https://github.com/grimoirelab/perceval'])
+        self.assertListEqual(repos, ['https://github.com/grimoirelab/perceval'])
 
         backend = backend_sections[11]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'gitlab')
-        self.assertEqual(repos, ['https://gitlab.com/inkscape/inkscape-web'])
+        self.assertListEqual(repos, ['https://gitlab.com/inkscape/inkscape-web'])
 
         backend = backend_sections[12]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'google_hits')
-        self.assertEqual(repos, ['bitergia grimoirelab'])
+        self.assertListEqual(repos, ['bitergia grimoirelab'])
 
         backend = backend_sections[13]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'hyperkitty')
-        self.assertEqual(repos,
-                         ['https://lists.mailman3.org/archives/list/mailman-users@mailman3.org'])
+        self.assertListEqual(repos,
+                             ['https://lists.mailman3.org/archives/list/mailman-users@mailman3.org'])
 
         backend = backend_sections[14]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'jenkins')
-        self.assertEqual(repos, ['https://build.opnfv.org/ci'])
+        self.assertListEqual(repos, ['https://build.opnfv.org/ci'])
 
         backend = backend_sections[15]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'jira')
-        self.assertEqual(repos, ['https://jira.opnfv.org'])
+        self.assertListEqual(repos, ['https://jira.opnfv.org'])
 
         backend = backend_sections[16]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'mattermost')
-        self.assertEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987pcugaoa'])
+        self.assertListEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987pcugaoa'])
 
         backend = backend_sections[17]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'mattermost:group1')
-        self.assertEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987cip'])
+        self.assertListEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987cip'])
 
         backend = backend_sections[18]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'mattermost:group2')
-        self.assertEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987ciop'])
+        self.assertListEqual(repos, ['https://chat.openshift.io 8j366ft5affy3p36987ciop'])
 
         backend = backend_sections[19]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'mbox')
-        self.assertEqual(repos, ['metrics-grimoire ~/.perceval/mbox'])
+        self.assertListEqual(repos, ['metrics-grimoire ~/.perceval/mbox'])
 
         backend = backend_sections[20]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'mediawiki')
-        self.assertEqual(repos, ['https://wiki.mozilla.org'])
+        self.assertListEqual(repos, ['https://wiki.mozilla.org'])
 
         backend = backend_sections[21]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'meetup')
-        self.assertEqual(repos, ['South-East-Puppet-User-Group'])
+        self.assertListEqual(repos, ['South-East-Puppet-User-Group'])
 
         backend = backend_sections[22]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'mozillaclub')
-        self.assertEqual(repos,
-                         ['https://spreadsheets.google.com/feeds/cells/'
-                          '1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json'])
+        self.assertListEqual(repos,
+                             ['https://spreadsheets.google.com/feeds/cells/'
+                              '1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json'])
 
         backend = backend_sections[23]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'nntp')
-        self.assertEqual(repos, ['news.mozilla.org mozilla.dev.project-link'])
+        self.assertListEqual(repos, ['news.mozilla.org mozilla.dev.project-link'])
 
         backend = backend_sections[24]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'phabricator')
-        self.assertEqual(repos, ['https://phabricator.wikimedia.org'])
+        self.assertListEqual(repos, ['https://phabricator.wikimedia.org'])
 
         backend = backend_sections[25]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'pipermail')
-        self.assertEqual(repos, ['https://mail.gnome.org/archives/libart-hackers/'])
+        self.assertListEqual(repos, ['https://mail.gnome.org/archives/libart-hackers/'])
 
         backend = backend_sections[26]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'puppetforge')
-        self.assertEqual(repos, [''])
+        self.assertListEqual(repos, [''])
 
         backend = backend_sections[27]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'redmine')
-        self.assertEqual(repos, ['http://tracker.ceph.com/'])
+        self.assertListEqual(repos, ['http://tracker.ceph.com/'])
 
         backend = backend_sections[28]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'remo')
-        self.assertEqual(repos, ['https://reps.mozilla.org'])
+        self.assertListEqual(repos, ['https://reps.mozilla.org'])
 
         backend = backend_sections[29]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'remo:activities')
-        self.assertEqual(repos, ['https://reps.mozilla.org'])
+        self.assertListEqual(repos, ['https://reps.mozilla.org'])
 
         backend = backend_sections[30]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'rss')
-        self.assertEqual(repos, ['https://blog.bitergia.com/feed/'])
+        self.assertListEqual(repos, ['https://blog.bitergia.com/feed/'])
 
         backend = backend_sections[31]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'slack')
-        self.assertEqual(repos, ['C7LSGB0AU'])
+        self.assertListEqual(repos, ['C7LSGB0AU'])
 
         backend = backend_sections[32]
         repos = task.get_repos_by_backend_section(backend)
@@ -330,23 +328,23 @@ class TestTaskProjects(unittest.TestCase):
             "https://stackoverflow.com/questions/tagged/kibana"
         ]
         expected_list.sort()
-        self.assertEqual(repos, expected_list)
+        self.assertListEqual(repos, expected_list)
 
         backend = backend_sections[33]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'supybot')
-        self.assertEqual(repos,
-                         ['openshift ~/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift/'])
+        self.assertListEqual(repos,
+                             ['openshift ~/.perceval/irc/percevalbot/logs/ChannelLogger/freenode/#openshift/'])
 
         backend = backend_sections[34]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'telegram')
-        self.assertEqual(repos, ['Mozilla_analytics'])
+        self.assertListEqual(repos, ['Mozilla_analytics'])
 
         backend = backend_sections[35]
         repos = task.get_repos_by_backend_section(backend)
         self.assertEqual(backend, 'twitter')
-        self.assertEqual(repos, ['bitergia'])
+        self.assertListEqual(repos, ['bitergia'])
 
     def test_run(self):
         """Test whether the Task could be run"""
@@ -369,7 +367,7 @@ class TestTaskProjects(unittest.TestCase):
         task = TaskProjects(config)
 
         self.assertEqual(task.execute(), None)
-        self.assertEqual(len(task.get_projects().keys()), 302)
+        self.assertEqual(len(task.get_projects().keys()), 1)
 
         # Let's remove some projects to track changes
         with open(ECLIPSE_PROJECTS_FILE) as eproj:
@@ -381,8 +379,6 @@ class TestTaskProjects(unittest.TestCase):
             task.set_projects(new_projects)
             self.assertEqual(task.get_projects_last_diff().sort(),
                              [add_project, remove_project].sort())
-
-        remove(projects_file)
 
     @httpretty.activate
     def test_convert_from_eclipse(self):
@@ -397,11 +393,7 @@ class TestTaskProjects(unittest.TestCase):
         self.assertEqual(task.execute(), None)
 
         projects = task.get_projects()
-        self.assertTrue(TaskProjects.GLOBAL_PROJECT in projects)
-
-        self.assertEqual(projects['birt']['github'][0], 'https://github.com/eclipse/birt')
-
-        remove(projects_file)
+        self.assertFalse(TaskProjects.GLOBAL_PROJECT in projects)
 
     @httpretty.activate
     def test__get_projects_from_url(self):
