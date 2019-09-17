@@ -41,7 +41,6 @@ class TaskProjects(Task):
 
     GLOBAL_PROJECT = 'unknown'  # project to download and enrich full sites
     __projects = {}  # static projects data dict
-    projects_last_diff = []  # Projects changed in last update
     projects_lock = Lock()
 
     def is_backend_task(self):
@@ -56,15 +55,13 @@ class TaskProjects(Task):
     @classmethod
     def set_projects(cls, projects):
         with cls.projects_lock:
-            old_projects_set = set(cls.__projects.keys())
-            new_projects_set = set(projects.keys())
-            cls.projects_last_diff = list(old_projects_set ^ new_projects_set)
-            logger.debug("Update project diff %s", cls.projects_last_diff)
-            cls.__projects = projects
+            old_projects_hash = hash(json.dumps(cls.__projects, sort_keys=True))
+            new_projects_hash = hash(json.dumps(projects, sort_keys=True))
 
-    @classmethod
-    def get_projects_last_diff(cls):
-        return cls.projects_last_diff
+            if old_projects_hash != new_projects_hash:
+                logger.debug("Projects file has changed")
+
+            cls.__projects = projects
 
     @classmethod
     def get_repos_by_backend_section(cls, backend_section, raw=True):

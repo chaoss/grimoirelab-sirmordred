@@ -19,7 +19,6 @@
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
 
-import json
 import sys
 import unittest
 
@@ -370,17 +369,6 @@ class TestTaskProjects(unittest.TestCase):
 
         self.assertEqual(task.execute(), None)
         self.assertEqual(len(task.get_projects().keys()), 302)
-
-        # Let's remove some projects to track changes
-        with open(ECLIPSE_PROJECTS_FILE) as eproj:
-            remove_project = 'birt'
-            add_project = 'new_project'
-            new_projects = task.convert_from_eclipse(json.load(eproj)['projects'])
-            new_projects.pop(remove_project)
-            new_projects.update({add_project: {}})
-            task.set_projects(new_projects)
-            self.assertEqual(task.get_projects_last_diff().sort(),
-                             [add_project, remove_project].sort())
 
         remove(projects_file)
 
