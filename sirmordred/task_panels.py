@@ -460,13 +460,6 @@ class TaskPanelsMenu(Task):
             "type": "entry",
             "panel_id": "Overview"
         },
-        "About": {
-            "title": "About",
-            "name": "About",
-            "description": "About panel",
-            "type": "entry",
-            "panel_id": "About"
-        },
         "Data Status": {
             "title": "Data Status",
             "name": "Data Status",
@@ -654,7 +647,38 @@ class TaskPanelsMenu(Task):
 
         return menu_entries
 
-    def __get_dash_menu(self, kibiter_major):
+    def __get_about_menu(self, contact_link):
+        """ Fill About entry with the panel and the contact link """
+        about_menu_item = {
+            'name': 'About',
+            'title': 'About',
+            'description': "About menu",
+            'type': "menu",
+            'dashboards': [
+                {
+                    "title": "About the dashboard",
+                    "name": "About the dashboard",
+                    "description": "Panel with information about the usage of the interface, an information about the \
+                                    panel itself and acknowledgments",
+                    "type": "entry",
+                    "panel_id": "About"
+                }
+            ]
+        }
+
+        if contact_link:
+            contact_entry = {
+                "title": "Contact",
+                "name": "Contact",
+                "description": "Direct link to the support repository",
+                "type": "entry",
+                "panel_id": contact_link
+            }
+            about_menu_item['dashboards'].append(contact_entry)
+
+        return about_menu_item
+
+    def __get_dash_menu(self, kibiter_major, contact_link):
         """Order the dashboard menu"""
 
         # omenu = OrderedDict()
@@ -703,9 +727,11 @@ class TaskPanelsMenu(Task):
         if community_menu:
             omenu.append(community_menu)
 
-        # At the end Data Status, About
+        # At the end Data Status
         omenu.append(self.menu_panels_common['Data Status'])
-        omenu.append(self.menu_panels_common['About'])
+
+        # And About
+        omenu.append(self.__get_about_menu(contact_link))
 
         logger.debug("Menu for panels: %s", json.dumps(ds_menu, indent=4))
         return omenu
@@ -715,7 +741,7 @@ class TaskPanelsMenu(Task):
 
         logger.info("Dashboard menu: uploading for %s ..." % kibiter_major)
         # Create the panels menu
-        menu = self.__get_dash_menu(kibiter_major)
+        menu = self.__get_dash_menu(kibiter_major, self.conf['panels']['contact'])
         # Remove the current menu and create the new one
         self.__upload_title(kibiter_major)
         self.__remove_dashboard_menu(kibiter_major)

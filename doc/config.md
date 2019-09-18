@@ -49,6 +49,7 @@ Use python mordred/config.py to generate it.
  * **gitlab-merges** (bool: False): Enable GitLab merge requests menu
  * **mattermost** (bool: False): Enable Mattermost menu
  * **strict** (bool: True): Enable strict panels loading
+ * **contact** (str: None): Support repository URL
 ### [phases] 
 
  * **collection** (bool: True): Activate collection of items (**Required**)
