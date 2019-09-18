@@ -37,6 +37,9 @@ from sirmordred.task_projects import TaskProjects
 from sirmordred.task_enrich import TaskEnrich
 
 CONF_FILE = 'test.cfg'
+CONF_FILE_NO_STUDY = 'test-no-study.cfg'
+CONF_FILE_BAD_STUDY = 'test-bad-study.cfg'
+CONF_FILE_MORE_STUDIES = 'test-more-studies.cfg'
 PROJ_FILE = 'test-projects.json'
 GIT_BACKEND_SECTION = 'git'
 
@@ -100,42 +103,39 @@ class TestTaskEnrich(unittest.TestCase):
 
     def test_studies(self):
         """Test whether the studies configuration works """
+
+        # Configure empty studies
         config = Config(CONF_FILE)
         cfg = config.get_conf()
-        # We need to load the projects
         TaskProjects(config).execute()
         backend_section = GIT_BACKEND_SECTION
         task = TaskEnrich(config, backend_section=backend_section)
-
-        # Configure no studies
-        cfg['git']['studies'] = None
         self.assertEqual(task.execute(), None)
 
         # Configure no studies
-        cfg['git']['studies'] = []
+        config = Config(CONF_FILE_NO_STUDY)
+        cfg = config.get_conf()
+        TaskProjects(config).execute()
+        backend_section = GIT_BACKEND_SECTION
+        task = TaskEnrich(config, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
         # Configure a wrong study
-        cfg['git']['studies'] = ['bad_study']
+        config = Config(CONF_FILE_BAD_STUDY)
+        cfg = config.get_conf()
+        TaskProjects(config).execute()
+        backend_section = GIT_BACKEND_SECTION
+        task = TaskEnrich(config, backend_section=backend_section)
         with self.assertRaises(DataEnrichmentError):
             self.assertEqual(task.execute(), None)
 
         # Configure several studies
-        cfg['git']['studies'] = ['enrich_onion']
+        config = Config(CONF_FILE_MORE_STUDIES)
+        cfg = config.get_conf()
+        TaskProjects(config).execute()
+        backend_section = GIT_BACKEND_SECTION
+        task = TaskEnrich(config, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
-
-        # Configure several studies
-        cfg['git']['studies'] = ['enrich_demography:1', 'enrich_areas_of_code']
-        self.assertEqual(task.execute(), None)
-
-        # Configure kafka kip study
-        cfg['mbox']['studies'] = ['kafka_kip']
-        self.assertEqual(task.execute(), None)
-
-        # Configure several studies, one wrong
-        cfg['git']['studies'] = ['enrich_demography:1', "enrich_areas_of_code1"]
-        with self.assertRaises(DataEnrichmentError):
-            self.assertEqual(task.execute(), None)
 
 
 if __name__ == "__main__":

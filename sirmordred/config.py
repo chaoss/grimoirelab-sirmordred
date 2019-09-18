@@ -22,6 +22,7 @@
 
 import configparser
 import logging
+from threading import Lock
 
 from sirmordred._version import __version__
 
@@ -40,6 +41,8 @@ GLOBAL_DATA_SOURCES = ['bugzilla', 'bugzillarest', 'confluence',
 
 class Config():
     """Class aimed to manage sirmordred configuration"""
+
+    config_lock = Lock()
 
     def __init__(self, conf_file, conf_list=[]):
         """Initialize object.
@@ -654,8 +657,11 @@ class Config():
             parser.write(f)
 
     def get_conf(self):
-        # TODO: Return a deepcopy to avoid uncontrolled changes in config?
-        return self.conf
+        """Reload configuration files"""
+
+        with self.config_lock:
+            self.__read_conf_files()
+            return self.conf
 
     def set_param(self, section, param, value):
         """ Change a param in the config """
