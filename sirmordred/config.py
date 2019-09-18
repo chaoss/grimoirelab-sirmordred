@@ -401,6 +401,12 @@ class Config():
                     "default": False,
                     "type": bool,
                     "description": "Enable Code Complexity menu"
+                },
+                "contact": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "Support repository URL"
                 }
             }
         }

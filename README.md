@@ -50,6 +50,7 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **code-license** (bool: False): Enable code license menu. Note that if enabled, colic sections in the setup.cfg and projects.json should be declared
  * **code-complexity** (bool: False): Enable code complexity menu. Note that if enabled, cocom sections in the setup.cfg and projects.json should be declared
  * **strict** (bool: True): Enable strict panels loading
+ * **contact** (str: None): Support repository URL
 ### [phases]
 
  * **collection** (bool: True): Activate collection of items (**Required**)
