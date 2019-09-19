@@ -32,7 +32,9 @@ from sortinghat.db.database import Database
 sys.path.insert(0, '..')
 
 from sirmordred.config import Config
-from sirmordred.task_identities import TaskIdentitiesLoad, TaskIdentitiesMerge
+from sirmordred.task_identities import (TaskIdentitiesLoad,
+                                        TaskIdentitiesMerge,
+                                        logger)
 
 
 CONF_FILE = 'test.cfg'
@@ -59,7 +61,7 @@ def setup_http_server():
             body = remote_identities
         http_requests.append(last_request)
 
-        return (200, headers, body)
+        return 200, headers, body
 
     httpretty.register_uri(httpretty.GET,
                            REMOTE_IDENTITIES_FILE_URL,
@@ -117,10 +119,29 @@ class TestTaskIdentitiesLoad(unittest.TestCase):
 
         config = Config(CONF_FILE)
         task = TaskIdentitiesLoad(config)
-        task.execute()
+
+        with self.assertLogs(logger, level='INFO') as cm:
+            task.execute()
+            self.assertEqual(cm.output[0],
+                             'INFO:sirmordred.task_identities:[sortinghat] '
+                             'Loading orgs from file data/orgs_sortinghat.json')
+            self.assertEqual(cm.output[1],
+                             'INFO:sirmordred.task_identities:[sortinghat] 20 organizations loaded')
+            self.assertEqual(cm.output[2],
+                             'INFO:sirmordred.task_identities:[sortinghat] '
+                             'Loading identities from file data/perceval_identities_sortinghat.json')
         # Check the number of identities loaded from local and remote files
         nuids = len(api.unique_identities(self.sh_db))
         self.assertEqual(nuids, 4)
+
+        with self.assertLogs(logger, level='INFO') as cm:
+            task.execute()
+            self.assertEqual(cm.output[0],
+                             'INFO:sirmordred.task_identities:[sortinghat] No changes in '
+                             'file data/orgs_sortinghat.json, organizations won\'t be loaded')
+            self.assertEqual(cm.output[1],
+                             'INFO:sirmordred.task_identities:[sortinghat] No changes in '
+                             'file data/perceval_identities_sortinghat.json, identities won\'t be loaded')
 
     class TestTaskIdentitiesMerge(unittest.TestCase):
         """Task tests"""
