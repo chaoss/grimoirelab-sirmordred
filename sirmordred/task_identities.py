@@ -137,6 +137,7 @@ class TaskIdentitiesLoad(Task):
         super().__init__(config)
 
         self.current_orgs_file_hash = None
+        self.current_identities_files_hash = {}
         self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
                           'database': self.db_sh, 'host': self.db_host,
                           'port': None}
@@ -172,8 +173,16 @@ class TaskIdentitiesLoad(Task):
                 logger.info("[sortinghat] Loading identities with reset from file %s", filename)
                 code = Load(**self.sh_kwargs).run("--reset", "--identities", filename)
             else:
-                logger.info("[sortinghat] Loading identities from file %s", filename)
-                code = Load(**self.sh_kwargs).run("--identities", filename)
+                content_hash = get_file_hash(filename)
+                if content_hash not in self.current_identities_files_hash:
+                    logger.info("[sortinghat] Loading identities from file %s", filename)
+                    code = Load(**self.sh_kwargs).run("--identities", filename)
+                    self.current_identities_files_hash.update({content_hash: {'filename': filename, 'has_changed': 1}})
+                else:
+                    self.current_identities_files_hash.update({content_hash: {'filename': filename, 'has_changed': 0}})
+                    logger.info("[sortinghat] No changes in file %s, identities won't be loaded", filename)
+                    code = CMD_SUCCESS
+
             if code != CMD_SUCCESS:
                 logger.error("[sortinghat] Error loading %s", filename)
             logger.info("[sortinghat] End of loading identities from file %s", filename)
@@ -317,17 +326,21 @@ class TaskIdentitiesLoad(Task):
                 with TasksManager.IDENTITIES_TASKS_ON_LOCK:
                     TasksManager.IDENTITIES_TASKS_ON = False
                 raise
-            # After loading the identities we need to unify in order
-            # to mix the identites loaded with then ones from data sources
-            cmd = ['sortinghat', '-u', self.db_user, '-p', self.db_password,
-                   '--host', self.db_host, '-d', self.db_sh]
-            cmd += ['unify', '--fast-matching']
-            for algo in cfg['sortinghat']['matching']:
-                ucmd = cmd + ['-m', algo]
-                if not cfg['sortinghat']['strict_mapping']:
-                    ucmd += ['--no-strict-matching']
-                logger.debug("Doing unify after identities load")
-                self.__execute_command(ucmd)
+
+            # If one of the identities file has changed, after loading the identities
+            # we need to unify in order to mix the identities loaded with then ones
+            # from data sources.
+            unify = any([v['has_changed'] for v in self.current_identities_files_hash.values()])
+            if unify:
+                cmd = ['sortinghat', '-u', self.db_user, '-p', self.db_password,
+                       '--host', self.db_host, '-d', self.db_sh]
+                cmd += ['unify', '--fast-matching']
+                for algo in cfg['sortinghat']['matching']:
+                    ucmd = cmd + ['-m', algo]
+                    if not cfg['sortinghat']['strict_mapping']:
+                        ucmd += ['--no-strict-matching']
+                    logger.debug("Doing unify after identities load")
+                    self.__execute_command(ucmd)
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
