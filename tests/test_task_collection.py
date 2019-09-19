@@ -21,6 +21,7 @@
 
 
 import logging
+import requests
 import sys
 import unittest
 
@@ -36,6 +37,10 @@ from sirmordred.task_projects import TaskProjects
 
 CONF_FILE = 'test.cfg'
 PROJ_FILE = 'test-projects.json'
+
+CONF_FILE_NO_COLL = 'test-no-collection.cfg'
+PROJ_FILE_NO_COLL = 'test-projects-no-collection.json'
+
 HOME_USER = expanduser("~")
 PERCEVAL_ARCHIVE = join(HOME_USER, '.perceval')
 
@@ -89,6 +94,44 @@ class TestTaskRawDataCollection(unittest.TestCase):
             self.assertTrue(p in expected_params)
 
     def test_execute(self):
+        """Test whether the Task could be run"""
+
+        config = Config(CONF_FILE)
+        cfg = config.get_conf()
+        backend_section = GIT_BACKEND_SECTION
+        task = TaskRawDataCollection(config, backend_section=backend_section)
+        # We need to load the projects
+        TaskProjects(config).execute()
+        self.assertIsNotNone(task.execute())
+
+        # Check that the collection went well
+        es_collection = cfg['es_collection']['url']
+        raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
+
+        r = requests.get(raw_index + "/_search?size=0", verify=False)
+        raw_items = r.json()['hits']['total']
+        self.assertEqual(raw_items, 3603)
+
+    def test_execute_no_collection(self):
+        """Test whether the raw data is not downloaded when --filter-no-collection is true"""
+
+        config = Config(CONF_FILE_NO_COLL)
+        cfg = config.get_conf()
+        backend_section = GIT_BACKEND_SECTION
+        task = TaskRawDataCollection(config, backend_section=backend_section)
+        # We need to load the projects
+        TaskProjects(config).execute()
+        self.assertIsNotNone(task.execute())
+
+        # Check that the fitler --filter-no-collection works
+        es_collection = cfg['es_collection']['url']
+        raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
+
+        r = requests.get(raw_index + "/_search?size=0", verify=False)
+        raw_items = r.json()['hits']['total']
+        self.assertEqual(raw_items, 40)
+
+    def test_execute_filter_no_collection(self):
         """Test whether the Task could be run"""
 
         config = Config(CONF_FILE)

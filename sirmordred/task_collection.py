@@ -105,8 +105,13 @@ class TaskRawDataCollection(Task):
         for repo in repos:
             repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
-            filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+            filter_raw = p2o_args.get('filter-raw', None)
+            no_collection = p2o_args.get('filter-no-collection', None)
 
+            if no_collection:
+                # If no-collection is set to true, the repository data is not collected.
+                logging.warning("Not collecting archive repository: %s", repo)
+                continue
             if filter_raw:
                 # If filter-raw exists it means that there is an equivalent URL
                 # in the `unknown` section of the projects.json. Thus the URL with
@@ -422,7 +427,13 @@ class TaskRawDataArthurCollection(Task):
                 self.arthur_items[tag] = []
                 repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
                 p2o_args = self._compose_p2o_params(self.backend_section, repo)
-                filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
+                filter_raw = p2o_args.get('filter-raw', None)
+                no_collection = p2o_args.get('filter-no-collection', None)
+
+                if no_collection:
+                    # If no-collection is set to true, the repository data is not collected.
+                    logging.warning("Not collecting archive repository: %s", repo)
+                    continue
                 if filter_raw:
                     # If filter-raw exists it means that there is an equivalent URL
                     # in the `unknown` section of the projects.json. Thus the URL with
@@ -430,6 +441,7 @@ class TaskRawDataArthurCollection(Task):
                     # in `unknown` is considered in this phase.
                     logging.warning("Not collecting filter raw repository: %s", repo)
                     continue
+
                 backend_args = self._compose_perceval_params(self.backend_section, repo)
                 logger.debug(backend_args)
 
