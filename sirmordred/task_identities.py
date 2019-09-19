@@ -136,6 +136,7 @@ class TaskIdentitiesLoad(Task):
     def __init__(self, config):
         super().__init__(config)
 
+        self.current_orgs_file_hash = None
         self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
                           'database': self.db_sh, 'host': self.db_host,
                           'port': None}
@@ -293,10 +294,15 @@ class TaskIdentitiesLoad(Task):
             elif not os.path.exists(cfg['sortinghat']['orgs_file']):
                 logger.error("Orgs file not found on disk")
             else:
-                logger.info("[sortinghat] Loading orgs from file %s", cfg['sortinghat']['orgs_file'])
-                code = Load(**self.sh_kwargs).run("--orgs", cfg['sortinghat']['orgs_file'])
-                if code != CMD_SUCCESS:
-                    logger.error("[sortinghat] Error loading %s", cfg['sortinghat']['orgs_file'])
+                orgs_file = cfg['sortinghat']['orgs_file']
+                orgs_file_hash = get_file_hash(orgs_file)
+                if not self.current_orgs_file_hash or self.current_orgs_file_hash != orgs_file_hash:
+                    logger.info("[sortinghat] Loading orgs from file %s", orgs_file)
+                    code = Load(**self.sh_kwargs).run("--orgs", orgs_file)
+                    if code != CMD_SUCCESS:
+                        logger.error("[sortinghat] Error loading %s", orgs_file)
+
+                    self.current_orgs_file_hash = orgs_file_hash
                 # FIXME get the number of loaded orgs
 
         # Identities loading from files. It could be in several formats.
