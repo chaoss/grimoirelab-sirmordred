@@ -23,6 +23,7 @@
 
 import base64
 import gzip
+import hashlib
 import json
 import logging
 import os
@@ -48,6 +49,30 @@ from sortinghat.db.model import Profile
 from grimoire_elk.elk import load_identities
 
 logger = logging.getLogger(__name__)
+
+
+def get_file_hash(filepath):
+    """Generate hash based on the file content
+
+    Read the content of a JSON file, remove all no alphanumeric
+    characters, sort the remaining characters and create a hash from them.
+
+    :param filepath: local path of the file to hash
+    :return: content hash
+    """
+    with open(filepath, 'r') as f:
+        content = f.read()
+
+    json_content = json.loads(content)
+    # Remove the attribute time for identities file, since its value changes
+    # any time the file is generated
+    json_content.pop('time', None)
+    json_dump = json.dumps(json_content)
+
+    digest_content = "".join([c if c.isalnum() else "" for c in sorted(json_dump)]).strip()
+    hash_object = hashlib.sha256()
+    hash_object.update(digest_content.encode('utf-8'))
+    return hash_object.hexdigest()
 
 
 class TaskInitSortingHat(Task):
