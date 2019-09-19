@@ -312,7 +312,11 @@ class TaskIdentitiesLoad(Task):
                         logger.error("[sortinghat] Error loading %s", orgs_file)
 
                     self.current_orgs_file_hash = orgs_file_hash
-                # FIXME get the number of loaded orgs
+                    with open(orgs_file, 'r') as f:
+                        json_content = json.loads(f.read())
+                    logger.info("[sortinghat] %s organizations loaded", len(json_content['organizations']))
+                else:
+                    logger.info("[sortinghat] No changes in file %s, organizations won't be loaded", orgs_file)
 
         # Identities loading from files. It could be in several formats.
         # Right now GrimoireLab and SortingHat formats are supported
