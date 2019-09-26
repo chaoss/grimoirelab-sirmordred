@@ -138,6 +138,234 @@ A complete list of studies parameters is available at:
 * **study-param-2**: ..
 * **study-param-n**: ..
 
+## Data Sources File Sections
+
+The data sources file (typically named projects.json) is aimed to describe the repositories grouped by project
+that will be monitored on your dashboard.
+
+The project file enables the users to list the instances of the software development tools to analyse, such
+as local and remote Git repositories, the URLs of GitHub and GitLab issue trackers and the name of Slack channels.
+Furthermore, it also allows the users to organize these instances into nested groups, which structure is reflected in
+the visualization artifacts (i.e., documents and dashboards). Groups can be useful to represent projects within a single
+company, sub-projects within a large project such as Linux and Eclipse, or the organizations within a collaborative project.
+
+1. First level: project names
+2. Second level: data sources and metadata
+3. Third level: data source URLs
+
+There are some filters and a special section:
+* Filter `--filter-no-collection=true`: This filter is used to show old enriched data within the dashboards from
+repositories that don't exist anymore in upstream.
+* Filter `--filter-raw` and the section `unknown`: The data sources will only collected at the section `unknown`
+but this allow to add the same source in different sections to enrich using the filter `--filter-raw`.
+* Section `unknown`: If the data source is only under this section it will be enriched as project `main`.
+```
+{
+    "Chaoss": {
+        "gerrit": [
+            "gerrit.chaoss.org --filter-raw=data.projects:CHAOSS"
+        ]
+        "git": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ],
+        "github": [
+            "https:/github.com/chaoss/grimoirelab-perceval --filter-no-collection=true",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    },
+    "GrimoireLab": {
+        "gerrit": [
+            "gerrit.chaoss.org --filter-raw=data.projects:GrimoireLab"
+        ],
+        "meta": {
+            "title": "GrimoireLab",
+            "type": "Dev",
+            "program" : "Bitergia",
+            "state": "Operating"
+        },
+    }
+    "unknown": {
+        "gerrit": [
+            "gerrit.chaoss.org"
+        ],
+        "confluence": [
+            "https://wiki.chaoss.org"
+        ]
+}
+```
+In the projects.json above:
+* The data included in the repo `gerrit.chaoss.org` will be collected entirely since the
+repo is listed in the `unknown` section. However only the project `GrimoireLab` will be enriched as declared in the
+`GrimoireLab` section.
+* In the section `Chaoss` in the data source `github` the repository `grimoirelab-perceval` is not collected for
+raw index but it will enriched in the enriched index.
+* In the section `GrimoireLab` the metadata will showed in the enriched index as extra fields.
+* In the section `unknown` the data source `confluence` will be enriched as the project `main`.
+
+### Supported data sources
+
+These are the data sources GrimoireLab supports:
+- askbot: Questions and answers from Askbot site
+- bugzilla: Bugzilla server
+- bugzillarest: Bugzilla server (>=5.0) using its REST API
+- confluence: Confluence server
+- discourse: Discourse site
+- gerrit: Gerrit server
+- git: Commits from Git
+- github: Issues and PRs from GitHub
+- gitlab: Issues and MRs from GitLab
+- gmane: Gmane messages (not working now)
+- hyperkitty: Messages from a HyperKitty archiver
+- jenkins: Builds data from a Jenkins server
+- jira: Issues data from JIRA issue tracker
+- mattermost: Messages from a Mattermost channel
+- mbox: Messages from MBox files
+- mediawiki: Pages and revisions from a MediaWiki site
+- meetup: Events from a Meetup group
+- nntp: Articles from a NNTP news group
+- phabricator: Tasks from a Phabricator site
+- pipermail: Messages from a Pipermail archiver
+- redmine: Issues data from a Redmine server
+- rss: Entries from a RSS feed server
+- slack: Messages from a Slack channel
+- stackexchange: Questions, answers and comments from StackExchange sites
+- supybot: Messages from Supybot log files
+- telegram: Messages from the Telegram server
+- twitter: Message from the Twitter server
+
+The following sub-sections show how the data sources that is not an URL must be included in the data
+sources file in order to be analyzed.
+
+#### gitlab
+
+GitLab issues and merge requests need to be configured in two different sections.
+
+```
+{
+    "Chaoss": {
+        "gitlab:issue": [
+            "https://gitlab.com/Molly/first",
+            "https://gitlab.com/Molly/second"
+        ],
+        "gitlab:merge": [
+            "https://gitlab.com/Molly/first",
+            "https://gitlab.com/Molly/second"
+        ],
+    }
+}
+```
+
+If a given GitLab repository is under more than 1 level, all the slashes `/` starting from the second level have to be
+replaced by `%2F`. For instance, for a repository with a structure similar to this one
+`https://gitlab.com/Molly/lab/first`.
+
+```
+{
+    "Chaoss": {
+        "gitlab:issue": [
+            "https://gitlab.com/Molly/lab%2Ffirst"
+        ],
+        "gitlab:merge": [
+            "https://gitlab.com/Molly/lab%2Ffirst"
+        ],
+    }
+}
+```
+
+
+#### mbox
+
+For mbox files, it is needed the name of the mailing list and the path where the mboxes can be found. In the example
+below, the name of the mailing list is set to "mirageos-devel".
+
+```
+{
+    "Chaoss": {
+        "mbox": [
+            "mirageos-devel /home/bitergia/mbox/mirageos-devel/"
+        ]
+    }
+}
+```
+
+#### meetup
+
+For meetup groups it is only needed the identifier of the meetup group.
+
+```
+{
+    "Chaoss": {
+        "meetup": [
+        "Alicante-Bitergia-Users-Group",
+        "South-East-Bitergia-User-Group"
+        ]
+    }
+}
+```
+
+
+#### nntp
+
+The way to setup netnews is adding the server and the news channel to be monitored. In the example below,
+the `news.myproject.org` is the server name.
+
+```
+{
+    "Chaoss": {
+        "nntp": [
+            "news.myproject.org mozilla.dev.tech.crypto.checkins",
+            "news.myproject.org mozilla.dev.tech.electrolysis",
+            "news.myproject.org mozilla.dev.tech.gfx",
+            "news.myproject.org mozilla.dev.tech.java"
+            ]
+    }
+}
+```
+
+#### slack
+
+The information needed to monitor slack channels is the channel id.
+
+```
+{
+    "Chaoss": {
+        "slack": [
+            "A195YQBLL",
+            "A495YQBM2"
+        ]
+    }
+}
+```
+
+#### supybot
+
+For supybot files, it is needed the name of the IRC channel and the path where the logs can be found. In the example
+below, the name of the channel is set to "irc://irc.freenode.net/atomic".
+
+```
+{
+    "Chaoss": {
+        "supybot": [
+            "irc://irc.freenode.net/atomic /home/bitergia/irc/percevalbot/logs/ChannelLogger/freenode/#atomic"
+        ]
+    }
+}
+```
+
+#### twitter
+
+For twitter it is only needed the name of the hashtag.
+
+```
+{
+    "Chaoss": {
+        "twitter": [
+            "bitergia"
+        ]
+}
+```
+
 ## Micro Mordred
 
 Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
