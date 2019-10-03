@@ -81,10 +81,6 @@ class TaskInitSortingHat(Task):
     def __init__(self, config):
         super().__init__(config)
 
-        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
-                          'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
-
     def is_backend_task(self):
         return False
 
@@ -104,9 +100,6 @@ class TaskIdentitiesCollection(Task):
         super().__init__(config)
 
         self.load_ids = load_ids  # Load identities from raw index
-        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
-                          'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
 
     def execute(self):
 
@@ -138,9 +131,6 @@ class TaskIdentitiesLoad(Task):
 
         self.current_orgs_file_hash = None
         self.current_identities_files_hash = {}
-        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
-                          'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
 
     def is_backend_task(self):
         return False
@@ -354,10 +344,6 @@ class TaskIdentitiesExport(Task):
     def __init__(self, config):
         super().__init__(config)
 
-        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
-                          'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
-
     def is_backend_task(self):
         return False
 
@@ -461,10 +447,6 @@ class TaskIdentitiesMerge(Task):
 
     def __init__(self, conf):
         super().__init__(conf)
-
-        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
-                          'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
         self.db = Database(**self.sh_kwargs)
         self.last_autorefresh = datetime.utcnow()  # Last autorefresh date
 
