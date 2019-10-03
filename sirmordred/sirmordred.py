@@ -194,8 +194,9 @@ class SirMordred:
         """
             Just a wrapper to the execute_batch_tasks method
         """
+        sleep_for = self.conf['sortinghat']['sleep_for'] if self.conf.get('sortinghat', None) else 1
         self.execute_batch_tasks(tasks_cls,
-                                 self.conf['sortinghat']['sleep_for'],
+                                 sleep_for,
                                  self.conf['general']['min_update_delay'], False)
 
     def execute_batch_tasks(self, tasks_cls, big_delay=0, small_delay=0, wait_for_threads=True):
@@ -368,11 +369,12 @@ class SirMordred:
 
             try:
                 if not self.conf['general']['update']:
+                    sleep_for = self.conf['sortinghat']['sleep_for'] if self.conf.get('sortinghat', None) else 1
                     self.execute_batch_tasks(all_tasks_cls,
-                                             self.conf['sortinghat']['sleep_for'],
+                                             sleep_for,
                                              self.conf['general']['min_update_delay'])
                     self.execute_batch_tasks(all_tasks_cls,
-                                             self.conf['sortinghat']['sleep_for'],
+                                             sleep_for,
                                              self.conf['general']['min_update_delay'])
                     break
                 else:
