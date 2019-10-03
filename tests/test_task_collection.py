@@ -41,6 +41,8 @@ PROJ_FILE = 'test-projects.json'
 CONF_FILE_NO_COLL = 'test-no-collection.cfg'
 PROJ_FILE_NO_COLL = 'test-projects-no-collection.json'
 
+CONF_ARCHIVE_FILE = 'archives-test.cfg'
+
 HOME_USER = expanduser("~")
 PERCEVAL_ARCHIVE = join(HOME_USER, '.perceval')
 
@@ -145,8 +147,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
         """Test fetching data from archives"""
 
         # proj_file -> 'test-projects-archive.json' stored within the conf file
-        conf_file = 'archives-test.cfg'
-        config = Config(conf_file)
+        config = Config(CONF_ARCHIVE_FILE)
 
         backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
                             'discourse', 'dockerhub', 'gerrit', 'github:issue', 'github:pull',

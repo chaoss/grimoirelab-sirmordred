@@ -194,7 +194,7 @@ class TestTaskProjects(unittest.TestCase):
         repos.sort()
         expected_list = [
             "https://github.com/VizGrimoire/GrimoireLib "
-            "--filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md",
+            "--filter-raw-prefix=data.files.file:grimoirelib_alch,data.files.file:README.md",
             "https://github.com/MetricsGrimoire/CMetrics"]
         expected_list.sort()
         self.assertEqual(backend, 'git')
