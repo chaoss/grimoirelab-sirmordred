@@ -37,6 +37,7 @@ from sirmordred.task_projects import TaskProjects
 from sirmordred.task_enrich import TaskEnrich
 
 CONF_FILE = 'test.cfg'
+CONF_FILE_NO_SH = 'test-no-sh.cfg'
 PROJ_FILE = 'test-projects.json'
 GIT_BACKEND_SECTION = 'git'
 
@@ -48,7 +49,10 @@ class TestTaskEnrich(unittest.TestCase):
 
     def setUp(self):
         config = Config(CONF_FILE)
-        sh = config.get_conf()['sortinghat']
+        sh = config.get_conf().get('sortinghat', None)
+
+        if not sh:
+            return
 
         self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
                           'database': sh['database'], 'host': sh['host'],
@@ -71,8 +75,25 @@ class TestTaskEnrich(unittest.TestCase):
         self.assertEqual(task.config, config)
         self.assertEqual(task.backend_section, backend_section)
 
-    def test_run(self):
+    def test_execute(self):
         """Test whether the Task could be run"""
+
+        def setUp(self):
+            config = Config(CONF_FILE)
+            sh = config.get_conf()['sortinghat']
+
+            self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
+                              'database': sh['database'], 'host': sh['host'],
+                              'port': None}
+
+            # Clean the database to start an empty state
+
+            Database.drop(**self.sh_kwargs)
+
+            # Create command
+            Database.create(**self.sh_kwargs)
+            self.sh_db = Database(**self.sh_kwargs)
+
         config = Config(CONF_FILE)
         cfg = config.get_conf()
         # We need to load the projects
@@ -96,6 +117,30 @@ class TestTaskEnrich(unittest.TestCase):
         # https://github.com/VizGrimoire/GrimoireLib
         # --filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md
         # see [git] section in tests/test-projects.json
+        self.assertGreater(raw_items, enriched_items)
+
+    def test_execute_no_sh(self):
+        """Test whether the Task could be run without SortingHat"""
+
+        config = Config(CONF_FILE_NO_SH)
+        cfg = config.get_conf()
+        # We need to load the projects
+        TaskProjects(config).execute()
+        backend_section = GIT_BACKEND_SECTION
+        task = TaskEnrich(config, backend_section=backend_section)
+        self.assertEqual(task.execute(), None)
+
+        # Check that the enrichment went well
+        es_collection = cfg['es_collection']['url']
+        es_enrichment = cfg['es_enrichment']['url']
+        raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
+        enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
+
+        r = requests.get(raw_index + "/_search?size=0", verify=False)
+        raw_items = r.json()['hits']['total']
+        r = requests.get(enrich_index + "/_search?size=0", verify=False)
+        enriched_items = r.json()['hits']['total']
+
         self.assertGreater(raw_items, enriched_items)
 
     def test_studies(self):
