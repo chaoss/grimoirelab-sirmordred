@@ -61,10 +61,11 @@ class TaskEnrich(Task):
         self.clean = False
         # check whether the aliases has beed already created
         self.enrich_aliases = False
-        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
-                          'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
-        self.db = Database(**self.sh_kwargs)
+        if self.db_sh is None and self.db_host is None:
+            self.db = None
+        else:
+            self.db = Database(**self.sh_kwargs)
+
         autorefresh_interval = self.conf['es_enrichment']['autorefresh_interval']
         self.last_autorefresh = self.__update_last_autorefresh(days=autorefresh_interval)
         self.last_autorefresh_studies = self.last_autorefresh
@@ -177,16 +178,16 @@ class TaskEnrich(Task):
                                cfg[self.backend_section]['enriched_index'],
                                None,  # projects_db is deprecated
                                cfg['projects']['projects_file'],
-                               cfg['sortinghat']['database'],
+                               self.db_sh,
                                no_incremental, only_identities,
                                github_token,
                                False,  # studies are executed in its own Task
                                only_studies,
                                cfg['es_enrichment']['url'],
                                None,  # args.events_enrich
-                               cfg['sortinghat']['user'],
-                               cfg['sortinghat']['password'],
-                               cfg['sortinghat']['host'],
+                               self.db_user,
+                               self.db_password,
+                               self.db_host,
                                None,  # args.refresh_projects,
                                None,  # args.refresh_identities,
                                author_id=None,
@@ -194,7 +195,7 @@ class TaskEnrich(Task):
                                filter_raw=filter_raw,
                                filters_raw_prefix=filters_raw_prefix,
                                jenkins_rename_file=jenkins_rename_file,
-                               unaffiliated_group=cfg['sortinghat']['unaffiliated_group'],
+                               unaffiliated_group=self.db_unaffiliate_group,
                                pair_programming=pair_programming,
                                node_regex=node_regex,
                                studies_args=studies_args,
@@ -413,12 +414,13 @@ class TaskEnrich(Task):
                              self.conf[self.backend_section]['enriched_index'])
             logger.info('[%s] data retention end', self.backend_section)
 
-            self.retain_identities(retention_time)
-            logger.info('[%s] identities retention end', self.backend_section)
+            if self.db:
+                self.retain_identities(retention_time)
+                logger.info('[%s] identities retention end', self.backend_section)
 
             autorefresh = cfg['es_enrichment']['autorefresh']
 
-            if autorefresh:
+            if autorefresh and self.db:
                 logger.info('[%s] autorefresh start', self.backend_section)
                 self.__autorefresh(self._get_enrich_backend())
                 logger.info('[%s] autorefresh end', self.backend_section)
@@ -427,7 +429,7 @@ class TaskEnrich(Task):
 
             self.__studies(retention_time)
 
-            if autorefresh:
+            if autorefresh and self.db:
                 logger.info('[%s] autorefresh for studies start', self.backend_section)
                 self.__autorefresh_studies(cfg)
                 logger.info('[%s] autorefresh for studies end', self.backend_section)
