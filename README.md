@@ -1,8 +1,12 @@
 # SirMordred [![Build Status](https://travis-ci.org/chaoss/grimoirelab-sirmordred.svg?branch=master)](https://travis-ci.org/chaoss/grimoirelab-sirmordred)[![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)
 
-SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via a configuration file. Below you can find details about the different sections composing the configuration file.
+SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via two main configuration files, the `setup.cfg` and `projects.json`, which are summarized below,
 
-## General Sections
+## Setup.cfg
+
+The setup file holds the configuration to arrange all process underlying GrimoireLab. It is composed of sections which allow to define the general settings such as which phases
+to activate (e.g., collection, enrichment) and where to store the logs, as well as the location and credentials for SortingHat and the ElasticSearch instances where the raw and enriched data 
+is stored. Furthermore, it also includes backend sections to set up the parameters used by Perceval to access the software development tools (e.g., GitHub tokens, gerrit username) and fetch their data.
 
 ### [es_collection] 
 
@@ -100,16 +104,9 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
  * **project** (str: TrackProject): Gerrit project to track (**Required**)
  * **raw_index_gerrit** (str: ): Name of the gerrit raw index (**Required**)
  * **raw_index_git** (str: ): Name of the git raw index (**Required**)
- * **upstream_raw_es_url** (str: ): URL with the file with the gerrit reviews to track (**Required**)
-## Backend Sections
+ * **upstream_raw_es_url** (str: ): URL with the file with the gerrit reviews to track (**Required**) 
+## [backend-name:tag] (tag is optional)
 
-In this section, a template of a backend section is shown.
-Further information about Perceval backends parameters are available at:
-
-* Params details: http://perceval.readthedocs.io/en/latest/perceval.backends.core.html
-* Examples: https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
-
-### [backend-name:tag] # :tag is optional
 * **collect** (bool: True): enable/disable collection phase
 * **raw_index** (str: None): Index name in which to store the raw items (**Required**)
 * **enriched_index** (str: None): Index name in which to store the enriched items (**Required**)
@@ -118,30 +115,31 @@ Further information about Perceval backends parameters are available at:
 * **backend-param-2**: ..
 * **backend-param-n**: ..
 
-#### Enrichment params
-Some backend sections allow to specify specific enrichment options, listed below.
+The template of a backend section is shown above. 
+Further information about Perceval backends parameters are available at:
+
+* Params details: http://perceval.readthedocs.io/en/latest/perceval.backends.core.html
+* Examples: https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
+
+Note that some backend sections allow to specify specific enrichment options, which are listed below.
 
 ##### [jenkins]
 * **node_regex**: regular expression for extracting node name from `builtOn` field. This
   regular expression **must contain at least one group**. First group will be used to extract
   node name. More groups are allowed but not used to extract anything else.
+## [studies-name:tag] (tag is optional)
 
-## Studies Sections
-
-In this section, a template of a study section is shown.
-A complete list of studies parameters is available at:
-
-* https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
-
-### [studies-name:tag] # :tag is optional
 * **study-param-1**: ..
 * **study-param-2**: ..
 * **study-param-n**: ..
 
-## Data Sources File Sections
+A template of a study section is shown above. A complete list of studies parameters is available at:
 
-The data sources file (typically named projects.json) is aimed to describe the repositories grouped by project
-that will be monitored on your dashboard.
+* https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
+
+## Projects.json
+
+The projects.json aims at describing the repositories grouped by project that will be shown on the dashboards.
 
 The project file enables the users to list the instances of the software development tools to analyse, such
 as local and remote Git repositories, the URLs of GitHub and GitLab issue trackers and the name of Slack channels.
