@@ -225,12 +225,6 @@ class Config():
                     "type": bool,
                     "description": "Load panels, create alias and other tasks related"
                 },
-                "track_items": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Track specific items from a gerrit repository"
-                },
                 "report": {
                     "optional": True,
                     "default": False,
@@ -585,37 +579,8 @@ class Config():
             }
         }
 
-        params_track_items = {
-            "track_items": {
-                "project": {
-                    "optional": False,
-                    "default": "TrackProject",
-                    "type": str,
-                    "description": "Gerrit project to track"
-                },
-                "upstream_raw_es_url": {
-                    "optional": False,
-                    "default": "",
-                    "type": str,
-                    "description": "URL with the file with the gerrit reviews to track"
-                },
-                "raw_index_gerrit": {
-                    "optional": False,
-                    "default": "",
-                    "type": str,
-                    "description": "Name of the gerrit raw index"
-                },
-                "raw_index_git": {
-                    "optional": False,
-                    "default": "",
-                    "type": str,
-                    "description": "Name of the git raw index"
-                }
-            }
-        }
-
         tasks_config_params = [params_collection, params_enrichment, params_panels,
-                               params_report, params_sortinghat, params_track_items]
+                               params_report, params_sortinghat]
 
         for section_params in tasks_config_params:
             params.update(section_params)
