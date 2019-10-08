@@ -62,7 +62,6 @@ is stored. Furthermore, it also includes backend sections to set up the paramete
  * **identities** (bool: True): Do the identities tasks (**Required**)
  * **panels** (bool: True): Load panels, create alias and other tasks related (**Required**)
  * **report** (bool: False): Generate the PDF report for a project (alpha)
- * **track_items** (bool: False): Track specific items from a gerrit repository
 ### [projects] 
 
  * **load_eclipse** (bool: False): Load the projects from Eclipse
@@ -99,12 +98,6 @@ is stored. Furthermore, it also includes backend sections to set up the paramete
  * **strict_mapping** (bool: True): rigorous check of values in identities matching (i.e, well formed email addresses)
  * **unaffiliated_group** (str: Unknown): Name of the organization for unaffiliated identities (**Required**)
  * **user** (str: root): User to access the Sortinghat database (**Required**)
-### [track_items] 
-
- * **project** (str: TrackProject): Gerrit project to track (**Required**)
- * **raw_index_gerrit** (str: ): Name of the gerrit raw index (**Required**)
- * **raw_index_git** (str: ): Name of the git raw index (**Required**)
- * **upstream_raw_es_url** (str: ): URL with the file with the gerrit reviews to track (**Required**) 
 ## [backend-name:tag] (tag is optional)
 
 * **collect** (bool: True): enable/disable collection phase
