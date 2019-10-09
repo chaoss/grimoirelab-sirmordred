@@ -224,12 +224,6 @@ class Config():
                     "default": True,
                     "type": bool,
                     "description": "Load panels, create alias and other tasks related"
-                },
-                "report": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Generate the PDF report for a project (alpha)"
                 }
             }
         }
@@ -405,53 +399,6 @@ class Config():
             }
         }
 
-        params_report = {
-            "report": {
-                "start_date": {
-                    "optional": False,
-                    "default": "1970-01-01",
-                    "type": str,
-                    "description": "Start date for the report"
-                },
-                "end_date": {
-                    "optional": False,
-                    "default": "2100-01-01",
-                    "type": str,
-                    "description": "End date for the report"
-                },
-                "interval": {
-                    "optional": False,
-                    "default": "quarter",
-                    "type": str,
-                    "description": "Interval for the report"
-                },
-                "config_file": {
-                    "optional": False,
-                    "default": "report.cfg",
-                    "type": str,
-                    "description": "Config file for the report"
-                },
-                "data_dir": {
-                    "optional": False,
-                    "default": "report_data",
-                    "type": str,
-                    "description": "Directory in which to store the report data"
-                },
-                "filters": {
-                    "optional": True,
-                    "default": [],
-                    "type": list,
-                    "description": "General filters to be applied to all queries"
-                },
-                "offset": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "Date offset to be applied to start and end"
-                }
-            }
-        }
-
         params_sortinghat = {
             "sortinghat": {
                 "affiliate": {
@@ -579,9 +526,7 @@ class Config():
             }
         }
 
-        tasks_config_params = [params_collection, params_enrichment, params_panels,
-                               params_report, params_sortinghat]
-
+        tasks_config_params = [params_collection, params_enrichment, params_panels, params_sortinghat]
         for section_params in tasks_config_params:
             params.update(section_params)
 

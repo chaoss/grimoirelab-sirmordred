@@ -51,7 +51,6 @@ from sirmordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad,
 from sirmordred.task_manager import TasksManager
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
-from sirmordred.task_report import TaskReport
 
 logger = logging.getLogger(__name__)
 
@@ -352,8 +351,6 @@ class SirMordred:
             #     all_tasks_cls.append(TaskIdentitiesCollection)
         if self.conf['phases']['enrichment']:
             all_tasks_cls.append(TaskEnrich)
-        if self.conf['phases']['report']:
-            all_tasks_cls.append(TaskReport)
 
         # this is the main loop, where the execution should spend
         # most of its time
