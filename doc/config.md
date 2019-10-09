@@ -56,21 +56,11 @@ Use python mordred/config.py to generate it.
  * **enrichment** (bool: True): Activate enrichment of items (**Required**)
  * **identities** (bool: True): Do the identities tasks (**Required**)
  * **panels** (bool: True): Load panels, create alias and other tasks related (**Required**)
- * **report** (bool: False): Generate the PDF report for a project (alpha)
 ### [projects] 
 
  * **load_eclipse** (bool: False): Load the projects from Eclipse
  * **projects_file** (str: projects.json): Projects file path with repositories to be collected group by projects
  * **projects_url** (str: None): Projects file URL
-### [report] 
-
- * **config_file** (str: report.cfg): Config file for the report (**Required**)
- * **data_dir** (str: report_data): Directory in which to store the report data (**Required**)
- * **end_date** (str: 2100-01-01): End date for the report (**Required**)
- * **filters** (list: []): General filters to be applied to all queries
- * **interval** (str: quarter): Interval for the report (**Required**)
- * **offset** (str: None): Date offset to be applied to start and end
- * **start_date** (str: 1970-01-01): Start date for the report (**Required**)
 ### [sortinghat] 
 
  * **affiliate** (bool: True): Affiliate identities to organizations (**Required**)
