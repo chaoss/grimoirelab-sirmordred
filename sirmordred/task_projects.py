@@ -118,6 +118,7 @@ class TaskProjects(Task):
 
         # avoid duplicated repos
         repos = list(set(repos))
+        repos.sort()
 
         return repos
 
