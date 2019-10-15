@@ -149,7 +149,7 @@ class TaskEnrich(Task):
         elastic_enrich = get_elastic(cfg['es_enrichment']['url'], cfg[self.backend_section]['enriched_index'])
         last_enrich_date = elastic_enrich.get_last_item_field("metadata__timestamp")
         if last_enrich_date:
-            last_enrich_date = last_enrich_date.replace(second=0, microsecond=0, tzinfo=None)
+            last_enrich_date = last_enrich_date.replace(tzinfo=None)
 
         for repo in repos:
             repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
