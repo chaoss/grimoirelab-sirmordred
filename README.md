@@ -64,8 +64,8 @@ is stored. Furthermore, it also includes backend sections to set up the paramete
 ### [projects] 
 
  * **load_eclipse** (bool: False): Load the projects from Eclipse
- * **projects_file** (str: projects.json): Projects file path with repositories to be collected group by projects
- * **projects_url** (str: None): Projects file URL
+ * **projects_file** (str: projects.json): Projects file path with repositories to be collected grouped by projects
+ * **projects_url** (str: None): Projects file URL, the projects_file is required to store the file locally
 ### [sortinghat] 
 
  * **affiliate** (bool: True): Affiliate identities to organizations (**Required**)
