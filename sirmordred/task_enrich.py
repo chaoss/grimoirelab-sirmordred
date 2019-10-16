@@ -226,7 +226,7 @@ class TaskEnrich(Task):
             enrich_backend.elastic.bulk_upload(eitems, field_id)
 
         # Refresh identities
-        logger.info("Refreshing identities fields in enriched index %s", self.backend_section)
+        logger.info("[%s] Refreshing identities", self.backend_section)
 
         if studies:
             after = self.last_autorefresh_studies
