@@ -239,13 +239,8 @@ class Task():
             repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
-            filters_raw_prefix = p2o_args['filter-raw-prefix'] if 'filter-raw-prefix' in p2o_args else None
 
-            if filter_raw or filters_raw_prefix:
-                logger.info("Using %s %s for getting identities from raw",
-                            filter_raw, filters_raw_prefix)
-            ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental,
-                                              filter_raw, filters_raw_prefix)
+            ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental, filter_raw)
         else:
             ocean_backend = get_ocean_backend(backend_cmd, enrich_backend, no_incremental)
 
