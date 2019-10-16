@@ -249,7 +249,8 @@ class SirMordred:
             if big_delay > 0:
                 when = datetime.now() + timedelta(seconds=big_delay)
                 when_str = when.strftime('%a, %d %b %Y %H:%M:%S %Z')
-                logger.info("%s will be executed on %s" % (global_tasks, when_str))
+                logger.info("%s will be executed on %s" % (' '.join([g.__name__ for g in global_tasks]),
+                                                           when_str))
 
         if wait_for_threads:
             time.sleep(1)  # Give enough time create and run all threads
@@ -290,7 +291,7 @@ class SirMordred:
         logger.info("Loading projects")
         tasks_cls = [TaskProjects]
         self.execute_tasks(tasks_cls)
-        logger.info("Done")
+        logger.info("Projects loaded")
 
         return
 
