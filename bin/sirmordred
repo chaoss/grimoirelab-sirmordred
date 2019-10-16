@@ -47,7 +47,6 @@ from sirmordred.sirmordred import SirMordred
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
 """need the 'sleep_for' variable in sortinghat section\n - Sir Mordred said."""
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -66,7 +65,6 @@ def setup_logs(logs_dir, debug_mode, log_file_handler, max_bytes, backup_count):
     else:
         log_file_handler = logging.FileHandler
 
-    # create logger with 'spam_application'
     logger = logging.getLogger()
     logger.setLevel(logging_mode)
     # create file handler which logs even debug messages
@@ -85,14 +83,13 @@ def setup_logs(logs_dir, debug_mode, log_file_handler, max_bytes, backup_count):
     logger.addHandler(fh)
     logger.addHandler(ch)
 
-    # this is needed because the log messages of the grimoire_elk library are to verbose
+    # this is needed because the perceval log messages are similar to ELK/mordred ones
     if not debug_mode:
         logging.getLogger('perceval').setLevel(logging.WARNING)
-        logging.getLogger('grimoire_elk').setLevel(logging.WARNING)
 
     logging.getLogger('requests').setLevel(logging.WARNING)
     logging.getLogger('urrlib3').setLevel(logging.WARNING)
-    logging.getLogger('elasticsearch').setLevel(logging.INFO)
+    logging.getLogger('elasticsearch').setLevel(logging.WARNING)
 
     return logger
 
