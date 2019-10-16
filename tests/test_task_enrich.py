@@ -113,11 +113,7 @@ class TestTaskEnrich(unittest.TestCase):
         r = requests.get(enrich_index + "/_search?size=0", verify=False)
         enriched_items = r.json()['hits']['total']
 
-        # the number of raw items is bigger since the enriched items are generated based on:
-        # https://github.com/VizGrimoire/GrimoireLib
-        # --filters-raw-prefix data.files.file:grimoirelib_alch data.files.file:README.md
-        # see [git] section in tests/test-projects.json
-        self.assertGreater(raw_items, enriched_items)
+        self.assertEqual(raw_items, enriched_items)
 
     def test_execute_no_sh(self):
         """Test whether the Task could be run without SortingHat"""
@@ -141,7 +137,7 @@ class TestTaskEnrich(unittest.TestCase):
         r = requests.get(enrich_index + "/_search?size=0", verify=False)
         enriched_items = r.json()['hits']['total']
 
-        self.assertGreater(raw_items, enriched_items)
+        self.assertEqual(raw_items, enriched_items)
 
     def test_studies(self):
         """Test whether the studies configuration works """
