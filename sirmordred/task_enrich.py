@@ -299,19 +299,19 @@ class TaskEnrich(Task):
 
     def __studies(self, retention_time):
         """ Execute the studies configured for the current backend """
-
+        log_prefix = "[" + self.backend_section + "]"
         cfg = self.config.get_conf()
         if 'studies' not in cfg[self.backend_section] or not \
            cfg[self.backend_section]['studies']:
-            logger.info('[%s] no studies', self.backend_section)
+            logger.info('%s no studies phase', log_prefix)
             return
 
         studies = [study for study in cfg[self.backend_section]['studies'] if study.strip() != ""]
         if not studies:
-            logger.info('[%s] no studies active', self.backend_section)
+            logger.info('%s no studies phase active', log_prefix)
             return
 
-        logger.info('[%s] studies start', self.backend_section)
+        logger.info('%s studies phase start', log_prefix)
         time.sleep(2)  # Wait so enrichment has finished in ES
         enrich_backend = self._get_enrich_backend()
         ocean_backend = self._get_ocean_backend(enrich_backend)
@@ -321,11 +321,11 @@ class TaskEnrich(Task):
         all_studies_names = [study.__name__ for study in enrich_backend.studies]
 
         # Time to check that configured studies are valid
-        logger.debug("All studies in %s: %s", self.backend_section, all_studies_names)
-        logger.debug("Configured studies %s", studies)
+        logger.debug("%s All studies: %s", log_prefix, all_studies_names)
+        logger.debug("%s Configured studies %s", log_prefix, studies)
         cfg_studies_types = [study.split(":")[0] for study in studies]
         if not set(cfg_studies_types).issubset(set(all_studies_names)):
-            logger.error('Wrong studies names for %s: %s', self.backend_section, studies)
+            logger.error('%s Wrong studies names: %s', log_prefix, studies)
             raise RuntimeError('Wrong studies names ', self.backend_section, studies)
 
         for study in enrich_backend.studies:
@@ -333,8 +333,7 @@ class TaskEnrich(Task):
                 active_studies.append(study)
 
         enrich_backend.studies = active_studies
-        print("Executing for %s the studies %s" % (self.backend_section,
-              [study for study in studies]))
+        logger.info("%s Executing studies %s" % (log_prefix, [study for study in studies]))
 
         studies_args = self.__load_studies()
 
@@ -342,7 +341,7 @@ class TaskEnrich(Task):
         # Return studies to its original value
         enrich_backend.studies = all_studies
 
-        logger.info('[%s] studies end', self.backend_section)
+        logger.info('%s studies phase end', log_prefix)
 
     def retain_identities(self, retention_time):
         """Retain the identities in SortingHat based on the `retention_time`
