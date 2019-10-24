@@ -48,7 +48,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(len(config.conf.keys()), 47)
 
     def test_init_studies(self):
-        """Test whether studies' attributes are initializated"""
+        """Test whether studies' attributes are initialized"""
 
         config = Config(CONF_SLIM)
 
@@ -60,11 +60,10 @@ class TestConfig(unittest.TestCase):
         demography_params = config.conf['enrich_demography:git'].keys()
         enrich_areas_of_code_params = config.conf['enrich_areas_of_code:git'].keys()
         enrich_onion_git_params = config.conf['enrich_onion:git'].keys()
+        enrich_extra_data_git_params = config.conf['enrich_extra_data:git'].keys()
         enrich_onion_github_params = config.conf['enrich_onion:github'].keys()
         enrich_onion_gerrit_params = config.conf['enrich_onion:gerrit'].keys()
         enrich_demography_gerrit_params = config.conf['enrich_demography:gerrit'].keys()
-
-        self.assertEqual(len(config.conf.keys()), 26)
 
         self.assertIn('general', top_sections)
         self.assertIn('projects', top_sections)
@@ -94,6 +93,10 @@ class TestConfig(unittest.TestCase):
         self.assertIn('sort_on_field', enrich_onion_git_params)
         self.assertIn('no_incremental', enrich_onion_git_params)
         self.assertIn('seconds', enrich_onion_git_params)
+
+        self.assertIn('enrich_extra_data:git', top_sections)
+        self.assertIn('json_url', enrich_extra_data_git_params)
+        self.assertIn('target_index', enrich_extra_data_git_params)
 
         self.assertIn('github:issues', top_sections)
         self.assertIn('github:pulls', top_sections)
