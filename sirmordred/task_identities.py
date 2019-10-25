@@ -321,20 +321,17 @@ class TaskIdentitiesLoad(Task):
                     TasksManager.IDENTITIES_TASKS_ON = False
                 raise
 
-            # If one of the identities file has changed, after loading the identities
             # we need to unify in order to mix the identities loaded with then ones
             # from data sources.
-            unify = any([v['has_changed'] for v in self.current_identities_files_hash.values()])
-            if unify:
-                cmd = ['sortinghat', '-u', self.db_user, '-p', self.db_password,
-                       '--host', self.db_host, '-d', self.db_sh]
-                cmd += ['unify', '--fast-matching']
-                for algo in cfg['sortinghat']['matching']:
-                    ucmd = cmd + ['-m', algo]
-                    if not cfg['sortinghat']['strict_mapping']:
-                        ucmd += ['--no-strict-matching']
-                    logger.debug("Doing unify after identities load")
-                    self.__execute_command(ucmd)
+            cmd = ['sortinghat', '-u', self.db_user, '-p', self.db_password,
+                   '--host', self.db_host, '-d', self.db_sh]
+            cmd += ['unify', '--fast-matching']
+            for algo in cfg['sortinghat']['matching']:
+                ucmd = cmd + ['-m', algo]
+                if not cfg['sortinghat']['strict_mapping']:
+                    ucmd += ['--no-strict-matching']
+                logger.debug("Doing unify after identities load")
+                self.__execute_command(ucmd)
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
