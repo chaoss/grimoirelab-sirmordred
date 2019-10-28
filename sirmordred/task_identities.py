@@ -333,6 +333,13 @@ class TaskIdentitiesLoad(Task):
                 logger.debug("Doing unify after identities load")
                 self.__execute_command(ucmd)
 
+            if 'affiliate' in cfg['sortinghat'] and cfg['sortinghat']['affiliate']:
+                cmd = ['sortinghat', '-u', self.db_user, '-p', self.db_password,
+                       '--host', self.db_host, '-d', self.db_sh]
+                cmd += ['affiliate']
+                logger.debug("Doing affiliate after identities load")
+                self.__execute_command(cmd)
+
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
 
