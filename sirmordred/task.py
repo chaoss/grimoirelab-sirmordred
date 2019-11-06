@@ -220,8 +220,8 @@ class Task():
             gh_token = self.conf['github']['backend_token']
             enrich_backend.set_github_token(gh_token)
 
-        if 'unaffiliated_group' in self.conf['sortinghat']:
-            enrich_backend.unaffiliated_group = self.conf['sortinghat']['unaffiliated_group']
+        if self.db_unaffiliate_group:
+            enrich_backend.unaffiliated_group = self.db_unaffiliate_group
 
         return enrich_backend
 
