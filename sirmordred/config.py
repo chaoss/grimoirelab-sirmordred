@@ -189,12 +189,6 @@ class Config():
                     "default": None,
                     "type": str,
                     "description": "Projects file URL"
-                },
-                "load_eclipse": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Load the projects from Eclipse"
                 }
             }
         }
