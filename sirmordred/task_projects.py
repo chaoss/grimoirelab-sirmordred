@@ -31,7 +31,6 @@ import requests
 from copy import deepcopy
 
 from sirmordred.task import Task
-from sirmordred.eclipse_projects_lib import compose_title, compose_projects_json
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +124,6 @@ class TaskProjects(Task):
     def execute(self):
         config = self.conf
 
-        if config['projects']['load_eclipse']:
-            self.__get_eclipse_projects()
         if config['projects']['projects_url']:
             projects = self.__get_projects_from_url()
         else:
@@ -148,36 +145,5 @@ class TaskProjects(Task):
         projects = res.json()
         with open(projects_file, "w") as fprojects:
             json.dump(projects, fprojects, indent=True)
-
-        return projects
-
-    def __get_eclipse_projects(self):
-        config = self.conf
-        projects_file = config['projects']['projects_file']
-
-        eclipse_projects_url = 'http://projects.eclipse.org/json/projects/all'
-
-        logger.info("Getting Eclipse projects (1 min) from  %s ", eclipse_projects_url)
-        eclipse_projects_resp = requests.get(eclipse_projects_url)
-        eclipse_projects_resp.raise_for_status()
-        eclipse_projects = eclipse_projects_resp.json()['projects']
-        projects = self.convert_from_eclipse(eclipse_projects)
-
-        with open(projects_file, "w") as fprojects:
-            json.dump(projects, fprojects, indent=True)
-
-    def convert_from_eclipse(self, eclipse_projects):
-        """ Convert from eclipse projects format to grimoire projects json format """
-
-        projects = {}
-
-        # We need the global project for downloading the full Bugzilla and Gerrit
-        projects['unknown'] = {
-            "gerrit": ["git.eclipse.org"],
-            "bugzilla": ["https://bugs.eclipse.org/bugs/"]
-        }
-
-        projects = compose_title(projects, eclipse_projects)
-        projects = compose_projects_json(projects, eclipse_projects)
 
         return projects

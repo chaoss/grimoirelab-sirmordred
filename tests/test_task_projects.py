@@ -24,8 +24,6 @@ import unittest
 
 import httpretty
 
-from os import remove
-
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
 sys.path.insert(0, '..')
@@ -35,8 +33,6 @@ from sirmordred.task_projects import TaskProjects
 
 
 CONF_FILE = 'test.cfg'
-ECLIPSE_PROJECTS_URL = 'http://projects.eclipse.org/json/projects/all'
-ECLIPSE_PROJECTS_FILE = 'data/eclipse-projects.json'
 PROJECTS_URL = 'http://localhost/projects.json'
 URL_PROJECTS_FILE = 'data/url-projects.json'
 URL_PROJECTS_MAIN = 'grimoire'
@@ -51,7 +47,6 @@ def read_file(filename, mode='r'):
 
 
 def setup_http_server():
-    eclipse_projects = read_file(ECLIPSE_PROJECTS_FILE)
     url_projects = read_file(URL_PROJECTS_FILE)
 
     http_requests = []
@@ -59,19 +54,11 @@ def setup_http_server():
     def request_callback(method, uri, headers):
         last_request = httpretty.last_request()
 
-        if uri.startswith(ECLIPSE_PROJECTS_URL):
-            body = eclipse_projects
-        elif uri.startswith(PROJECTS_URL):
-            body = url_projects
+        body = url_projects
         http_requests.append(last_request)
 
-        return (200, headers, body)
+        return 200, headers, body
 
-    httpretty.register_uri(httpretty.GET,
-                           ECLIPSE_PROJECTS_URL,
-                           responses=[
-                               httpretty.Response(body=request_callback)
-                           ])
     httpretty.register_uri(httpretty.GET,
                            PROJECTS_URL,
                            responses=[
@@ -353,43 +340,6 @@ class TestTaskProjects(unittest.TestCase):
         task = TaskProjects(config)
         self.assertEqual(task.execute(), None)
         self.assertEqual(len(task.get_projects().keys()), 1)
-
-    @httpretty.activate
-    def test_run_eclipse(self):
-        """Test whether the Task could be run getting projects from Eclipse"""
-        setup_http_server()
-
-        # Create a empty projects file for testing
-        projects_file = 'test-projects-eclipse.json'
-
-        config = Config(CONF_FILE)
-        config.set_param('projects', 'load_eclipse', True)
-        config.set_param('projects', 'projects_file', projects_file)
-        task = TaskProjects(config)
-
-        self.assertEqual(task.execute(), None)
-        self.assertEqual(len(task.get_projects().keys()), 302)
-
-        remove(projects_file)
-
-    @httpretty.activate
-    def test_convert_from_eclipse(self):
-        """Test the conversion from eclipse projects to grimoire projects"""
-        setup_http_server()
-
-        projects_file = 'test-projects-eclipse.json'
-        config = Config(CONF_FILE)
-        config.set_param('projects', 'load_eclipse', True)
-        config.set_param('projects', 'projects_file', projects_file)
-        task = TaskProjects(config)
-        self.assertEqual(task.execute(), None)
-
-        projects = task.get_projects()
-        self.assertTrue(TaskProjects.GLOBAL_PROJECT in projects)
-
-        self.assertEqual(projects['birt']['github'][0], 'https://github.com/eclipse/birt')
-
-        remove(projects_file)
 
     @httpretty.activate
     def test__get_projects_from_url(self):
