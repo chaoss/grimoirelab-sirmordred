@@ -64,8 +64,6 @@ The "projects" section  specifies where the projects file is
 ```
 [projects]
 projects_file = /home/bitergia/conf/projects.json
-# Uncommnet it to get projects information from Eclipse server
-# load_eclipse = True
 ```
 
 The following two sections are used to store the 'raw' information we will

@@ -58,7 +58,6 @@ Use python mordred/config.py to generate it.
  * **panels** (bool: True): Load panels, create alias and other tasks related (**Required**)
 ### [projects] 
 
- * **load_eclipse** (bool: False): Load the projects from Eclipse
  * **projects_file** (str: projects.json): Projects file path with repositories to be collected grouped by projects
  * **projects_url** (str: None): Projects file URL, the projects_file is required to store the file locally
 ### [sortinghat] 
