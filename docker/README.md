@@ -107,7 +107,6 @@ orgs_file = [/home/bitergia/conf/orgs_file.json]
 matching = [email-name, github]
 autoprofile = [customer, git, github]
 sleep_for = 86400
-bots_names = [Beloved Bot]
 unaffiliated_group = Unknown
 ```
 

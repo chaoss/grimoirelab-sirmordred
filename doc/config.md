@@ -66,7 +66,6 @@ Use python mordred/config.py to generate it.
  * **affiliate** (bool: True): Affiliate identities to organizations (**Required**)
  * **autogender** (bool: False): Add gender to the profiles (executes autogender)
  * **autoprofile** (list: ['customer', 'git', 'github']): Order in which to get the identities information for filling the profile (**Required**)
- * **bots_names** (list: []): Name of the identities to be marked as bots
  * **database** (str: sortinghat_db): Name of the Sortinghat database (**Required**)
  * **host** (str: mariadb): Host with the Sortinghat database (**Required**)
  * **identities_api_token** (str: None): API token for remote operation with GitHub and Gitlab
@@ -75,7 +74,6 @@ Use python mordred/config.py to generate it.
  * **identities_format** (str: sortinghat): Format of the identities data to be loaded
  * **load_orgs** (bool: False): 
  * **matching** (list: ['email']): Algorithm for matching identities in Sortinghat (**Required**)
- * **no_bots_names** (list: []): Name of the identities to be unmarked as bots
  * **orgs_file** (str: None): File path with the organizations to be loaded in Sortinghat
  * **password** (str: ): Password to access the Sortinghat database (**Required**)
  * **reset_on_load** (bool: False): Unmerge and remove affiliations for all identities on load

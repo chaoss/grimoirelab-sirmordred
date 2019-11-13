@@ -505,18 +505,6 @@ class Config():
                     "type": str,
                     "description": "API token for remote operation with GitHub and Gitlab"
                 },
-                "bots_names": {
-                    "optional": True,
-                    "default": [],
-                    "type": list,
-                    "description": "Name of the identities to be marked as bots"
-                },
-                "no_bots_names": {
-                    "optional": True,
-                    "default": [],
-                    "type": list,
-                    "description": "Name of the identities to be unmarked as bots"
-                },
                 "autogender": {
                     "optional": True,
                     "default": False,

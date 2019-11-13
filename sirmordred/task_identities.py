@@ -38,7 +38,6 @@ import requests
 
 from sirmordred.task import Task
 from sirmordred.task_manager import TasksManager
-from sortinghat import api
 from sortinghat.cmd.init import Init
 from sortinghat.cmd.load import Load
 from sortinghat.cmd.export import Export
@@ -570,28 +569,6 @@ class TaskIdentitiesMerge(Task):
         else:
             logger.info("[sortinghat] Executing autogender")
             self.do_autogender()
-
-        if 'bots_names' not in cfg['sortinghat']:
-            logger.info("[sortinghat] Bots name list not configured. Skipping.")
-        else:
-            logger.info("[sortinghat] Marking bots: %s",
-                        cfg['sortinghat']['bots_names'])
-            for name in cfg['sortinghat']['bots_names']:
-                # First we need the uuids for the profile name
-                uuids = self.__get_uuids_from_profile_name(name)
-                # Then we can modify the profile setting bot flag
-                profile = {"is_bot": True}
-                for uuid in uuids:
-                    api.edit_profile(self.db, uuid, **profile)
-            # For quitting the bot flag - debug feature
-            if 'no_bots_names' in cfg['sortinghat']:
-                logger.info("[sortinghat] Removing Marking bots: %s",
-                            cfg['sortinghat']['no_bots_names'])
-                for name in cfg['sortinghat']['no_bots_names']:
-                    uuids = self.__get_uuids_from_profile_name(name)
-                    profile = {"is_bot": False}
-                    for uuid in uuids:
-                        api.edit_profile(self.db, uuid, **profile)
 
         with TasksManager.IDENTITIES_TASKS_ON_LOCK:
             TasksManager.IDENTITIES_TASKS_ON = False
