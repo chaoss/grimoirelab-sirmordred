@@ -50,27 +50,19 @@ SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still
 logger = logging.getLogger(__name__)
 
 
-def setup_logs(logs_dir, debug_mode, log_file_handler, max_bytes, backup_count):
+def setup_logs(logs_dir, debug_mode):
 
     if debug_mode:
         logging_mode = logging.DEBUG
     else:
         logging_mode = logging.INFO
 
-    log_file_handler_kwargs = {}
-    if log_file_handler == "rotate":
-        log_file_handler = logging.handlers.RotatingFileHandler
-        log_file_handler_kwargs['maxBytes'] = max_bytes
-        log_file_handler_kwargs['backupCount'] = backup_count
-    else:
-        log_file_handler = logging.FileHandler
-
     logger = logging.getLogger()
     logger.setLevel(logging_mode)
     # create file handler which logs even debug messages
 
-    fh_filepath = os.path.join(logs_dir,'all.log')
-    fh = log_file_handler(fh_filepath, **log_file_handler_kwargs)
+    fh_filepath = os.path.join(logs_dir, 'all.log')
+    fh = logging.FileHandler(fh_filepath)
     fh.setLevel(logging_mode)
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -126,10 +118,7 @@ if __name__ == '__main__':
         config_dict = config.get_conf()
         logs_dir = config_dict['general']['logs_dir']
         debug_mode = config_dict['general']['debug']
-        log_file_handler = config_dict['general']['log_handler']
-        log_max_bytes = config_dict['general']['log_max_bytes']
-        log_backup_count = config_dict['general']['log_backup_count']
-        logger = setup_logs(logs_dir, debug_mode, log_file_handler, log_max_bytes, log_backup_count)
+        logger = setup_logs(logs_dir, debug_mode)
     except RuntimeError as error:
         print("Error while consuming configuration: ", error)
         sys.exit(1)

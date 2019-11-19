@@ -27,9 +27,6 @@ is stored. Furthermore, it also includes backend sections to set up the paramete
 
  * **bulk_size** (int: 1000): Number of items to write in Elasticsearch using bulk operations
  * **debug** (bool: True): Debug mode (logging mainly) (**Required**)
- * **log_backup_count** (int: 5): Number of rotate logs files to preserve
- * **log_handler** (str: file): use rotate for rotating the logs automatically
- * **log_max_bytes** (int: 104857600): Max number of bytes per log file
  * **logs_dir** (str: logs): Directory with the logs of sirmordred (**Required**)
  * **min_update_delay** (int: 60): Short delay between tasks (collect, enrich ...)
  * **scroll_size** (int: 100): Number of items to read from Elasticsearch when scrolling
