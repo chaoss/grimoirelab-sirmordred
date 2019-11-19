@@ -126,24 +126,6 @@ class Config():
                     "type": str,
                     "description": "Directory with the logs of sirmordred"
                 },
-                "log_handler": {
-                    "optional": True,
-                    "default": "file",
-                    "type": str,
-                    "description": "use rotate for rotating the logs automatically"
-                },
-                "log_max_bytes": {
-                    "optional": True,
-                    "default": 104857600,  # 100MB
-                    "type": int,
-                    "description": "Max number of bytes per log file"
-                },
-                "log_backup_count": {
-                    "optional": True,
-                    "default": 5,
-                    "type": int,
-                    "description": "Number of rotate logs files to preserve"
-                },
                 "bulk_size": {
                     "optional": True,
                     "default": 1000,
