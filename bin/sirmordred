@@ -23,12 +23,10 @@
 
 
 import argparse
-import configparser
 import logging
 import logging.handlers
 import os
 import sys
-import traceback
 
 sys.path.insert(1, '.')
 
@@ -39,13 +37,11 @@ warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
 from sirmordred.config import Config
-from sirmordred.error import ElasticSearchError
-from sirmordred.error import DataCollectionError
 from sirmordred.sirmordred import SirMordred
 
 
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
-"""need the 'sleep_for' variable in sortinghat section\n - Sir Mordred said."""
+                 """need the 'sleep_for' variable in sortinghat section\n - Sir Mordred said."""
 
 logger = logging.getLogger(__name__)
 
@@ -85,29 +81,30 @@ def setup_logs(logs_dir, debug_mode):
 
     return logger
 
-def parse_args():
 
+def parse_args():
     parser = argparse.ArgumentParser(
         description='SirMordred, the friendly friend of GrimoireELK',
         epilog='Software metrics for your peace of mind'
-        )
+    )
 
-    parser.add_argument('-c','--config', help='Configuration files',
+    parser.add_argument('-c', '--config', help='Configuration files',
                         type=str, nargs='+', default=['mordred.cfg'],
                         dest='config_files')
-    parser.add_argument('-t','--template', help='Create template configuration file',
+    parser.add_argument('-t', '--template', help='Create template configuration file',
                         dest='config_template_file')
-    parser.add_argument('-p','--phases', nargs='*',
+    parser.add_argument('-p', '--phases', nargs='*',
                         help='List of phases to execute (update is set to false)')
 
     args = parser.parse_args()
     return args
 
+
 if __name__ == '__main__':
     args = parse_args()
     if args.config_template_file is not None:
         Config.create_config_file(args.config_template_file)
-        logger.info("Sample config file created in %s", args.config_template_file)
+        logger.info("Sample config file created in {}".format(args.config_template_file))
         sys.exit(0)
     elif args.config_files is None:
         logger.error("Option -t or -c is required")
@@ -120,11 +117,11 @@ if __name__ == '__main__':
         debug_mode = config_dict['general']['debug']
         logger = setup_logs(logs_dir, debug_mode)
     except RuntimeError as error:
-        print("Error while consuming configuration: ", error)
+        print("Error while consuming configuration: {}".format(error))
         sys.exit(1)
 
     if args.phases:
-        logger.info("Executing sirmordred for phases: %s", args.phases)
+        logger.info("Executing sirmordred for phases: {}".format(args.phases))
         # HACK: the internal dict of Config is modified directly
         # In manual phases execute sirmordred as an script
         config_dict['general']['update'] = False
