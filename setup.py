@@ -67,9 +67,11 @@ setup(name="sirmordred",
           'kingarthur>=0.1.12',
           'elasticsearch==6.3.1',
           'elasticsearch-dsl==6.3.1',
-          'redis==3.0.0'
+          'redis==3.0.0',
+          'file-read-backwards==2.0.0'
       ],
       scripts=[
-          'bin/sirmordred'
+          'bin/sirmordred',
+          'utils/healthcheck.py'
       ],
       zip_safe=False)
