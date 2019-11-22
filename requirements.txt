@@ -1,5 +1,6 @@
 elasticsearch==6.3.1
 elasticsearch-dsl==6.3.1
+file-read-backwards==2.0.0
 redis==3.0.0
 -e git+https://github.com/chaoss/grimoirelab-toolkit/#egg=grimoirelab-toolkit
 -e git+https://github.com/chaoss/grimoirelab-sortinghat/#egg=grimoirelab-sortinghat
