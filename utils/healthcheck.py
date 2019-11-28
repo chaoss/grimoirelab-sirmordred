@@ -34,7 +34,8 @@ HEALTHCHECK_CACHEFILE = '/tmp/.mordred_healthcheck'
 HEALTHCHECK_DATEFORMAT = '%Y-%m-%d %H:%M:%S,%f'
 HEALTHCHECK_DESCRIPTION = "Healthcheck for SirMordred"
 HEALTHCHECK_EPILOG = "Software metrics for your peace of mind"
-HEALTHCHECK_LOGREGEXP = '[2][0-9]{3}-[0-9]{2}-[0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}.*'
+HEALTHCHECK_LOGREGEXP = '[2][0-9]{3}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}.*'
+
 
 def main():
     logs_dir, match_string = parse_args()
@@ -42,7 +43,7 @@ def main():
     healthy, time_a = read_cache_file()
     error_found = False
 
-    if healthy and (time_a != None):
+    if healthy and (time_a is not None):
         # We discard to search if the cache file is not created, this way the container
         #  won't have to worry about old logs
         file_path = logs_dir + '/all.log'
@@ -53,6 +54,7 @@ def main():
 
     if not healthy:
         sys.exit(1)
+
 
 def parse_args():
     """ Parses arguments and returns a tuple with the path of the logs dir and the string to be found """
@@ -76,6 +78,7 @@ def parse_args():
 
     return config_dict['general']['logs_dir'], args.match_string
 
+
 def read_cache_file():
     """Reads the content of the cache file with the data of the last execution.
 
@@ -93,6 +96,7 @@ def read_cache_file():
         return default_output
     except KeyError:
         return default_output
+
 
 def match_error_string(file_path, time_a, time_b, match_string):
     """Searches a string in a log file for all the lines where date is between time_a and time_b
@@ -120,6 +124,7 @@ def match_error_string(file_path, time_a, time_b, match_string):
 
     return False
 
+
 def write_cache_file(is_healthy, time):
     """Stores a JSON with a boolean and a datetime timestamp in the cache file
 
@@ -133,6 +138,7 @@ def write_cache_file(is_healthy, time):
 
     with open(HEALTHCHECK_CACHEFILE, 'w+') as f:
         f.write(json.dumps(cache_content))
+
 
 if __name__ == '__main__':
     main()
