@@ -1,0 +1,35 @@
+2019-11-27 13:50:50,426 - grimoire_elk.elk - INFO - [github] Done collection for https://github.com/fempire/women-tech-speakers-organizers
+2019-11-27 13:50:50,427 - sirmordred.task_collection - INFO - [github] collection finished for https://github.com/fempire/women-tech-speakers-organizers
+2019-11-27 13:50:50,428 - sirmordred.task_manager - ERROR - [stackexchange] Exception in Task Manager HTTPSConnectionPool(host='habitatsh.biterg.io', port=443): Max retries
+exceeded with url: /data (Caused by ResponseError('too many 502 error responses',))
+2019-11-27 13:50:50,429 - sirmordred.task_collection - INFO - [github] collection phase finished in 00:00:03
+2019-11-27 13:50:51,679 - grimoire_elk.elk - ERROR - Error feeding raw from github (https://github.com/cregit/cregit): 401 Client Error: Unauthorized for url: https://api.github.com/rate_limit
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.5/dist-packages/grimoire_elk/elk.py", line 228, in feed_backend
+    ocean_backend.feed(**params)
+  File "/usr/local/lib/python3.5/dist-packages/grimoire_elk/raw/elastic.py", line 230, in feed
+    self.feed_items(items)
+  File "/usr/local/lib/python3.5/dist-packages/grimoire_elk/raw/elastic.py", line 246, in feed_items
+    for item in items:
+  File "/usr/local/lib/python3.5/dist-packages/perceval/backend.py", line 213, in fetch
+    self.client = self._init_client()
+  File "/usr/local/lib/python3.5/dist-packages/perceval/backends/core/github.py", line 285, in _init_client
+    self.archive, from_archive)
+  File "/usr/local/lib/python3.5/dist-packages/perceval/backends/core/github.py", line 609, in __init__
+    self._choose_best_api_token()
+  File "/usr/local/lib/python3.5/dist-packages/perceval/backends/core/github.py", line 908, in _choose_best_api_token
+    self._update_current_rate_limit()
+  File "/usr/local/lib/python3.5/dist-packages/perceval/backends/core/github.py", line 953, in _update_current_rate_limit
+    raise error
+  File "/usr/local/lib/python3.5/dist-packages/perceval/backends/core/github.py", line 945, in _update_current_rate_limit
+    response = super().fetch(url)
+  File "/usr/local/lib/python3.5/dist-packages/perceval/client.py", line 132, in fetch
+    response = self._fetch_from_remote(url, payload, headers, method, stream, verify, auth)
+  File "/usr/local/lib/python3.5/dist-packages/perceval/client.py", line 173, in _fetch_from_remote
+    raise e
+  File "/usr/local/lib/python3.5/dist-packages/perceval/client.py", line 168, in _fetch_from_remote
+    response.raise_for_status()
+  File "/usr/local/lib/python3.5/dist-packages/requests/models.py", line 940, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: https://api.github.com/rate_limit
+2019-11-27 13:50:52,663 - sirmordred.task_identities - INFO - [sortinghat] Executing autoprofile for sources: ['github', 'pipermail', 'git']
