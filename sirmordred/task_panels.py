@@ -63,12 +63,18 @@ ONION_PANEL_PROJECTS = 'panels/json/onion_projects.json'
 ONION_PANEL_ORGS = 'panels/json/onion_organizations.json'
 DEMOGRAPHICS = 'panels/json/demographics.json'
 AFFILIATIONS = 'panels/json/affiliations.json'
+CONTRIBUTIONS_GROWTH = 'panels/json/contributors_growth.json'
+ENGAGEMENT_BY_CONTRIBUTIONS = 'panels/json/engagement_by_contributions.json'
+ORGANIZATIONAL_DIVERSITY = 'panels/json/organizational_diversity.json'
+ORGANIZATIONAL_DIVERSITY_BY_DOMAINS = 'panels/json/organizational_diversity_by_domains.json'
 
 ONION_PANEL_OVERALL_IP = 'panels/json/all_onion-index-pattern.json'
 ONION_PANEL_PROJECTS_IP = 'panels/json/all_onion-index-pattern.json'
 ONION_PANEL_ORGS_IP = 'panels/json/all_onion-index-pattern.json'
 DEMOGRAPHICS_IP = 'panels/json/demographics-index-pattern.json'
 AFFILIATIONS_IP = 'panels/json/affiliations-index-pattern.json'
+ALL_ENRICHED_IP = 'panels/json/all_enriched-index-pattern.json'
+ALL_ENRICHED_TICKETS_IP = 'panels/json/all_enriched_tickets-index-pattern.json'
 
 COMMUNITY_MENU = {
     'name': COMMUNITY_NAME,
@@ -79,14 +85,20 @@ COMMUNITY_MENU = {
         ONION_PANEL_PROJECTS_IP,
         ONION_PANEL_ORGS_IP,
         DEMOGRAPHICS_IP,
-        AFFILIATIONS_IP
+        AFFILIATIONS_IP,
+        ALL_ENRICHED_IP,
+        ALL_ENRICHED_TICKETS_IP
     ],
     'menu': [
         {'name': 'Overall', 'panel': ONION_PANEL_OVERALL},
         {'name': 'Projects', 'panel': ONION_PANEL_PROJECTS},
         {'name': 'Organizations', 'panel': ONION_PANEL_ORGS},
         {'name': 'Demographics', 'panel': DEMOGRAPHICS},
-        {'name': 'Affiliations', 'panel': AFFILIATIONS}
+        {'name': 'Affiliations', 'panel': AFFILIATIONS},
+        {'name': 'Contributors Growth', 'panel': CONTRIBUTIONS_GROWTH},
+        {'name': 'Organizational Diversity', 'panel': ORGANIZATIONAL_DIVERSITY},
+        {'name': 'Organizational Diversity by Domains', 'panel': ORGANIZATIONAL_DIVERSITY_BY_DOMAINS},
+        {'name': 'Engagement', 'panel': ENGAGEMENT_BY_CONTRIBUTIONS}
     ]
 }
 
@@ -246,7 +258,10 @@ class TaskPanels(Task):
             self.panels[COMMUNITY_SOURCE] = [ONION_PANEL_OVERALL, ONION_PANEL_PROJECTS,
                                              ONION_PANEL_ORGS, DEMOGRAPHICS, AFFILIATIONS,
                                              ONION_PANEL_OVERALL_IP, ONION_PANEL_PROJECTS_IP,
-                                             ONION_PANEL_ORGS_IP, DEMOGRAPHICS_IP, AFFILIATIONS_IP]
+                                             ONION_PANEL_ORGS_IP, DEMOGRAPHICS_IP, AFFILIATIONS_IP,
+                                             ENGAGEMENT_BY_CONTRIBUTIONS, CONTRIBUTIONS_GROWTH,
+                                             ORGANIZATIONAL_DIVERSITY, ORGANIZATIONAL_DIVERSITY_BY_DOMAINS,
+                                             ALL_ENRICHED_IP, ALL_ENRICHED_TICKETS_IP]
 
         if self.conf['panels'][KAFKA_SOURCE]:
             self.panels[KAFKA_SOURCE] = [KAFKA_PANEL, KAKFA_IP]
