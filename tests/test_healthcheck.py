@@ -84,5 +84,6 @@ class TestHealthCheck(unittest.TestCase):
         self.assertTrue(a)
         self.assertIsNone(b)
 
+
 if __name__ == "__main__":
     unittest.main(warnings='ignore')
