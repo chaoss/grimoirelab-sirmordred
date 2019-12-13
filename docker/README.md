@@ -303,29 +303,13 @@ Crowd: [shouts] Burn her anyway!
 
 ## Advanced features
 
-mordred includes some extra features, like tracking items (gerrit reviews, git commits ...) from a specific Elasticsearch raw index and to enrich and to include them in the default enriched index. The items to be tracked must be included in a file called "UPSTREAM" at the root of git repositories.
-
-```
-[phases]
-...
-track_items = true
-
-
-[track_items]
-# Name of the project for the items tracked
-project = "OpenStack"
-upstream_raw_es_url = http://raw.elasticsearch:9200
-raw_index_gerrit = gerrit_openstack_170322
-raw_index_git = git_openstack_170313
-```
-
-Also, items to be enriched can be collected from a raw index using filters. A project can be specified as:
+Items to be enriched can be collected from a raw index using filters. A project can be specified as:
 
 ```
 {
     "RDO": {
         "askbot": [
-            "https://ask.openstack.org --filter-raw data.tags:rdo"
+            "https://ask.openstack.org --filter-raw=data.tags:rdo"
         ]
     }
 }
