@@ -182,32 +182,40 @@ raw index but it will enriched in the enriched index.
 
 These are the data sources GrimoireLab supports:
 - askbot: Questions and answers from Askbot site
-- bugzilla: Bugzilla server
-- bugzillarest: Bugzilla server (>=5.0) using its REST API
-- confluence: Confluence server
-- discourse: Discourse site
-- gerrit: Gerrit server
+- bugzilla: Bugs from Bugzilla
+- bugzillarest: Bugs from Bugzilla server (>=5.0) using its REST API
+- confluence: contents from Confluence
+- crates: packages from Crates.io
+- discourse: Topics from Discourse
+- dockerhub: Repositories info from DockerHub
+- functest: Tests from functest
+- gerrit: Reviews from Gerrit
 - git: Commits from Git
 - github: Issues and PRs from GitHub
 - gitlab: Issues and MRs from GitLab
-- gmane: Gmane messages (not working now)
-- hyperkitty: Messages from a HyperKitty archiver
-- jenkins: Builds data from a Jenkins server
-- jira: Issues data from JIRA issue tracker
-- mattermost: Messages from a Mattermost channel
+- google_hits: number of hits for a set of keywords from Google
+- groupsio: messages from Groupsio
+- hyperkitty: Messages from a HyperKitty
+- jenkins: Builds from a Jenkins
+- jira: Issues data from JIRA issue trackers
+- kitsune: Questions and answers from KitSune
+- mattermost: Messages from Mattermost channels
 - mbox: Messages from MBox files
-- mediawiki: Pages and revisions from a MediaWiki site
-- meetup: Events from a Meetup group
-- nntp: Articles from a NNTP news group
-- phabricator: Tasks from a Phabricator site
-- pipermail: Messages from a Pipermail archiver
-- redmine: Issues data from a Redmine server
-- rss: Entries from a RSS feed server
-- slack: Messages from a Slack channel
-- stackexchange: Questions, answers and comments from StackExchange sites
+- mediawiki: Pages and revisions from MediaWiki
+- meetup: Events from Meetup groups
+- mozillaclub: Events from Mozillaclub
+- nntp: Articles from NNTP newsgroups
+- phabricator: Tasks from Phabricator
+- pipermail: Messages from Pipermail
+- puppetforge: Modules and their releases from Puppet's forge
+- redmine: Issues from Redmine
+- remo: Events, people and activities from ReMo
+- rss: Entries from RSS feeds
+- slack: Messages from Slack channels
+- stackexchange: Questions, answers and comments from StackExchange
 - supybot: Messages from Supybot log files
-- telegram: Messages from the Telegram server
-- twitter: Message from the Twitter server
+- telegram: Messages from Telegram
+- twitter: Messages from Twitter
 
 The following sub-sections show how the data sources that is not an URL must be included in the data
 sources file in order to be analyzed.
