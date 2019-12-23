@@ -564,7 +564,7 @@ class Config():
         studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion", "kafka_kip",
                    "enrich_pull_requests", "enrich_git_branches", "enrich_cocom_analysis",
                    "enrich_colic_analysis", "enrich_geolocation", "enrich_forecast_activity",
-                   "enrich_extra_data")
+                   "enrich_extra_data", "enrich_feelings")
 
         return studies
 
