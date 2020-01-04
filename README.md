@@ -219,7 +219,7 @@ GitLab issues and merge requests need to be configured in two different sections
 ```
 {
     "Chaoss": {
-        "gitlab:issue": [
+        "gitlab:issues": [
             "https://gitlab.com/Molly/first",
             "https://gitlab.com/Molly/second"
         ],
@@ -238,7 +238,7 @@ replaced by `%2F`. For instance, for a repository with a structure similar to th
 ```
 {
     "Chaoss": {
-        "gitlab:issue": [
+        "gitlab:issues": [
             "https://gitlab.com/Molly/lab%2Ffirst"
         ],
         "gitlab:merge": [
