@@ -102,6 +102,23 @@ COMMUNITY_MENU = {
     ]
 }
 
+GITHUB_COMMENTS = "github-comments"
+GITHUB_ISSUE_COMMENTS_PANEL = "panels/json/github2_issues_comments_and_collaboration.json"
+GITHUB_ISSUE_COMMENTS_IP = "panels/json/github2_issues-index-pattern.json"
+GITHUB_PULL_COMMENTS_PANEL = "panels/json/github2_pull_requests_comments_and_collaboration.json"
+GITHUB_PULL_COMMENTS_IP = "panels/json/github2_pull_requests-index-pattern.json"
+
+GITHUB_COMMENTS_MENU = {
+    'name': 'GitHub Comments',
+    'source': GITHUB_COMMENTS,
+    'icon': 'default.png',
+    'index-patterns': [GITHUB_ISSUE_COMMENTS_IP, GITHUB_PULL_COMMENTS_IP],
+    'menu': [
+        {'name': 'Issues', 'panel': GITHUB_ISSUE_COMMENTS_PANEL},
+        {'name': 'Pull requests', 'panel': GITHUB_PULL_COMMENTS_PANEL}
+    ]
+}
+
 GITHUB_REPOS = "github-repos"
 GITHUB_REPOS_PANEL_OVERALL = "panels/json/github_repositories.json"
 GITHUB_REPOS_IP = "panels/json/github_repositories-index-pattern.json"
@@ -265,6 +282,10 @@ class TaskPanels(Task):
 
         if self.conf['panels'][KAFKA_SOURCE]:
             self.panels[KAFKA_SOURCE] = [KAFKA_PANEL, KAKFA_IP]
+
+        if self.conf['panels'][GITHUB_COMMENTS]:
+            self.panels[GITHUB_COMMENTS] = [GITHUB_ISSUE_COMMENTS_PANEL, GITHUB_PULL_COMMENTS_PANEL,
+                                            GITHUB_ISSUE_COMMENTS_IP, GITHUB_PULL_COMMENTS_IP]
 
         if self.conf['panels'][GITHUB_REPOS]:
             self.panels[GITHUB_REPOS] = [GITHUB_REPOS_PANEL_OVERALL, GITHUB_REPOS_IP]
@@ -494,6 +515,9 @@ class TaskPanelsMenu(Task):
                 logger.error(ex)
                 raise
 
+        if self.conf['panels'][GITHUB_COMMENTS]:
+            self.panels_menu.append(GITHUB_COMMENTS_MENU)
+
         if self.conf['panels'][GITHUB_REPOS]:
             self.panels_menu.append(GITHUB_REPOS_MENU)
 
@@ -533,7 +557,8 @@ class TaskPanelsMenu(Task):
         for entry in self.panels_menu:
             ds = entry['source']
             if ds in self.conf.keys() or ds in [COMMUNITY_SOURCE, KAFKA_SOURCE, GITLAB_ISSUES, GITLAB_MERGES,
-                                                MATTERMOST, GITHUB_REPOS, COCOM_SOURCE, COLIC_SOURCE]:
+                                                MATTERMOST, GITHUB_COMMENTS, GITHUB_REPOS,
+                                                COCOM_SOURCE, COLIC_SOURCE]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
 
