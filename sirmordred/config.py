@@ -330,6 +330,12 @@ class Config():
                     "type": bool,
                     "description": "Enable kafka menu"
                 },
+                "github-comments": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable GitHub comments menu"
+                },
                 "github-repos": {
                     "optional": True,
                     "default": False,
