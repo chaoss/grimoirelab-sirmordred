@@ -50,6 +50,14 @@
       "raw": ["github_repositories-raw"],
       "enrich": ["github_repositories"]
   },
+  "github2:issue": {
+      "raw": ["github2_issues-raw"],
+      "enrich": ["github2_issues"]
+  },
+  "github2:pull": {
+      "raw": ["github2_pull_requests-raw"],
+      "enrich": ["github2_pull_requests"]
+  },
   "github": {
       "raw": ["github-raw"],
       "enrich": ["github_issues", "github_issues_enrich", "issues_closed",
