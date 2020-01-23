@@ -44,9 +44,10 @@ is stored. Furthermore, it also includes backend sections to set up the paramete
  * **kibiter_url** (str): Kibiter URL (**Required**)
  * **kibiter_version** (str: None): Kibiter version
  * **kafka** (bool: False): Include KIP section in dashboard
- * **github-repos** (bool: False): Enable GitHub repo stats menu. Note that if enabled, github:repo sections in the setup.cfg and projects.json should be declared
- * **gitlab-issues** (bool: False): Enable GitLab issues menu
- * **gitlab-merges** (bool: False): Enable GitLab merge requests menu
+ * **github-comments** (bool: False): Enable GitHub comments menu. Note that if enabled, the github2:issue and github2:pulls sections in the setup.cfg and projects.json should be declared
+ * **github-repos** (bool: False): Enable GitHub repo stats menu. Note that if enabled, the github:repo section in the setup.cfg and projects.json should be declared
+ * **gitlab-issues** (bool: False): Enable GitLab issues menu. Note that if enabled, the gitlab:issue section in the setup.cfg and projects.json should be declared
+ * **gitlab-merges** (bool: False): Enable GitLab merge requests menu. Note that if enabled, the gitlab:merge sections in the setup.cfg and projects.json should be declared
  * **mattermost** (bool: False): Enable Mattermost menu
  * **code-license** (bool: False): Enable code license menu. Note that if enabled, colic sections in the setup.cfg and projects.json should be declared
  * **code-complexity** (bool: False): Enable code complexity menu. Note that if enabled, cocom sections in the setup.cfg and projects.json should be declared
