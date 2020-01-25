@@ -213,13 +213,6 @@ class Task():
                                      clean, enrich_backend)
         enrich_backend.set_elastic(elastic_enrich)
 
-        if 'github' in self.conf.keys() and \
-            'backend_token' in self.conf['github'].keys() and \
-            self.get_backend(self.backend_section) == "git":
-
-            gh_token = self.conf['github']['backend_token']
-            enrich_backend.set_github_token(gh_token)
-
         if self.db_unaffiliate_group:
             enrich_backend.unaffiliated_group = self.db_unaffiliate_group
 

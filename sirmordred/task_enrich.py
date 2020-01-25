@@ -124,11 +124,10 @@ class TaskEnrich(Task):
             ElasticSearch.max_items_bulk = cfg['general']['bulk_size']
 
         no_incremental = False
+        # not used due to https://github.com/chaoss/grimoirelab-elk/pull/773
         github_token = None
         pair_programming = False
         node_regex = None
-        if 'github' in cfg and 'backend_token' in cfg['github']:
-            github_token = cfg['github']['backend_token']
         if 'git' in cfg and 'pair-programming' in cfg['git']:
             pair_programming = cfg['git']['pair-programming']
         if 'jenkins' in cfg and 'node_regex' in cfg['jenkins']:
