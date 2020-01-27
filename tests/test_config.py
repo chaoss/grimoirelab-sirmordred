@@ -98,8 +98,8 @@ class TestConfig(unittest.TestCase):
         self.assertIn('json_url', enrich_extra_data_git_params)
         self.assertIn('target_index', enrich_extra_data_git_params)
 
-        self.assertIn('github:issues', top_sections)
-        self.assertIn('github:pulls', top_sections)
+        self.assertIn('github:issue', top_sections)
+        self.assertIn('github:pull', top_sections)
         self.assertIn('enrich_onion:github', top_sections)
         self.assertIn('in_index_iss', enrich_onion_github_params)
         self.assertIn('in_index_prs', enrich_onion_github_params)
