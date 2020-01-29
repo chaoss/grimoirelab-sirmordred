@@ -9,7 +9,7 @@ ENV DEPLOY_USER bitergia
 ENV DEPLOY_USER_DIR /home/${DEPLOY_USER}
 ENV CONF_DIR ${DEPLOY_USER_DIR}/conf
 ENV SCRIPTS_DIR ${DEPLOY_USER_DIR}/scripts
-ENV GRIMOIRELAB_RELEASE "0.2.36"
+ENV GRIMOIRELAB_RELEASE "0.2.37"
 
 # Initial user
 RUN useradd ${DEPLOY_USER} --create-home --shell /bin/bash
@@ -71,5 +71,7 @@ RUN mkdir -p ${CONF_DIR} && \
     git clone https://github.com/grimoirelab/grimoirelab.git --depth 1 && \
     echo "Installing and checking GrimoireLab Release"
 RUN  sudo grimoirelab/utils/build_grimoirelab --build --install --check --install_system --relfile ${CONF_DIR}/requirements.cfg -l debug
+
+HEALTHCHECK --interval=60s --timeout=6s --retries=1 CMD healthcheck.py -c ${CONF_DIR}/setup.cfg -s 'Exception in Task Manager' || exit 1
 
 CMD ${DEPLOY_USER_DIR}/stage
