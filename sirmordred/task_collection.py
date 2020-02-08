@@ -96,6 +96,10 @@ class TaskRawDataCollection(Task):
         if 'fetch-archive' in cfg[self.backend_section] and cfg[self.backend_section]['fetch-archive']:
             fetch_archive = True
 
+        pipes = None
+        if 'pipes' in cfg[self.backend_section]:
+            pipes = [pipe for pipe in self.conf[self.backend_section]['pipes'] if pipe.strip() != ""]
+
         # repos could change between executions because changes in projects
         repos = TaskProjects.get_repos_by_backend_section(self.backend_section)
 
@@ -135,7 +139,7 @@ class TaskRawDataCollection(Task):
                 error_msg = feed_backend(es_col_url, clean, fetch_archive, backend, backend_args,
                                          cfg[ds]['raw_index'], cfg[ds]['enriched_index'], project,
                                          es_aliases=es_aliases, projects_json_repo=repo,
-                                         repo_labels=repo_labels)
+                                         repo_labels=repo_labels, pipes=pipes)
                 error = {
                     'backend': backend,
                     'repo': repo,

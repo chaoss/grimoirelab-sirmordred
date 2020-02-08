@@ -37,7 +37,7 @@ class Task():
 
     NO_BACKEND_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url',
                          'collect', 'pair-programming', 'fetch-archive', 'studies',
-                         'node_regex']
+                         'node_regex', 'pipes']
     PARAMS_WITH_SPACES = ['blacklist-jobs']
 
     def __init__(self, config):
