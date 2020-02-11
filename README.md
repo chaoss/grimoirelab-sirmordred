@@ -183,87 +183,636 @@ raw index but it will enriched in the enriched index.
 ### Supported data sources
 
 These are the data sources GrimoireLab supports:
-- askbot: Questions and answers from Askbot site
-- bugzilla: Bugs from Bugzilla
-- bugzillarest: Bugs from Bugzilla server (>=5.0) using its REST API
-- confluence: contents from Confluence
-- crates: packages from Crates.io
-- discourse: Topics from Discourse
-- dockerhub: Repositories info from DockerHub
-- functest: Tests from functest
-- gerrit: Reviews from Gerrit
-- git: Commits from Git
-- github: Issues and PRs from GitHub
-- gitlab: Issues and MRs from GitLab
-- google_hits: number of hits for a set of keywords from Google
-- groupsio: messages from Groupsio
-- hyperkitty: Messages from a HyperKitty
-- jenkins: Builds from a Jenkins
-- jira: Issues data from JIRA issue trackers
-- kitsune: Questions and answers from KitSune
-- mattermost: Messages from Mattermost channels
-- mbox: Messages from MBox files
-- mediawiki: Pages and revisions from MediaWiki
-- meetup: Events from Meetup groups
-- mozillaclub: Events from Mozillaclub
-- nntp: Articles from NNTP newsgroups
-- phabricator: Tasks from Phabricator
-- pipermail: Messages from Pipermail
-- puppetforge: Modules and their releases from Puppet's forge
-- redmine: Issues from Redmine
-- remo: Events, people and activities from ReMo
-- rss: Entries from RSS feeds
-- slack: Messages from Slack channels
-- stackexchange: Questions, answers and comments from StackExchange
-- supybot: Messages from Supybot log files
-- telegram: Messages from Telegram
-- twitter: Messages from Twitter
 
-The following sub-sections show how the data sources that is not an URL must be included in the data
-sources file in order to be analyzed.
-
-#### gitlab
-
-GitLab issues and merge requests need to be configured in two different sections.
-
+#### askbot
+Questions and answers from Askbot site
+- projects.json
 ```
 {
     "Chaoss": {
-        "gitlab:issues": [
-            "https://gitlab.com/Molly/first",
-            "https://gitlab.com/Molly/second"
-        ],
-        "gitlab:merge": [
-            "https://gitlab.com/Molly/first",
-            "https://gitlab.com/Molly/second"
-        ],
+        "askbot": [
+            "https://ask.puppet.com"
+        ]
     }
 }
 ```
+- setup.cfg
+```
+[askbot]
+raw_index = askbot_raw
+enriched_index = askbot_enrcihed
+```
+#### bugzilla
+Bugs from Bugzilla
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "bugzilla": [
+            "https://bugs.eclipse.org/bugs/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[bugzilla]
+raw_index = bugzilla_raw
+enriched_index = bugzilla_enriched
+backend-user = yyyy (optional)
+backend-password = xxxx (optional)
+no-archive = true (suggested)
+```
+#### bugzillarest
+Bugs from Bugzilla server (>=5.0) using its REST API
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "bugzillarest": [
+            "https://bugzilla.mozilla.org"
+        ]
+    }
+}
+```
+
+- setup.cfg
+```
+[bugzillarest]
+raw_index = bugzillarest_raw
+enriched_index = bugzillarest_enriched
+backend-user = yyyy (optional)
+backend-password = xxxx (optional)
+no-archive = true (suggested)
+```
+#### confluence
+contents from Confluence
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "confluence": [
+            "https://wiki.open-o.org/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[confluence]
+raw_index = confluence_raw
+enriched_index = confluence_enriched
+no-archive = true (suggested)
+```
+#### crates
+packages from Crates.io
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "crates": [
+            ""
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[crates]
+raw_index = crates_raw
+enriched_index = crates_enriched
+```
+#### discourse
+Topics from Discourse
+- projects.json
+```
+{
+    "Chaoss": {
+        "discourse": [
+            "https://foro.mozilla-hispano.org/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[discourse]
+raw_index = discourse_raw
+enriched_index = discourse_enriched
+no-archive = true (suggested)
+```
+#### dockerhub
+Repositories info from DockerHub
+- projects.json
+```
+{
+    "Chaoss": {
+        "dockerhub": [
+            "bitergia kibiter"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[dockerhub]
+raw_index = dockerhub_raw
+enriched_index = dockerhub_enriched
+no-archive = true (suggested)
+```
+#### functest
+Tests from functest
+- projects.json
+```
+{
+    "Chaoss": {
+        "functest": [
+            "http://testresults.opnfv.org/test/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[functest]
+raw_index = functest_raw
+enriched_index = functest_enriched
+no-archive = true (suggested)
+```
+#### gerrit
+Reviews from Gerrit
+
+You have to add your public key in the gerrit server.
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "gerrit": [
+            "review.opendev.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[gerrit]
+raw_index = gerrit_raw
+enriched_index = gerrit_enriched
+user = xxxx
+no-archive = true (suggested)
+blacklist-ids = [] (optional)
+max-reviews = 500 (optional)
+studies = [enrich_demography:gerrit, enrich_onion:gerrit] (optional)
+
+[enrich_demography:gerrit] (optional)
+
+[enrich_onion:gerrit] (optional)
+in_index = gerrit_enriched
+out_index = gerrit-onion_enriched
+```
+#### git
+Commits from Git
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "git": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[git]
+raw_index = git_raw
+enriched_index = git_enriched
+latest-items = true (suggested)
+studies = [enrich_demography:git, enrich_git_branches:git, enrich_areas_of_code:git, enrich_onion:git, enrich_extra_data:git] (optional)
+
+[enrich_demography:git] (optional)
+
+[enrich_git_branches:git] (optional)
+
+[enrich_areas_of_code:git] (optional)
+in_index = git_raw
+out_index = git-aoc_enriched
+
+[enrich_onion:git] (optional)
+in_index = git_enriched
+out_index = git-onion_enriched
+
+[enrich_extra_data:git]
+json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+```
+#### github
+Issues and PRs from GitHub
+
+##### issue
+- projects.json
+```
+{
+    "Chaoss": {
+        "github:issue": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[github:issue]
+raw_index = github_raw
+enriched_index = github_enriched
+api-token = xxxx
+category = issue
+sleep-for-rate = true
+no-archive = true (suggested)
+studies = [enrich_onion:github, enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:github] (optional)
+
+[enrich_onion:github] (optional)
+in_index_iss = github_issues_onion-src
+in_index_prs = github_prs_onion-src
+out_index_iss = github-issues-onion_enriched
+out_index_prs = github-prs-onion_enriched
+
+[enrich_geolocation:user] (optional)
+location_field = user_location
+geolocation_field = user_geolocation
+
+[enrich_geolocation:assignee] (optional)
+location_field = assignee_location
+geolocation_field = assignee_geolocation
+
+[enrich_extra_data:github]
+json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+```
+##### pull request
+- projects.json
+```
+{
+    "Chaoss": {
+        "github:pull": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[github:pull]
+raw_index = github-pull_raw
+enriched_index = github-pull_enriched
+api-token = xxxx
+category = pull_request
+sleep-for-rate = true
+no-archive = true (suggested)
+studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:github] (optional)
+
+[enrich_geolocation:user]
+location_field = user_location
+geolocation_field = user_geolocation
+
+[enrich_geolocation:assignee]
+location_field = assignee_location
+geolocation_field = assignee_geolocation
+
+[enrich_extra_data:github]
+json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+```
+##### repo
+The number of forks, starts, and subscribers in the repository.
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "github:repo": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[github:repo]
+raw_index = github-repo_raw
+enriched_index = github-repo_enriched
+api-token = xxxx
+category = repository
+sleep-for-rate = true
+no-archive = true (suggested)
+studies = [enrich_extra_data:github]
+
+[enrich_extra_data:github]
+json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+```
+#### github2
+Comments from GitHub
+
+The corresponding dashboards can be automatically uploaded by setting `github-comments`
+to `true` in the `panels` section within the `setup.cfg`
+
+##### issue
+- projects.json
+```
+{
+    "Chaoss": {
+        "github2:issue": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[github2:issue]
+api-token = xxxx
+raw_index = github2-issues_raw
+enriched_index = github2-issues_enriched
+sleep-for-rate = true
+category = issue
+no-archive = true (suggested)
+studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:github2] (optional)
+
+[enrich_geolocation:user] (optional)
+location_field = user_location
+geolocation_field = user_geolocation
+
+[enrich_geolocation:assignee] (optional)
+location_field = assignee_location
+geolocation_field = assignee_geolocation
+
+[enrich_extra_data:github2]
+json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+```
+##### pull request
+- projects.json
+```
+{
+    "Chaoss": {
+        "github2:pull": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[github2:pull]
+api-token = xxxx
+raw_index = github2-pull_raw
+enriched_index = github2-pull_enriched
+sleep-for-rate = true
+category = pull_request
+no-archive = true (suggested)
+studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:git] (optional)
+
+[enrich_geolocation:user] (optional)
+location_field = user_location
+geolocation_field = user_geolocation
+
+[enrich_geolocation:assignee] (optional)
+location_field = assignee_location
+geolocation_field = assignee_geolocation
+
+[enrich_extra_data:github2]
+json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+```
+
+#### gitlab
+Issues and MRs from GitLab
+
+GitLab issues and merge requests need to be configured in two different sections.
+The corresponding dashboards can be automatically uploaded by setting `gitlab-issue` and `gitlab-merge`
+to `true` in the `panels` section within the `setup.cfg`
 
 If a given GitLab repository is under more than 1 level, all the slashes `/` starting from the second level have to be
 replaced by `%2F`. For instance, for a repository with a structure similar to this one
 `https://gitlab.com/Molly/lab/first`.
-
+##### issue
+- projects.json
 ```
 {
     "Chaoss": {
         "gitlab:issues": [
-            "https://gitlab.com/Molly/lab%2Ffirst"
-        ],
+            "https://gitlab.com/Molly/first",
+            "https://gitlab.com/Molly/lab%2Fsecond"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[panels]
+gitlab-issues = true
+
+[gitlab:issue]
+category = issue
+raw_index = gitlab-issues_raw
+enriched_index = gitlab-issues_enriched
+api-token = xxxx
+sleep-for-rate = true
+no-archive = true (suggested)
+studies = [enrich_onion:gitlab-issue] (optional)
+
+[enrich_onion:gitlab-issue] (optional)
+in_index = gitlab-issues_enriched
+out_index = gitlab-issues-onion_enriched
+data_source = gitlab-issues
+```
+##### merge request
+- projects.json
+```
+{
+    "Chaoss": {
         "gitlab:merge": [
-            "https://gitlab.com/Molly/lab%2Ffirst"
+            "https://gitlab.com/Molly/first",
+            "https://gitlab.com/Molly/lab%2Fsecond"
         ],
     }
 }
 ```
+- setup.cfg
+```
+[panels]
+gitlab-merges = true
 
+[gitlab:merge]
+category = merge_request
+raw_index = gitlab-mrs_raw
+enriched_index = gitlab-mrs_enriched
+api-token = xxxx
+sleep-for-rate = true
+no-archive = true (suggested)
+studies = [enrich_onion:gitlab-merge] (optional)
 
+[enrich_onion:gitlab-merge] (optional)
+in_index = gitlab-mrs_enriched
+out_index = gitlab-mrs-onion_enriched
+data_source = gitlab-merges
+
+```
+
+#### google_hits
+Number of hits for a set of keywords from Google
+- projects.json
+```
+{
+    "Chaoss": {
+        "google_hits": [
+            "bitergia grimoirelab"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[google_hits]
+raw_index = google_hits_raw
+enriched_index =google_hits_enriched
+```
+#### groupsio
+Messages from Groupsio
+
+To know the lists you are subscribed to: https://gist.github.com/valeriocos/ad33a0b9b2d13a8336230c8c59df3c55
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "groupsio": [
+            "group1",
+            "group2"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[groupsio]
+raw_index = groupsio_raw
+enriched_index = groupsio_enriched
+email = yyyy
+password = xxxx
+```
+#### hyperkitty
+Messages from a HyperKitty
+- projects.json
+```
+{
+    "Chaoss": {
+        "hyperkitty": [
+            "https://lists.mailman3.org/archives/list/mailman-users@mailman3.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[hyperkitty]
+raw_index = hyperkitty_raw
+enriched_index = hyperkitty_enriched
+```
+#### jenkins
+Builds from a Jenkins
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "jenkins": [
+            "https://build.opnfv.org/ci"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[jenkins]
+raw_index = jenkins_raw
+enriched_index = jenkins_enriched
+no-archive = true (suggested)
+```
+#### jira
+Issues data from JIRA issue trackers
+
+- projects.json
+```
+{
+    "Chaoss":{
+        "jira": [
+            "https://jira.opnfv.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[jira]
+raw_index = jira_raw
+enriched_index = jira_enriched
+no-archive = true (suggested)
+backend-user = yyyy (optional)
+backend-password = xxxx (optional)
+```
+#### kitsune
+Questions and answers from KitSune
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "kitsune": [
+            ""
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[kitsune]
+raw_index = kitsune_raw
+enriched_index = kitsune_enriched
+```
+
+#### mattermost
+Messages from Mattermost channels
+- projects.json
+```
+{
+    "Chaoss": {
+        "mattermost": [
+            "https://chat.openshift.io 8j366ft5affy3p36987pcugaoa"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[mattermost]
+raw_index = mattermost_raw
+enriched_index = mattermost_enriched
+api-token = xxxx
+```
 #### mbox
+Messages from MBox files
 
 For mbox files, it is needed the name of the mailing list and the path where the mboxes can be found. In the example
 below, the name of the mailing list is set to "mirageos-devel".
-
+- projects.json
 ```
 {
     "Chaoss": {
@@ -273,11 +822,38 @@ below, the name of the mailing list is set to "mirageos-devel".
     }
 }
 ```
+- setup.cfg
+```
+[mbox]
+raw_index = mbox_raw
+enriched_index = mbox_enriched
+```
+#### mediawiki
+Pages and revisions from MediaWiki
 
+-projects.json
+```
+{
+    "Chaoss": {
+        "mediawiki": [
+            "https://www.mediawiki.org/w https://www.mediawiki.org/wiki"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[mediawiki]
+raw_index = mediawiki_raw
+enriched_index = mediawiki_enriched
+no-archive = true (suggested)
+```
 #### meetup
+Events from Meetup groups
 
-For meetup groups it is only needed the identifier of the meetup group.
-
+For meetup groups it is only needed the identifier of the meetup group
+and an API token: https://chaoss.github.io/grimoirelab-tutorial/gelk/meetup.html#gathering-meetup-groups-data
+- projects.json
 ```
 {
     "Chaoss": {
@@ -288,13 +864,41 @@ For meetup groups it is only needed the identifier of the meetup group.
     }
 }
 ```
+- setup.cfg
+```
+[meetup]
+raw_index = meetup_raw
+enriched_index = meetup_enriched
+api-token = xxxx
+sleep-for-rate = true
+sleep-time = "300" (optional)
+no-archive = true (suggested)
 
-
+```
+#### mozillaclub
+Events from Mozillaclub
+- projects.json
+```
+{
+    "Chaoss": {
+        "mozillaclub": [
+            "https://spreadsheets.google.com/feeds/cells/1QHl2bjBhMslyFzR5XXPzMLdzzx7oeSKTbgR5PM8qp64/ohaibtm/public/values?alt=json"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[mozillaclub]
+raw_index = mozillaclub_raw
+enriched_index = mozillaclub_enriched
+```
 #### nntp
+Articles from NNTP newsgroups
 
 The way to setup netnews is adding the server and the news channel to be monitored. In the example below,
 the `news.myproject.org` is the server name.
-
+- projects.json
 ```
 {
     "Chaoss": {
@@ -303,15 +907,137 @@ the `news.myproject.org` is the server name.
             "news.myproject.org mozilla.dev.tech.electrolysis",
             "news.myproject.org mozilla.dev.tech.gfx",
             "news.myproject.org mozilla.dev.tech.java"
-            ]
+        ]
     }
 }
 ```
+- setup.cfg
+```
+[nntp]
+raw_index = nntp_raw
+enriched_index =  nntp_enriched
+```
+#### phabricator
+Tasks from Phabricator
 
+- projects.json
+```
+{
+    "Chaoss": {
+        "phabricator": [
+            "https://phabricator.wikimedia.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[phabricator]
+raw_index = phabricator_raw
+enriched_index = phabricator_enriched
+api-token = xxxx
+no-archive = true (suggested)
+```
+#### pipermail
+Messages from Pipermail
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "pipermail": [
+            "https://lists.linuxfoundation.org/pipermail/grimoirelab-discussions/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[pipermail]
+raw_index = pipermail_raw
+enriched_index = pipermail_enriched
+```
+#### puppetforge
+Modules and their releases from Puppet's forge
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "puppetforge": [
+            ""
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[puppetforge]
+raw_index = puppetforge_raw
+enriched_index = puppetforge_enriched
+```
+#### redmine
+Issues from Redmine
+- project.json
+```
+{
+    "Chaoss": {
+        "redmine": [
+            "http://tracker.ceph.com/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[redmine]
+raw_index = redmine_raw
+enriched_index = redmine_enriched
+api-token = XXXXX
+```
+#### remo
+Events, people and activities from ReMo
+- project.json
+```
+{
+    "Chaoss": {
+        "remo": [
+            "https://reps.mozilla.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[remo]
+raw_index = remo_raw
+enriched_index = remo_enriched
+```
+
+#### rss
+Entries from RSS feeds
+
+- project.json
+```
+{
+    "Chaoss": {
+        "remo": [
+            "https://reps.mozilla.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[rss]
+raw_index = rss_raw
+enriched_index = rss_enriched
+```
 #### slack
+Messages from Slack channels
 
 The information needed to monitor slack channels is the channel id.
-
+- projects.json
 ```
 {
     "Chaoss": {
@@ -322,12 +1048,45 @@ The information needed to monitor slack channels is the channel id.
     }
 }
 ```
+- setup.cfg
+```
+[slack]
+raw_index = slack_raw
+enriched_index = slack_enriched
+api-token = xxxx
+no-archive = true (suggested)
+```
+#### stackexchange
+Questions, answers and comments from StackExchange
 
+- projects.json
+```
+{
+    "Chaoss": {
+        "stackexchange": [
+            "http://stackoverflow.com/questions/tagged/chef",
+            "http://stackoverflow.com/questions/tagged/chefcookbook",
+            "http://stackoverflow.com/questions/tagged/ohai",
+            "http://stackoverflow.com/questions/tagged/test-kitchen",
+            "http://stackoverflow.com/questions/tagged/knife"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[stackexchange]
+raw_index = stackexchange_raw
+enriched_index = stackexchange_enriched
+api-token = xxxx
+no-archive = true (suggested)
+```
 #### supybot
+Messages from Supybot log files
 
 For supybot files, it is needed the name of the IRC channel and the path where the logs can be found. In the example
 below, the name of the channel is set to "irc://irc.freenode.net/atomic".
-
+- projects.json
 ```
 {
     "Chaoss": {
@@ -337,20 +1096,57 @@ below, the name of the channel is set to "irc://irc.freenode.net/atomic".
     }
 }
 ```
+- setup.cfg
+```
+[supybot]
+raw_index = supybot_raw
+enriched_index = supybot_enriched
+```
 
+#### telegram
+Messages from Telegram
+
+You have to need an API token: https://github.com/chaoss/grimoirelab-perceval#telegram
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "telegram": [
+            "Mozilla_analytics"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[telegram]
+raw_index = telegram_raw
+enriched_index = telegram_enriched
+api-token = XXXXX
+```
 #### twitter
+Messages from Twitter
 
-For twitter it is only needed the name of the hashtag.
+For twitter it is only needed the name of the hashtag and an API token: https://gist.github.com/valeriocos/7d4d28f72f53fbce49f1512ba77ef5f6
 
+- projects.json
 ```
 {
     "Chaoss": {
         "twitter": [
             "bitergia"
         ]
+    }
 }
 ```
-
+- setup.cfg
+```
+[twitter]
+raw_index = twitter_raw
+enriched_index = twitter_enriched
+api-token = XXXX
+```
 ## Micro Mordred
 
 Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
