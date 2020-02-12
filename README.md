@@ -8,6 +8,10 @@ The setup file holds the configuration to arrange all process underlying Grimoir
 to activate (e.g., collection, enrichment) and where to store the logs, as well as the location and credentials for SortingHat and the ElasticSearch instances where the raw and enriched data 
 is stored. Furthermore, it also includes backend sections to set up the parameters used by Perceval to access the software development tools (e.g., GitHub tokens, gerrit username) and fetch their data.
 
+Dashboards can be automatically uploaded via the `setup.cfg` if the phase `panels` is enabled. The `Data Status` and `Overview` dashboards will contain
+widgets that summarize the information of the data sources declared in the `setup.cfg`. Note that the widgets are not updated when adding
+new data sources, thus you need to manually delete the dashboards `Data Status` and `Overview`, and restart mordred again (making sure that the option `panels` is enabled).
+
 ### [es_collection] 
 
  * **arthur** (bool: False): Use arthur for collecting items from perceval
@@ -59,6 +63,7 @@ is stored. Furthermore, it also includes backend sections to set up the paramete
  * **enrichment** (bool: True): Activate enrichment of items (**Required**)
  * **identities** (bool: True): Do the identities tasks (**Required**)
  * **panels** (bool: True): Load panels, create alias and other tasks related (**Required**)
+
 ### [projects] 
 
  * **projects_file** (str: projects.json): Projects file path with repositories to be collected grouped by projects
