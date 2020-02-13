@@ -552,7 +552,7 @@ enriched_index = github2-issues_enriched
 sleep-for-rate = true
 category = issue
 no-archive = true (suggested)
-studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:github2] (optional)
+studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:github2, enrich_feelings] (optional)
 
 [enrich_geolocation:user] (optional)
 location_field = user_location
@@ -564,6 +564,10 @@ geolocation_field = assignee_geolocation
 
 [enrich_extra_data:github2]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+
+[enrich_feelings]
+attributes = [title, body]
+nlp_rest_url = http://localhost:2901
 ```
 ##### pull request
 - projects.json
@@ -586,7 +590,7 @@ enriched_index = github2-pull_enriched
 sleep-for-rate = true
 category = pull_request
 no-archive = true (suggested)
-studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:git] (optional)
+studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:git, enrich_feelings] (optional)
 
 [enrich_geolocation:user] (optional)
 location_field = user_location
@@ -598,6 +602,10 @@ geolocation_field = assignee_geolocation
 
 [enrich_extra_data:github2]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+
+[enrich_feelings]
+attributes = [title, body]
+nlp_rest_url = http://localhost:2901
 ```
 
 #### gitlab
