@@ -329,6 +329,48 @@ raw_index = dockerhub_raw
 enriched_index = dockerhub_enriched
 no-archive = true (suggested)
 ```
+#### dockerdeps
+Dependencies extracted from Docker files. Requires https://github.com/crossminer/crossJadolint
+- projects.json
+```
+{
+    "Chaoss": {
+        "dockerdeps": [
+            "https://github.com/chaoss/grimoirelab"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[dockerdeps]
+raw_index = dockerdeps_raw
+enriched_index = dockerdeps_enrich
+category = code_dependencies_jadolint
+exec-path = <jadolint-local-path>/jadolint.jar
+in-paths = [Dockerfile, Dockerfile-full, Dockerfile-secured, Dockerfile-factory, Dockerfile-installed]
+```
+#### dockersmells
+Smells extracted from Docker files. Requires https://github.com/crossminer/crossJadolint 
+- projects.json
+```
+{
+    "Chaoss": {
+        "dockersmells": [
+            "https://github.com/chaoss/grimoirelab"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[dockersmells]
+raw_index = dockersmells_raw
+enriched_index = dockersmells_enrich
+category = code_quality_jadolint
+exec-path = <jadolint-local-path>/jadolint.jar
+in-paths = [Dockerfile, Dockerfile-full, Dockerfile-secured, Dockerfile-factory, Dockerfile-installed]
+```
 #### functest
 Tests from functest
 - projects.json
