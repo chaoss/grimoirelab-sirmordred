@@ -416,6 +416,9 @@ out_index = git-onion_enriched
 
 [enrich_extra_data:git]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+
+[enrich_forecast_activity]
+out_index = git_study_forecast
 ```
 #### github
 Issues and PRs from GitHub
