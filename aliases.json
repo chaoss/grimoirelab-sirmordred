@@ -764,12 +764,12 @@
   "supybot": {
     "raw": [
       {
-        "alias": "supybot-raw"
+        "alias": "irc-raw"
       }
     ],
     "enrich": [
       {
-        "alias": "supybot"
+        "alias": "irc"
       },
       {
         "alias": "affiliations"

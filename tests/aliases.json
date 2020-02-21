@@ -144,8 +144,8 @@
       "enrich": ["stackoverflow", "affiliations"]
   },
   "supybot": {
-      "raw": ["supybot-raw"],
-      "enrich": ["supybot", "affiliations"]
+      "raw": ["irc-raw"],
+      "enrich": ["irc", "affiliations"]
   },
   "telegram": {
       "raw": ["telegram-raw"],
