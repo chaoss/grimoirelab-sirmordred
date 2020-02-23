@@ -1241,6 +1241,8 @@ kibiter:
     - PROJECT_NAME=Development
     - NODE_OPTIONS=--max-old-space-size=1000
     - ELASTICSEARCH_URL=https://elasticsearch:9200
+    - ELASTICSEARCH_USER=kibanaserver
+    - ELASTICSEARCH_PASSWORD=kibanaserver
   links:
     - elasticsearch
   ports:
@@ -1263,6 +1265,14 @@ mariadb:
       max-size: "100m"
       max-file: "3"
 ```
+
+Save the above into a docker-compose.yml file and run
+```
+docker-compose up -d
+```
+to get ElasticSearch, Kibiter and MariaDB. Comment/remove the mariadb section in case you have MariaDB or MySQL already installed in your system.
+
+You can read more about docker and docker-compose [here](https://docs.docker.com/compose/)
 
 ### Only docker
 
