@@ -565,7 +565,7 @@ class Config():
                    "enrich_pull_requests", "enrich_git_branches", "enrich_cocom_analysis",
                    "enrich_colic_analysis", "enrich_geolocation", "enrich_forecast_activity",
                    "enrich_extra_data", "enrich_backlog_analysis", "enrich_feelings")
-        
+
         return studies
 
     def get_active_data_sources(self):
