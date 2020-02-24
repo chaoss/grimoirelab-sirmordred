@@ -262,14 +262,6 @@
       }
     ]
   },
-  "github2:issue": {
-      "raw": ["github2_issues-raw"],
-      "enrich": ["github2_issues"]
-  },
-  "github2:pull": {
-      "raw": ["github2_pull_requests-raw"],
-      "enrich": ["github2_pull_requests"]
-  },
   "github": {
     "raw": [
       {
@@ -772,12 +764,12 @@
   "supybot": {
     "raw": [
       {
-        "alias": "supybot-raw"
+        "alias": "irc-raw"
       }
     ],
     "enrich": [
       {
-        "alias": "supybot"
+        "alias": "irc"
       },
       {
         "alias": "affiliations"

@@ -23,8 +23,6 @@
 import configparser
 import logging
 
-from sirmordred._version import __version__
-
 from sirmordred.task import Task
 from grimoire_elk.utils import get_connectors
 
@@ -566,8 +564,8 @@ class Config():
         studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion", "kafka_kip",
                    "enrich_pull_requests", "enrich_git_branches", "enrich_cocom_analysis",
                    "enrich_colic_analysis", "enrich_geolocation", "enrich_extra_data",
-                   "enrich_backlog_analysis")
-
+                   "enrich_backlog_analysis", "enrich_feelings")
+        
         return studies
 
     def get_active_data_sources(self):
@@ -705,70 +703,3 @@ class Config():
             conf = self.__add_types(raw_conf)
             self._add_to_conf(conf)
         self.check_config(self.conf)
-
-    @staticmethod
-    def write_doc(filename):
-
-        def format_params(section):
-            params_md = ""
-
-            for param in sorted(section):
-                pvalue = section[param]
-                param_md = " * **%s** (%s: %s)" % (param, pvalue['type'].__name__, pvalue['default'])
-                if 'description' in pvalue:
-                    param_md += ": " + str(pvalue['description'])
-                if not pvalue['optional']:
-                    param_md += " (**Required**)"
-                params_md += param_md + "\n"
-
-            return params_md
-
-        print("Generating SirMordred config documentation")
-        general_sections = Config.general_params()
-
-        config_md = "# SirMordred %s " \
-                    "[![Build Status]" \
-                    "(https://travis-ci.org/chaoss/grimoirelab-sirmordred.svg?branch=master)]" \
-                    "(https://travis-ci.org/chaoss/grimoirelab-sirmordred)" \
-                    "[![Coverage Status]" \
-                    "(https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)]" \
-                    "(https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)\n\n" % __version__
-
-        config_md += "SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, " \
-                     "via a configuration file. Below you can find details about the different sections composing " \
-                     "the configuration file.\n\n"
-
-        config_md += "## General Sections\n\n"
-        for section in sorted(general_sections):
-            config_md += "### [" + section + "] \n\n"
-            config_md += format_params(general_sections[section])
-
-        config_md += "## Backend Sections\n\n"
-        config_md += "In this section, a template of a backend section is shown.\n" \
-                     "Further information about Perceval backends parameters are available at:\n\n" \
-                     "* Params details: http://perceval.readthedocs.io/en/latest/perceval.backends.core.html\n" \
-                     "* Examples: https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg\n\n"
-        config_md += "### [backend-name:tag] # :tag is optional\n"
-        config_md += "* **collect** (bool: True): enable/disable collection phase\n"
-        config_md += "* **raw_index** (str: None): Index name in which to store the raw items (**Required**)\n"
-        config_md += "* **enriched_index** (str: None): Index name in which to store the enriched items (**Required**)\n"
-        config_md += "* **studies** (list: []): List of studies to be executed\n"
-        config_md += "* **backend-param-1**: ..\n"
-        config_md += "* **backend-param-2**: ..\n"
-        config_md += "* **backend-param-n**: ..\n\n"
-
-        config_md += "## Studies Sections\n\n"
-        config_md += "In this section, a template of a study section is shown.\n" \
-                     "A complete list of studies parameters is available at:\n\n" \
-                     "* https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg\n\n"
-        config_md += "### [studies-name:tag] # :tag is optional\n"
-        config_md += "* **study-param-1**: ..\n"
-        config_md += "* **study-param-2**: ..\n"
-        config_md += "* **study-param-n**: ..\n"
-
-        with open(filename, "w") as config_doc:
-            config_doc.write(config_md)
-
-
-if __name__ == '__main__':
-    Config.write_doc("../README.md")

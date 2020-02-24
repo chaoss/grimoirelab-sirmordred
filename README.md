@@ -864,21 +864,6 @@ Questions and answers from KitSune
 raw_index = kitsune_raw
 enriched_index = kitsune_enriched
 ```
-
-#### mattermost
-Messages from Mattermost channels
-- projects.json
-```
-{
-    "Chaoss": {
-        "mattermost": [
-            "https://chat.openshift.io 8j366ft5affy3p36987pcugaoa"
-        ]
-    }
-}
-```
-- setup.cfg
-```
 [mattermost]
 raw_index = mattermost_raw
 enriched_index = mattermost_enriched
@@ -1030,6 +1015,63 @@ Messages from Pipermail
 ```
 - setup.cfg
 ```
+[pipermail]
+raw_index = pipermail_raw
+enriched_index = pipermail_enriched
+```
+#### puppetforge
+Modules and their releases from Puppet's forge
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "puppetforge": [
+            ""
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[puppetforge]
+raw_index = puppetforge_raw
+enriched_index = puppetforge_enriched
+```
+#### redmine
+Issues from Redmine
+- project.json
+```
+{
+    "Chaoss": {
+        "redmine": [
+            "http://tracker.ceph.com/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[redmine]
+raw_index = redmine_raw
+enriched_index = redmine_enriched
+api-token = XXXXX
+```
+#### remo
+Events, people and activities from ReMo
+- project.json
+```
+{
+    "Chaoss": {
+        "remo": [
+            "https://reps.mozilla.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+
 [pipermail]
 raw_index = pipermail_raw
 enriched_index = pipermail_enriched
