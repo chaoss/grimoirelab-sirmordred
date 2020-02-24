@@ -864,6 +864,21 @@ Questions and answers from KitSune
 raw_index = kitsune_raw
 enriched_index = kitsune_enriched
 ```
+
+#### mattermost
+Messages from Mattermost channels
+- projects.json
+```
+{
+    "Chaoss": {
+        "mattermost": [
+            "https://chat.openshift.io 8j366ft5affy3p36987pcugaoa"
+        ]
+    }
+}
+```
+- setup.cfg
+```
 [mattermost]
 raw_index = mattermost_raw
 enriched_index = mattermost_enriched
