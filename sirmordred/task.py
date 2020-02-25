@@ -124,36 +124,6 @@ class Task():
 
         return params
 
-    def _compose_arthur_params(self, backend_section, repo):
-        # Params for the backends must be in a dictionary for arthur
-
-        params = {}
-
-        backend = self.get_backend(backend_section)
-        connector = get_connector_from_name(backend)
-        ocean = connector[1]
-
-        # First add the params from the URL, which is backend specific
-        params.update(ocean.get_arthur_params_from_url(repo))
-
-        # Now add the backend params included in the config file
-        for p in self.conf[backend_section]:
-            if p in self.NO_BACKEND_FIELDS:
-                # These params are not for the perceval backend
-                continue
-            if self.conf[backend_section][p]:
-                # Command line - in param is converted to _ in python variable
-                p_ = p.replace("-", "_")
-                if p in self.PARAMS_WITH_SPACES:
-                    # '--blacklist-jobs', 'a', 'b', 'c'
-                    # 'a', 'b', 'c' must be added as items in the list
-                    list_params = self.conf[backend_section][p].split()
-                    params[p_] = list_params
-                else:
-                    params[p_] = self.conf[backend_section][p]
-
-        return params
-
     def _compose_perceval_params(self, backend_section, repo):
         backend = self.get_backend(backend_section)
         connector = get_connector_from_name(backend)

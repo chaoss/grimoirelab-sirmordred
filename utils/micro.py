@@ -25,7 +25,7 @@ import logging
 import sys
 
 from sirmordred.config import Config
-from sirmordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
+from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_identities import TaskIdentitiesMerge, TaskIdentitiesLoad
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
@@ -36,13 +36,12 @@ DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
 INFO_LOG_FORMAT = "%(asctime)s %(message)s"
 
 
-def micro_mordred(cfg_path, backend_sections, raw, arthur, identities_load, identities_merge, enrich, panels):
+def micro_mordred(cfg_path, backend_sections, raw, identities_load, identities_merge, enrich, panels):
     """Execute the Mordred tasks using the configuration file (`cfg_path`).
 
     :param cfg_path: the path of a Mordred configuration file
     :param backend_sections: the backend sections where the raw/enrich/identities phases will be executed
     :param raw: if true, it activates the collection of raw data
-    :param arthur: if true, it enables Arthur to collect the raw data
     :param identities_load: if true, it activates the identities loading process
     :param identities_merge: if true, it activates the identities merging process
     :param enrich: if true, it activates the enrichment of the raw data
@@ -53,7 +52,7 @@ def micro_mordred(cfg_path, backend_sections, raw, arthur, identities_load, iden
 
     if raw:
         for backend in backend_sections:
-            get_raw(config, backend, arthur)
+            get_raw(config, backend)
 
     if identities_load:
         get_identities_load(config)
@@ -69,19 +68,14 @@ def micro_mordred(cfg_path, backend_sections, raw, arthur, identities_load, iden
         get_panels(config)
 
 
-def get_raw(config, backend_section, arthur):
-    """Execute the raw phase for a given backend section, optionally using Arthur
+def get_raw(config, backend_section):
+    """Execute the raw phase for a given backend section
 
     :param config: a Mordred config object
     :param backend_section: the backend section where the raw phase is executed
-    :param arthur: if true, it enables Arthur to collect the raw data
     """
 
-    if arthur:
-        task = TaskRawDataArthurCollection(config, backend_section=backend_section)
-    else:
-        task = TaskRawDataCollection(config, backend_section=backend_section)
-
+    task = TaskRawDataCollection(config, backend_section=backend_section)
     TaskProjects(config).execute()
     try:
         task.execute()
@@ -167,8 +161,6 @@ def get_params_parser():
     parser.add_argument('-g', '--debug', dest='debug',
                         action='store_true',
                         help=argparse.SUPPRESS)
-    parser.add_argument("--arthur", action='store_true', dest='arthur',
-                        help="Enable arthur to collect raw data")
     parser.add_argument("--raw", action='store_true', dest='raw',
                         help="Activate raw task")
     parser.add_argument("--enrich", action='store_true', dest='enrich',
@@ -213,7 +205,7 @@ if __name__ == '__main__':
     config_logging(args.debug)
 
     micro_mordred(args.cfg_path, args.backend_sections,
-                  args.raw, args.arthur,
+                  args.raw,
                   args.identities_load,
                   args.identities_merge,
                   args.enrich,

@@ -3,19 +3,6 @@
 HOME_DIR='/home/bitergia'
 CONF_DIR="$HOME_DIR/conf"
 
-# This could be an ENV var probably (it is defined in mordred conf)
-REDIS="redis"
-
-# arthur on
-arthurd -g -d redis://$REDIS/8 --log-path $HOME_DIR/logs/arthurd --no-archive
-# Give time to arthur to create the raw index
-echo "Waiting for arthur startup completion ..."
-sleep 5
-echo "Starting two workers: collect and update tasks"
-# Two workers
-(arthurw -g -d redis://$REDIS/8 > $HOME_DIR/logs/worker-collect.log 2>&1) &
-(arthurw -g -d redis://$REDIS/8 update > $HOME_DIR/logs/worker-update.log 2>&1) &
-
 rm -f /tmp/.mordred_healthcheck
 
 sirmordred -c $HOME_DIR/conf/setup.cfg

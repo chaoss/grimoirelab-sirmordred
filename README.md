@@ -14,10 +14,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
 
 ### [es_collection] 
 
- * **arthur** (bool: False): Use arthur for collecting items from perceval
- * **arthur_url** (str: None): URL for the arthur service
  * **password** (str: None): Password for connection to Elasticsearch
- * **redis_url** (str: None): URL for the redis service
  * **url** (str: http://172.17.0.1:9200): Elasticsearch URL (**Required**)
  * **user** (str: None): User for connection to Elasticsearch
 ### [es_enrichment] 
@@ -1271,7 +1268,6 @@ Micro Mordred is located in the [/utils](https://github.com/chaoss/grimoirelab-s
 --debug: execute Micro Mordred in debug mode
 
 --raw: activate raw task
---arthur: use Arthur to collect the raw data
 
 --enrich: activate enrich task
 
@@ -1304,7 +1300,6 @@ You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/Mari
 
 - [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
 - [ELK](https://github.com/chaoss/grimoirelab-elk)
-- [King Arthur](https://github.com/chaoss/grimoirelab-kingarthur)
 - [Graal](https://github.com/chaoss/grimoirelab-graal)
 - [Perceval](https://github.com/chaoss/grimoirelab-perceval)
 - [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
@@ -1385,7 +1380,6 @@ the GitHub repos below and cloning them to a target local folder (e.g., `sources
 
 - [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
 - [ELK](https://github.com/chaoss/grimoirelab-elk)
-- [King Arthur](https://github.com/chaoss/grimoirelab-kingarthur)
 - [Graal](https://github.com/chaoss/grimoirelab-graal)
 - [Perceval](https://github.com/chaoss/grimoirelab-perceval)
 - [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)

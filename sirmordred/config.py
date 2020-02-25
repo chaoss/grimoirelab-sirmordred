@@ -227,24 +227,6 @@ class Config():
                     "default": "http://172.17.0.1:9200",
                     "type": str,
                     "description": "Elasticsearch URL"
-                },
-                "arthur": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Use arthur for collecting items from perceval"
-                },
-                "arthur_url": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "URL for the arthur service"
-                },
-                "redis_url": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "URL for the redis service"
                 }
             }
         }
