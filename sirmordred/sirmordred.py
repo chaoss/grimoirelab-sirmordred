@@ -31,21 +31,18 @@ import traceback
 
 from datetime import datetime, timedelta
 
-import redis
 import requests
 
 import warnings
 warnings.filterwarnings("ignore", message="numpy.dtype size changed")
 warnings.filterwarnings("ignore", message="numpy.ufunc size changed")
 
-from arthur.common import Q_STORAGE_ITEMS
-
 from grimoire_elk.enriched.utils import grimoire_con
 
 from sirmordred.config import Config
 from sirmordred.error import DataCollectionError
 from sirmordred.error import DataEnrichmentError
-from sirmordred.task_collection import TaskRawDataCollection, TaskRawDataArthurCollection
+from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
 from sirmordred.task_manager import TasksManager
@@ -62,36 +59,6 @@ class SirMordred:
         self.config = config
         self.conf = config.get_conf()
         self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
-
-    def check_redis_access(self):
-        redis_access = False
-
-        redis_url = self.conf['es_collection']['redis_url']
-        try:
-            # Try to access REDIS items to check it is working
-            conn = redis.StrictRedis.from_url(redis_url)
-            pipe = conn.pipeline()
-            pipe.lrange(Q_STORAGE_ITEMS, 0, 0)
-            pipe.execute()[0]
-            redis_access = True
-        except redis.exceptions.ConnectionError:
-            logging.error("Can not connect to raw items in redis %s", redis_url)
-
-        return redis_access
-
-    def check_arthur_access(self):
-
-        arthur_access = False
-
-        arthur_url = self.conf['es_collection']['arthur_url']
-        try:
-            res = requests.post(arthur_url + "/tasks")
-            res.raise_for_status()
-            arthur_access = True
-        except requests.exceptions.ConnectionError as ex:
-            logging.error("Can not connect to arthur %s", arthur_url)
-
-        return arthur_access
 
     def check_bestiary_access(self):
 
@@ -316,15 +283,6 @@ class SirMordred:
             print('Can not access Elasticsearch service. Exiting sirmordred ...')
             sys.exit(1)
 
-        # If arthur is configured check that it is working
-        if self.conf['es_collection']['arthur']:
-            if not self.check_redis_access():
-                print('Can not access redis service. Exiting sirmordred ...')
-                sys.exit(1)
-            if not self.check_arthur_access():
-                print('Can not access arthur service. Exiting sirmordred ...')
-                sys.exit(1)
-
         # If bestiary is configured check that it is working
         if self.conf['projects']['projects_url']:
             if not self.check_bestiary_access():
@@ -338,10 +296,7 @@ class SirMordred:
         all_tasks_cls = []
         all_tasks_cls.append(TaskProjects)  # projects update is always needed
         if self.conf['phases']['collection']:
-            if not self.conf['es_collection']['arthur']:
-                all_tasks_cls.append(TaskRawDataCollection)
-            else:
-                all_tasks_cls.append(TaskRawDataArthurCollection)
+            all_tasks_cls.append(TaskRawDataCollection)
         if self.conf['phases']['identities']:
             # load identities and orgs periodically for updates
             all_tasks_cls.append(TaskIdentitiesLoad)

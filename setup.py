@@ -65,10 +65,8 @@ setup(name="sirmordred",
           'kidash>=0.4.13',
           'grimoirelab-panels>=0.0.7',
           'sortinghat>=0.7',
-          'kingarthur>=0.1.12',
           'elasticsearch==6.3.1',
           'elasticsearch-dsl==6.3.1',
-          'redis==3.0.0',
           'file-read-backwards==2.0.0'
       ],
       scripts=[
