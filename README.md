@@ -486,7 +486,11 @@ api-token = xxxx
 category = issue
 sleep-for-rate = true
 no-archive = true (suggested)
-studies = [enrich_onion:github, enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:github] (optional)
+studies = [enrich_onion:github, 
+           enrich_geolocation:user, 
+           enrich_geolocation:assignee, 
+           enrich_extra_data:github,
+           enrich_backlog_analysis] (optional)
 
 [enrich_onion:github] (optional)
 in_index_iss = github_issues_onion-src
@@ -504,6 +508,12 @@ geolocation_field = assignee_geolocation
 
 [enrich_extra_data:github]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+
+[enrich_backlog_analysis]
+out_index = github_enrich_backlog
+interval_days = 7
+reduced_labels = [bug,enhancement]
+map_label = [others, bugs, enhancements]
 ```
 ##### pull request
 - projects.json
