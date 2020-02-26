@@ -13,3 +13,4 @@ redis==3.0.0
 -e git+https://github.com/chaoss/grimoirelab-perceval-mozilla/#egg=grimoirelab-perceval-mozilla
 -e git+https://github.com/Bitergia/grimoirelab-perceval-finos/#egg=grimoirelab-perceval-finos
 -e git+https://github.com/chaoss/grimoirelab-kingarthur/#egg=grimoirelab-kingarthur
+-e git+https://github.com/chaoss/grimoirelab-sigils/#egg=grimoirelab-sigils

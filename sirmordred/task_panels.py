@@ -28,6 +28,7 @@ import operator
 import requests
 import yaml
 
+import panels
 from grimoirelab_toolkit.uris import urijoin
 
 from kidash.kidash import import_dashboard, get_dashboard_name, check_kibana_index
@@ -228,6 +229,11 @@ COLIC_MENU = {
         {'name': 'Overview', 'panel': COLIC_PANEL}
     ]
 }
+
+
+def get_sigils_path():
+    sigils_path = panels.__file__.replace('panels/__init__.py', '')
+    return sigils_path
 
 
 class TaskPanels(Task):
@@ -449,12 +455,13 @@ class TaskPanels(Task):
             data_sources = list(data_sources)
             data_sources.append('maniphest')
 
+        panels_path = get_sigils_path() + panel_file
         try:
-            import_dashboard(es_enrich, kibana_url, panel_file, data_sources=data_sources, strict=strict)
+            import_dashboard(es_enrich, kibana_url, panels_path, data_sources=data_sources, strict=strict)
         except ValueError:
-            logger.error("%s does not include release field. Not loading the panel.", panel_file)
+            logger.error("%s does not include release field. Not loading the panel.", panels_path)
         except RuntimeError:
-            logger.error("Can not load the panel %s", panel_file)
+            logger.error("Can not load the panel %s", panels_path)
 
     def execute(self):
         # Configure kibiter
@@ -670,9 +677,10 @@ class TaskPanelsMenu(Task):
             }
             for subentry in entry['menu']:
                 try:
-                    dash_name = get_dashboard_name(subentry['panel'])
+                    panel_path = get_sigils_path() + subentry['panel']
+                    dash_name = get_dashboard_name(panel_path)
                 except FileNotFoundError:
-                    logging.error("Can't open dashboard file %s", subentry['panel'])
+                    logging.error("Can't open dashboard file %s", panel_path)
                     continue
                 # The name for the entry is in self.panels_menu
                 child_item = {
