@@ -82,7 +82,8 @@ class TestTaskPanels(unittest.TestCase):
         config = Config(CONF_FILE)
         task = TaskPanels(config)
 
-        task.create_dashboard(None, data_sources=["stackexchange"])
+        panel_file = 'panels/json/stackoverflow.json'
+        task.create_dashboard(panel_file, data_sources=["stackexchange"])
 
     @httpretty.activate
     def test_create_dashboard_multi_ds_kibiter_6(self):
