@@ -1174,7 +1174,7 @@ enriched_index = supybot_enriched
 #### telegram
 Messages from Telegram
 
-You have to need an API token: https://github.com/chaoss/grimoirelab-perceval#telegram
+You need to have an API token: https://github.com/chaoss/grimoirelab-perceval#telegram
 
 - projects.json
 ```
@@ -1196,7 +1196,7 @@ api-token = XXXXX
 #### twitter
 Messages from Twitter
 
-For twitter it is only needed the name of the hashtag and an API token: https://gist.github.com/valeriocos/7d4d28f72f53fbce49f1512ba77ef5f6
+You need to provide a [search query](https://developer.twitter.com/en/docs/tweets/search/guides/build-standard-query) and an API token (which requires to create an [app](https://developer.twitter.com/en/docs/basics/apps/overview)). The script at https://gist.github.com/valeriocos/7d4d28f72f53fbce49f1512ba77ef5f6 helps obtaining a token.
 
 - projects.json
 ```
