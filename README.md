@@ -229,6 +229,30 @@ backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 no-archive = true (suggested)
 ```
+#### cocom
+Code complexity integration.
+Some graal dependencies like `cloc` might be required, https://github.com/chaoss/grimoirelab-graal#how-to-installcreate-the-executables
+
+- projects.json
+```
+{
+    "Chaoss":{
+        "cocom": [
+            "https://github.com/chaoss/grimoirelab-toolkit"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[cocom]
+raw_index = cocom_chaoss
+enriched_index = cocom_chaoss_enrich
+category = code_complexity_lizard_file
+studies = [enrich_cocom_analysis]
+branches = master
+worktree-path = /tmp/cocom/
+```
 #### bugzillarest
 Bugs from Bugzilla server (>=5.0) using its REST API
 
