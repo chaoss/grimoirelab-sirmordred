@@ -229,6 +229,29 @@ backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 no-archive = true (suggested)
 ```
+#### bugzillarest
+Bugs from Bugzilla server (>=5.0) using its REST API
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "bugzillarest": [
+            "https://bugzilla.mozilla.org"
+        ]
+    }
+}
+```
+
+- setup.cfg
+```
+[bugzillarest]
+raw_index = bugzillarest_raw
+enriched_index = bugzillarest_enriched
+backend-user = yyyy (optional)
+backend-password = xxxx (optional)
+no-archive = true (suggested)
+```
 #### cocom
 Code complexity integration.
 Some graal dependencies like `cloc` might be required, https://github.com/chaoss/grimoirelab-graal#how-to-installcreate-the-executables
@@ -253,28 +276,28 @@ studies = [enrich_cocom_analysis]
 branches = master
 worktree-path = /tmp/cocom/
 ```
-#### bugzillarest
-Bugs from Bugzilla server (>=5.0) using its REST API
-
+#### colic
+Code license backend.
 - projects.json
 ```
 {
-    "Chaoss": {
-        "bugzillarest": [
-            "https://bugzilla.mozilla.org"
+    "Chaoss":{
+        "colic": [
+            "https://github.com/chaoss/grimoirelab-toolkit"
         ]
     }
 }
 ```
-
 - setup.cfg
 ```
-[bugzillarest]
-raw_index = bugzillarest_raw
-enriched_index = bugzillarest_enriched
-backend-user = yyyy (optional)
-backend-password = xxxx (optional)
-no-archive = true (suggested)
+[colic]
+raw_index = colic_chaoss
+enriched_index = colic_chaoss_enrich
+category = code_license_nomos
+studies = [enrich_colic_analysis]
+exec-path = /usr/share/fossology/nomos/agent/nomossa
+branches = master
+worktree-path = /tmp/colic
 ```
 #### confluence
 contents from Confluence
