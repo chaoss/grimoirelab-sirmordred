@@ -1259,6 +1259,55 @@ raw_index = twitter_raw
 enriched_index = twitter_enriched
 api-token = XXXX
 ```
+
+## Troubleshooting
+
+Following is a list of common problems encountered while setting up GrimoireLab
+
+---
+**NOTE**
+
+In order to see the logs, run ```docker-compose up``` without the ```-d``` or ```--detach``` option while starting/(re)creating/building/attaching containers for a service.
+
+---
+
+#### Low Virtual Memory
+
+* Indications:
+  Cannot open ```https://localhost:9200/``` in browser. Shows ```Secure connection Failed```, ```PR_END_OF_FILE_ERROR```, ```SSL_ERROR_SYSCALL in connection to localhost:9200``` messages.
+
+* Diagnosis:
+    Check for the following log in the output of ```docker-compose up```
+   ```
+   elasticsearch_1  | ERROR: [1] bootstrap checks failed
+   elasticsearch_1  | [1]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+   ````
+* Solution:
+    Increase the kernel ```max_map_count``` parameter of vm. Execute the following command
+    ```sudo sysctl -w vm.max_map_count=262144```
+    Now stop the container services and re-run ```docker-compose up```.
+    Note that this is valid only for current session. To set this value permanently, update the ```vm.max_map_count``` setting in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
+
+#### Permisssion Denied 
+
+* Indications:
+  Can't create indices in Kibana. Nothing happens after clicking create index.
+
+* Diagonosis:
+  Check for the following log in the output of ```docker-compose up```
+  ```
+  elasticsearch_1 |[INFO ][c.f.s.c.PrivilegesEvaluator] No index-level perm match for User [name=readall, roles=[readall], requestedTenant=null] [IndexType [index=.kibana, type=doc]] [Action [[indices:data/write/index]]] [RolesChecked [sg_own_index, sg_readall]]
+
+  elasticsearch_1 | [c.f.s.c.PrivilegesEvaluator] No permissions for {sg_own_index=[IndexType [index=.kibana, type=doc]], sg_readall=[IndexType [index=.kibana, type=doc]]}
+
+  kibiter_1 | {"type":"response","@timestamp":CURRENT_TIME,"tags":[],"pid":1,"method":"post","statusCode":403,"req":{"url":"/api/saved_objects/index-pattern?overwrite=false","method":"post","headers":{"host":"localhost:5601","user-agent":YOUR_USER_AGENT,"accept":"application/json, text/plain, /","accept-language":"en-US,en;q=0.5","accept-encoding":"gzip, deflate","referer":"http://localhost:5601/app/kibana","content-type":"application/json;charset=utf-8","kbn-version":"6.1.4-1","content-length":"59","connection":"keep-alive"},"remoteAddress":YOUR_IP,"userAgent":YOUR_IP,"referer":"http://localhost:5601/app/kibana"},"res":{"statusCode":403,"responseTime":25,"contentLength":9},"message":"POST /api/saved_objects/index-pattern?overwrite=false 403 25ms - 9.0B"} 
+  ```
+  or any type of 403 error.
+  
+* Solution:
+  This message generally appears when you try to create an index pattern but you are not logged in Kibana. Try logging in to Kibana (the login button is on the bottom left corner).
+
+
 ## Micro Mordred
 
 Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
