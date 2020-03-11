@@ -1288,12 +1288,12 @@ In order to see the logs, run ```docker-compose up``` without the ```-d``` or ``
     Now stop the container services and re-run ```docker-compose up```.
     Note that this is valid only for current session. To set this value permanently, update the ```vm.max_map_count``` setting in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
 
-#### Permisssion Denied 
+#### Permission Denied 
 
 * Indications:
   Can't create indices in Kibana. Nothing happens after clicking create index.
 
-* Diagonosis:
+* Diagnosis:
   Check for the following log in the output of ```docker-compose up```
   ```
   elasticsearch_1 |[INFO ][c.f.s.c.PrivilegesEvaluator] No index-level perm match for User [name=readall, roles=[readall], requestedTenant=null] [IndexType [index=.kibana, type=doc]] [Action [[indices:data/write/index]]] [RolesChecked [sg_own_index, sg_readall]]
