@@ -71,6 +71,8 @@ setup(name="sirmordred",
       ],
       scripts=[
           'bin/sirmordred',
-          'utils/healthcheck.py'
+          'utils/healthcheck.py',
+          'utils/micro.py',
+          'utils/panels_config.py'
       ],
       zip_safe=False)
