@@ -1307,7 +1307,28 @@ In order to see the logs, run ```docker-compose up``` without the ```-d``` or ``
 * Solution:
   This message generally appears when you try to create an index pattern but you are not logged in Kibana. Try logging in to Kibana (the login button is on the bottom left corner).
 
+#### Empty Index
 
+* Indications and Diagnosis:
+  Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/utils/micro.py) using ```micro.py --raw --enrich --panels --cfg ./setup.cfg --backends git```(Here, using git as backend)
+  ```
+  [git] Problem executing study enrich_areas_of_code:git, RequestError(400, 'search_phase_execution_exception', 'No mapping   found for [metadata__timestamp] in order to sort on')
+  ```
+* Solution:
+  This error appears when the index is empty (here, ```git-aoc_chaoss_enriched``` index is empty). An index can be empty when   the local clone of the repository being analyzed is in sync with the upstream repo, so there will be no new commits to       ingest to grimoirelab.
+  
+  There are 2 methods to solve this problem:
+ 
+  Method 1: Disable the param [latest-items](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg#L78) by setting it to false.
+  
+  Method 2: Delete the local clone of the repo (which is stored in ```~/.perceval/repositories```).
+ 
+  Some extra details to better understand this behavior:
+  
+  The Git backend of perceval creates a clone of the repository (which is stored in ```~/.perceval/repositories```) and keeps the local copy in sync with the upstream one. This clone is then used to ingest the commits data to grimoirelab.
+  Grimoirelab periodically collects data from different data sources (in this specific case, a git repository) in an           incremental way. 
+  A typical execution of grimoirelab for a git repository consists of ingesting only the new commits to the platform. These   commits are obtained by comparing the local copy with the upstream one, thus if the two repos are synchronized, then no commits are returned and hence Index will be empty. In the case where all commits need to be extracted even if there is already a local clone, latest-items param should be disabled. Another option is to delete the local clone (which is stored at ```~/.perceval/repositories```), and by doing so the platform will clone the repo again and extract all commits. 
+ 
 ## Micro Mordred
 
 Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
