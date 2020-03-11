@@ -111,7 +111,7 @@ class TaskEnrich(Task):
 
     def __enrich_items(self):
 
-        time_start = time.time()
+        time_start = datetime.now()
 
         logger.info('[%s] enrichment phase starts', self.backend_section)
 
@@ -208,7 +208,7 @@ class TaskEnrich(Task):
 
             logger.info('[%s] enrichment finished for %s', self.backend_section, repo)
 
-        spent_time = time.strftime("%H:%M:%S", time.gmtime(time.time() - time_start))
+        spent_time = str(datetime.now() - time_start).split('.')[0]
         logger.info('[%s] enrichment phase finished in %s', self.backend_section, spent_time)
 
     def __autorefresh(self, enrich_backend, studies=False):
