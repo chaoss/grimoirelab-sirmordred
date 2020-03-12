@@ -1288,6 +1288,31 @@ In order to see the logs, run ```docker-compose up``` without the ```-d``` or ``
     Now stop the container services and re-run ```docker-compose up```.
     Note that this is valid only for current session. To set this value permanently, update the ```vm.max_map_count``` setting in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
 
+#### Processes have conflicts with SearchGuard
+
+* Indications:
+    - Cannot open ```localhost:9200``` in browser, shows ```Secure connection Failed```
+    - ```curl -XGET localhost:9200 -k``` gives
+    ```curl: (52) Empty reply from server```
+
+* Diagnosis:
+    Check for the following log in the output of ```docker-compose up```
+    ```
+    elasticsearch_1  | [2020-03-12T13:05:34,959][WARN ][c.f.s.h.SearchGuardHttpServerTransport] [Xrb6LcS] Someone (/172.18.0.1:59838) speaks http plaintext instead of ssl, will close the channel
+    ```
+    Check for conflicting processes by running ```sudo lsof -i:58888``` (e.g.  58888 is the port number)
+
+* Solution:
+    1. Try to close the conflicting processes:
+        You can do this easily with fuser (```sudo apt-get install fuser```), 
+        run ```fuser -k 58888/tcp``` (e.g. 58888 is the port number).
+        Re-run ```docker-compose up``` and check if ```localhost:9200``` shows up.
+    2. Use a docker-compose without SearchGuard:
+        Use the docker-compose below, this doesn't include SearchGuard.
+        <https://github.com/chaoss/grimoirelab-sirmordred#docker-compose-without-searchguard>.
+        Note: With this docker-compose, access to the Kibiter and ElasticSearch don't require credentials.
+        Re-run ```docker-compose up``` and check if ```localhost:9200``` shows up.
+
 #### Permission Denied 
 
 * Indications:
