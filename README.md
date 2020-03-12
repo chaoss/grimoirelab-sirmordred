@@ -1388,6 +1388,7 @@ You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/Mari
 You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibiter and MariaDB.
 Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
 
+#### docker-compose (with SearchGuard)
 ```
 elasticsearch:
   restart: on-failure:5
@@ -1428,6 +1429,40 @@ mariadb:
   log_opt:
       max-size: "100m"
       max-file: "3"
+```
+#### docker-compose (without SearchGuard)
+Note: Here, access to kibiter and elasticsearch don't need credentials.
+```
+version: '2.2'
+
+services:
+    mariadb:
+      image: mariadb:10.0
+      expose:
+        - "3306"
+      environment:
+        - MYSQL_ROOT_PASSWORD=
+        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+
+    elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.4
+      command: /elasticsearch/bin/elasticsearch -E network.bind_host=0.0.0.0
+      ports:
+        - 9200:9200
+      environment:
+        - ES_JAVA_OPTS=-Xms2g -Xmx2g
+
+    kibiter:
+      restart: on-failure:5
+      image: bitergia/kibiter:optimized-v6.1.4-4
+      environment:
+        - PROJECT_NAME=Demo
+        - NODE_OPTIONS=--max-old-space-size=1000
+        - ELASTICSEARCH_URL=http://elasticsearch:9200
+      links:
+        - elasticsearch
+      ports:
+        - 5601:5601
 ```
 
 Save the above into a docker-compose.yml file and run
