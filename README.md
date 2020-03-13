@@ -1331,12 +1331,9 @@ In order to see the logs, run ```docker-compose up``` without the ```-d``` or ``
   
 * Solution:
   This message generally appears when you try to create an index pattern but you are not logged in Kibana. Try logging in to Kibana (the login button is on the bottom left corner).
-<<<<<<< HEAD
+  The credentials used for login should be username: `admin` and password: `admin`.
 
 #### Empty Index
-=======
-  The credentials used for login should be username: `admin` and password: `admin`.
->>>>>>> fixed username and pass for kibiter login
 
 * Indications and Diagnosis:
   Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/utils/micro.py) using ```micro.py --raw --enrich --panels --cfg ./setup.cfg --backends git```(Here, using git as backend)
@@ -1418,6 +1415,7 @@ You will have to install the GrimoireLab components listed above, and use the fo
 Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
 
 #### docker-compose (with SearchGuard)
+Note: For accessing Kibiter and/or creating indexes login is required, the `username:password` is `admin:admin`.
 ```
 elasticsearch:
   restart: on-failure:5
