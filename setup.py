@@ -67,7 +67,8 @@ setup(name="sirmordred",
           'sortinghat>=0.7',
           'elasticsearch==6.3.1',
           'elasticsearch-dsl==6.3.1',
-          'file-read-backwards==2.0.0'
+          'file-read-backwards==2.0.0',
+          'colorlog==4.1.0'
       ],
       scripts=[
           'bin/sirmordred',
