@@ -22,6 +22,7 @@
 
 import argparse
 import logging
+import colorlog
 import sys
 
 from sirmordred.config import Config
@@ -31,9 +32,9 @@ from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
 
-
-DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
-INFO_LOG_FORMAT = "%(asctime)s %(message)s"
+DEBUG_LOG_FORMAT = "\033[1m %(log_color)s [%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
+INFO_LOG_FORMAT = "\033[1m %(log_color)s %(asctime)s %(message)s"
+LOG_COLORS = {'DEBUG': 'white', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'red,bg_white'}
 
 
 def micro_mordred(cfg_path, backend_sections, raw, identities_load, identities_merge, enrich, panels):
@@ -143,11 +144,18 @@ def config_logging(debug):
     """Config logging level output output"""
 
     if debug:
+        format = DEBUG_LOG_FORMAT
         logging.basicConfig(level=logging.DEBUG,
                             format=DEBUG_LOG_FORMAT)
         logging.debug("Debug mode activated")
     else:
+        format = INFO_LOG_FORMAT
         logging.basicConfig(level=logging.INFO, format=INFO_LOG_FORMAT)
+
+    # Setting the color scheme into the root logger
+    stream = logging.root.handlers[0]
+    formatter = colorlog.ColoredFormatter(fmt=format, log_colors=LOG_COLORS)
+    stream.setFormatter(formatter)
 
     # ES logger is set to INFO since, it produces a really verbose output if set to DEBUG
     logging.getLogger('elasticsearch').setLevel(logging.INFO)
@@ -200,7 +208,6 @@ def get_params():
 
 
 if __name__ == '__main__':
-
     args = get_params()
     config_logging(args.debug)
 

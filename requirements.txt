@@ -1,3 +1,4 @@
+colorlog==4.1.0
 elasticsearch==6.3.1
 elasticsearch-dsl==6.3.1
 file-read-backwards==2.0.0
