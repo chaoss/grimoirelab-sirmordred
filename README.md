@@ -197,7 +197,7 @@ raw index but it will enriched in the enriched index.
 
 These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [github](#github-), [github2](#github2-), [gitlab](#gitlab-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
 
-#### askbot [&uarr;](##supported-data-sources-)
+#### askbot [&uarr;](#supported-data-sources-)
 Questions and answers from Askbot site
 - projects.json
 ```
@@ -215,7 +215,7 @@ Questions and answers from Askbot site
 raw_index = askbot_raw
 enriched_index = askbot_enrcihed
 ```
-#### bugzilla [&uarr;](##supported-data-sources-)
+#### bugzilla [&uarr;](#supported-data-sources-)
 Bugs from Bugzilla
 
 - projects.json
@@ -237,7 +237,7 @@ backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 no-archive = true (suggested)
 ```
-#### bugzillarest [&uarr;](##supported-data-sources-)
+#### bugzillarest [&uarr;](#supported-data-sources-)
 Bugs from Bugzilla server (>=5.0) using its REST API
 
 - projects.json
@@ -260,7 +260,7 @@ backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 no-archive = true (suggested)
 ```
-#### cocom [&uarr;](##supported-data-sources-)
+#### cocom [&uarr;](#supported-data-sources-)
 Code complexity integration.
 Some graal dependencies like `cloc` might be required, https://github.com/chaoss/grimoirelab-graal#how-to-installcreate-the-executables
 
@@ -284,7 +284,7 @@ studies = [enrich_cocom_analysis]
 branches = master
 worktree-path = /tmp/cocom/
 ```
-#### colic [&uarr;](##supported-data-sources-)
+#### colic [&uarr;](#supported-data-sources-)
 Code license backend.
 - projects.json
 ```
@@ -307,7 +307,7 @@ exec-path = /usr/share/fossology/nomos/agent/nomossa
 branches = master
 worktree-path = /tmp/colic
 ```
-#### confluence [&uarr;](##supported-data-sources-)
+#### confluence [&uarr;](#supported-data-sources-)
 contents from Confluence
 
 - projects.json
@@ -327,7 +327,7 @@ raw_index = confluence_raw
 enriched_index = confluence_enriched
 no-archive = true (suggested)
 ```
-#### crates [&uarr;](##supported-data-sources-)
+#### crates [&uarr;](#supported-data-sources-)
 packages from Crates.io
 
 - projects.json
@@ -346,7 +346,7 @@ packages from Crates.io
 raw_index = crates_raw
 enriched_index = crates_enriched
 ```
-#### discourse [&uarr;](##supported-data-sources-)
+#### discourse [&uarr;](#supported-data-sources-)
 Topics from Discourse
 - projects.json
 ```
@@ -365,7 +365,7 @@ raw_index = discourse_raw
 enriched_index = discourse_enriched
 no-archive = true (suggested)
 ```
-#### dockerhub [&uarr;](##supported-data-sources-)
+#### dockerhub [&uarr;](#supported-data-sources-)
 Repositories info from DockerHub
 - projects.json
 ```
@@ -384,7 +384,7 @@ raw_index = dockerhub_raw
 enriched_index = dockerhub_enriched
 no-archive = true (suggested)
 ```
-#### dockerdeps [&uarr;](##supported-data-sources-)
+#### dockerdeps [&uarr;](#supported-data-sources-)
 Dependencies extracted from Docker files. Requires https://github.com/crossminer/crossJadolint
 - projects.json
 ```
@@ -405,7 +405,7 @@ category = code_dependencies_jadolint
 exec-path = <jadolint-local-path>/jadolint.jar
 in-paths = [Dockerfile, Dockerfile-full, Dockerfile-secured, Dockerfile-factory, Dockerfile-installed]
 ```
-#### dockersmells [&uarr;](##supported-data-sources-)
+#### dockersmells [&uarr;](#supported-data-sources-)
 Smells extracted from Docker files. Requires https://github.com/crossminer/crossJadolint 
 - projects.json
 ```
@@ -426,7 +426,7 @@ category = code_quality_jadolint
 exec-path = <jadolint-local-path>/jadolint.jar
 in-paths = [Dockerfile, Dockerfile-full, Dockerfile-secured, Dockerfile-factory, Dockerfile-installed]
 ```
-#### functest [&uarr;](##supported-data-sources-)
+#### functest [&uarr;](#supported-data-sources-)
 Tests from functest
 - projects.json
 ```
@@ -445,7 +445,7 @@ raw_index = functest_raw
 enriched_index = functest_enriched
 no-archive = true (suggested)
 ```
-#### gerrit [&uarr;](##supported-data-sources-)
+#### gerrit [&uarr;](#supported-data-sources-)
 Reviews from Gerrit
 
 You have to add your public key in the gerrit server.
@@ -477,7 +477,7 @@ studies = [enrich_demography:gerrit, enrich_onion:gerrit] (optional)
 in_index = gerrit_enriched
 out_index = gerrit-onion_enriched
 ```
-#### git [&uarr;](##supported-data-sources-)
+#### git [&uarr;](#supported-data-sources-)
 Commits from Git
 
 - projects.json
@@ -517,7 +517,7 @@ json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a14923
 [enrich_forecast_activity]
 out_index = git_study_forecast
 ```
-#### github [&uarr;](##supported-data-sources-)
+#### github [&uarr;](#supported-data-sources-)
 Issues and PRs from GitHub
 
 ##### issue
@@ -632,7 +632,7 @@ studies = [enrich_extra_data:github]
 [enrich_extra_data:github]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
 ```
-#### github2 [&uarr;](##supported-data-sources-)
+#### github2 [&uarr;](#supported-data-sources-)
 Comments from GitHub
 
 The corresponding dashboards can be automatically uploaded by setting `github-comments`
@@ -715,7 +715,7 @@ attributes = [title, body]
 nlp_rest_url = http://localhost:2901
 ```
 
-#### gitlab [&uarr;](##supported-data-sources-)
+#### gitlab [&uarr;](#supported-data-sources-)
 Issues and MRs from GitLab
 
 GitLab issues and merge requests need to be configured in two different sections.
@@ -789,7 +789,7 @@ data_source = gitlab-merges
 
 ```
 
-#### google_hits [&uarr;](##supported-data-sources-)
+#### google_hits [&uarr;](#supported-data-sources-)
 Number of hits for a set of keywords from Google
 - projects.json
 ```
@@ -807,7 +807,7 @@ Number of hits for a set of keywords from Google
 raw_index = google_hits_raw
 enriched_index =google_hits_enriched
 ```
-#### groupsio [&uarr;](##supported-data-sources-)
+#### groupsio [&uarr;](#supported-data-sources-)
 Messages from Groupsio
 
 To know the lists you are subscribed to: https://gist.github.com/valeriocos/ad33a0b9b2d13a8336230c8c59df3c55
@@ -831,7 +831,7 @@ enriched_index = groupsio_enriched
 email = yyyy
 password = xxxx
 ```
-#### hyperkitty [&uarr;](##supported-data-sources-)
+#### hyperkitty [&uarr;](#supported-data-sources-)
 Messages from a HyperKitty
 - projects.json
 ```
@@ -849,7 +849,7 @@ Messages from a HyperKitty
 raw_index = hyperkitty_raw
 enriched_index = hyperkitty_enriched
 ```
-#### jenkins [&uarr;](##supported-data-sources-)
+#### jenkins [&uarr;](#supported-data-sources-)
 Builds from a Jenkins
 
 - projects.json
@@ -869,7 +869,7 @@ raw_index = jenkins_raw
 enriched_index = jenkins_enriched
 no-archive = true (suggested)
 ```
-#### jira [&uarr;](##supported-data-sources-)
+#### jira [&uarr;](#supported-data-sources-)
 Issues data from JIRA issue trackers
 
 - projects.json
@@ -891,7 +891,7 @@ no-archive = true (suggested)
 backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 ```
-#### kitsune [&uarr;](##supported-data-sources-)
+#### kitsune [&uarr;](#supported-data-sources-)
 Questions and answers from KitSune
 
 - projects.json
@@ -911,7 +911,7 @@ raw_index = kitsune_raw
 enriched_index = kitsune_enriched
 ```
 
-#### mattermost [&uarr;](##supported-data-sources-)
+#### mattermost [&uarr;](#supported-data-sources-)
 Messages from Mattermost channels
 - projects.json
 ```
@@ -930,7 +930,7 @@ raw_index = mattermost_raw
 enriched_index = mattermost_enriched
 api-token = xxxx
 ```
-#### mbox [&uarr;](##supported-data-sources-)
+#### mbox [&uarr;](#supported-data-sources-)
 Messages from MBox files
 
 For mbox files, it is needed the name of the mailing list and the path where the mboxes can be found. In the example
@@ -951,7 +951,7 @@ below, the name of the mailing list is set to "mirageos-devel".
 raw_index = mbox_raw
 enriched_index = mbox_enriched
 ```
-#### mediawiki [&uarr;](##supported-data-sources-)
+#### mediawiki [&uarr;](#supported-data-sources-)
 Pages and revisions from MediaWiki
 
 -projects.json
@@ -971,7 +971,7 @@ raw_index = mediawiki_raw
 enriched_index = mediawiki_enriched
 no-archive = true (suggested)
 ```
-#### meetup [&uarr;](##supported-data-sources-)
+#### meetup [&uarr;](#supported-data-sources-)
 Events from Meetup groups
 
 For meetup groups it is only needed the identifier of the meetup group
@@ -998,7 +998,7 @@ sleep-time = "300" (optional)
 no-archive = true (suggested)
 
 ```
-#### mozillaclub [&uarr;](##supported-data-sources-)
+#### mozillaclub [&uarr;](#supported-data-sources-)
 Events from Mozillaclub
 - projects.json
 ```
@@ -1016,7 +1016,7 @@ Events from Mozillaclub
 raw_index = mozillaclub_raw
 enriched_index = mozillaclub_enriched
 ```
-#### nntp [&uarr;](##supported-data-sources-)
+#### nntp [&uarr;](#supported-data-sources-)
 Articles from NNTP newsgroups
 
 The way to setup netnews is adding the server and the news channel to be monitored. In the example below,
@@ -1040,7 +1040,7 @@ the `news.myproject.org` is the server name.
 raw_index = nntp_raw
 enriched_index =  nntp_enriched
 ```
-#### phabricator [&uarr;](##supported-data-sources-)
+#### phabricator [&uarr;](#supported-data-sources-)
 Tasks from Phabricator
 
 - projects.json
@@ -1061,7 +1061,7 @@ enriched_index = phabricator_enriched
 api-token = xxxx
 no-archive = true (suggested)
 ```
-#### pipermail [&uarr;](##supported-data-sources-)
+#### pipermail [&uarr;](#supported-data-sources-)
 Messages from Pipermail
 
 - projects.json
@@ -1080,7 +1080,7 @@ Messages from Pipermail
 raw_index = pipermail_raw
 enriched_index = pipermail_enriched
 ```
-#### puppetforge [&uarr;](##supported-data-sources-)
+#### puppetforge [&uarr;](#supported-data-sources-)
 Modules and their releases from Puppet's forge
 
 - projects.json
@@ -1099,7 +1099,7 @@ Modules and their releases from Puppet's forge
 raw_index = puppetforge_raw
 enriched_index = puppetforge_enriched
 ```
-#### redmine [&uarr;](##supported-data-sources-)
+#### redmine [&uarr;](#supported-data-sources-)
 Issues from Redmine
 - project.json
 ```
@@ -1118,7 +1118,7 @@ raw_index = redmine_raw
 enriched_index = redmine_enriched
 api-token = XXXXX
 ```
-#### remo [&uarr;](##supported-data-sources-)
+#### remo [&uarr;](#supported-data-sources-)
 Events, people and activities from ReMo
 - project.json
 ```
@@ -1137,7 +1137,7 @@ raw_index = remo_raw
 enriched_index = remo_enriched
 ```
 
-#### rss [&uarr;](##supported-data-sources-)
+#### rss [&uarr;](#supported-data-sources-)
 Entries from RSS feeds
 
 - project.json
@@ -1156,7 +1156,7 @@ Entries from RSS feeds
 raw_index = rss_raw
 enriched_index = rss_enriched
 ```
-#### slack [&uarr;](##supported-data-sources-)
+#### slack [&uarr;](#supported-data-sources-)
 Messages from Slack channels
 
 The information needed to monitor slack channels is the channel id.
@@ -1179,7 +1179,7 @@ enriched_index = slack_enriched
 api-token = xxxx
 no-archive = true (suggested)
 ```
-#### stackexchange [&uarr;](##supported-data-sources-)
+#### stackexchange [&uarr;](#supported-data-sources-)
 Questions, answers and comments from StackExchange
 
 - projects.json
@@ -1204,7 +1204,7 @@ enriched_index = stackexchange_enriched
 api-token = xxxx
 no-archive = true (suggested)
 ```
-#### supybot [&uarr;](##supported-data-sources-)
+#### supybot [&uarr;](#supported-data-sources-)
 Messages from Supybot log files
 
 For supybot files, it is needed the name of the IRC channel and the path where the logs can be found. In the example
@@ -1226,7 +1226,7 @@ raw_index = supybot_raw
 enriched_index = supybot_enriched
 ```
 
-#### telegram [&uarr;](##supported-data-sources-)
+#### telegram [&uarr;](#supported-data-sources-)
 Messages from Telegram
 
 You need to have an API token: https://github.com/chaoss/grimoirelab-perceval#telegram
@@ -1248,7 +1248,7 @@ raw_index = telegram_raw
 enriched_index = telegram_enriched
 api-token = XXXXX
 ```
-#### twitter [&uarr;](##supported-data-sources-)
+#### twitter [&uarr;](#supported-data-sources-)
 Messages from Twitter
 
 You need to provide a [search query](https://developer.twitter.com/en/docs/tweets/search/guides/build-standard-query) and an API token (which requires to create an [app](https://developer.twitter.com/en/docs/basics/apps/overview)). The script at https://gist.github.com/valeriocos/7d4d28f72f53fbce49f1512ba77ef5f6 helps obtaining a token.
