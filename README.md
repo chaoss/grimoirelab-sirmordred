@@ -204,7 +204,7 @@ Questions and answers from Askbot site
 {
     "Chaoss": {
         "askbot": [
-            "https://ask.puppet.com"
+            "https://askbot.org/"
         ]
     }
 }
@@ -213,7 +213,7 @@ Questions and answers from Askbot site
 ```
 [askbot]
 raw_index = askbot_raw
-enriched_index = askbot_enrcihed
+enriched_index = askbot_enriched
 ```
 #### bugzilla [&uarr;](#supported-data-sources-)
 Bugs from Bugzilla
