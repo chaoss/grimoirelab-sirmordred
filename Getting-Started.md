@@ -1,6 +1,207 @@
-## Troubleshooting
+## Getting started [&uarr;](/README.md#contents)
+
+SirModred relies on ElasticSearch, Kibiter and MySQL/MariaDB. The current versions used are:
+- ElasticSearch 6.1.0
+- Kibiter 6.1.4
+- MySQL/MariaDB (5.7.24/10.0)
+
+There are 3 options to get started with SirMordred:
+- [Source code](#source-code-)
+- [Source code and docker](#source-code-and-docker-)
+- [Only docker](#only-docker-)
+
+You can also [set up a development environment in pycharm](#setting-up-a-pycharm-dev-environment-) and develop from there if you are comfortable with the Pycharm IDE.
+
+
+### Source code [&uarr;](#getting-started-)
+
+You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/MariaDB database (5.7.24/10.0), and the following components:
+
+- [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
+- [ELK](https://github.com/chaoss/grimoirelab-elk)
+- [Graal](https://github.com/chaoss/grimoirelab-graal)
+- [Perceval](https://github.com/chaoss/grimoirelab-perceval)
+- [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
+- [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
+- [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
+- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
+- [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
+- [Sigils](https://github.com/chaoss/grimoirelab-sigils)
+- [Kidash](https://github.com/chaoss/grimoirelab-kidash)
+- [Toolkit](https://github.com/chaoss/grimoirelab-toolkit)
+- [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
+- [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
+
+### Source code and docker [&uarr;](#getting-started-)
+
+You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibiter and MariaDB.
+Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
+
+#### docker-compose (with SearchGuard) [&uarr;](#source-code-and-docker-)
+Note: For accessing Kibiter and/or creating indexes login is required, the `username:password` is `admin:admin`.
+```
+elasticsearch:
+  restart: on-failure:5
+  image: bitergia/elasticsearch:6.1.0-secured
+  command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
+  environment:
+    - ES_JAVA_OPTS=-Xms2g -Xmx2g
+  ports:
+    - 9200:9200
+
+kibiter:
+  restart: on-failure:5
+  image: bitergia/kibiter:secured-v6.1.4-5
+  environment:
+    - PROJECT_NAME=Development
+    - NODE_OPTIONS=--max-old-space-size=1000
+    - ELASTICSEARCH_URL=https://elasticsearch:9200
+    - ELASTICSEARCH_USER=kibanaserver
+    - ELASTICSEARCH_PASSWORD=kibanaserver
+  links:
+    - elasticsearch
+  ports:
+    - 5601:5601
+    
+mariadb:
+  restart: on-failure:5
+  image: mariadb:10.0
+  expose:
+    - "3306"
+  ports:
+    - "3306:3306"
+  environment:
+    - MYSQL_ROOT_PASSWORD=
+    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    - MYSQL_DATABASE=test_sh
+  command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
+  log_driver: "json-file"
+  log_opt:
+      max-size: "100m"
+      max-file: "3"
+```
+#### docker-compose (without SearchGuard) [&uarr;](#source-code-and-docker-)
+Note: Here, access to kibiter and elasticsearch don't need credentials.
+```
+version: '2.2'
+
+services:
+    elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.4
+      command: /elasticsearch/bin/elasticsearch -E network.bind_host=0.0.0.0
+      ports:
+        - 9200:9200
+      environment:
+        - ES_JAVA_OPTS=-Xms2g -Xmx2g
+
+    kibiter:
+      restart: on-failure:5
+      image: bitergia/kibiter:optimized-v6.1.4-4
+      environment:
+        - PROJECT_NAME=Demo
+        - NODE_OPTIONS=--max-old-space-size=1000
+        - ELASTICSEARCH_URL=http://elasticsearch:9200
+      links:
+        - elasticsearch
+      ports:
+        - 5601:5601
+
+    mariadb:
+      restart: on-failure:5
+      image: mariadb:10.0
+      expose:
+        - "3306"
+      ports:
+        - "3306:3306"
+      environment:
+        - MYSQL_ROOT_PASSWORD=
+        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+        - MYSQL_DATABASE=test_sh
+      command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
+```
+
+Save the above into a docker-compose.yml file and run
+```
+docker-compose up -d
+```
+to get ElasticSearch, Kibiter and MariaDB. Comment/remove the mariadb section in case you have MariaDB or MySQL already installed in your system.
+
+You can read more about docker and docker-compose [here](https://docs.docker.com/compose/)
+
+### Only docker [&uarr;](#getting-started-)
+
+Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/sirmordred/container.html)
+
+
+### Setting up a Pycharm dev environment [&uarr;](#getting-started-)
+
+This section provides details about how to set up a dev environment using PyCharm. The first step consists in forking
+the GitHub repos below and cloning them to a target local folder (e.g., `sources`).
+
+- [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
+- [ELK](https://github.com/chaoss/grimoirelab-elk)
+- [Graal](https://github.com/chaoss/grimoirelab-graal)
+- [Perceval](https://github.com/chaoss/grimoirelab-perceval)
+- [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
+- [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
+- [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
+- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
+- [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
+- [Sigils](https://github.com/chaoss/grimoirelab-sigils)
+- [Kidash](https://github.com/chaoss/grimoirelab-kidash)
+- [Toolkit](https://github.com/chaoss/grimoirelab-toolkit)
+- [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
+- [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
+
+
+Each local repo should have two `remotes`: `origin` points to the forked repo, while `upstream` points to the original CHAOSS repo. An example
+is provided below.
+```
+~/sources/perceval$ git remote -v
+origin	https://github.com/valeriocos/perceval (fetch)
+origin	https://github.com/valeriocos/perceval (push)
+upstream	https://github.com/chaoss/grimoirelab-perceval (fetch)
+upstream	https://github.com/chaoss/grimoirelab-perceval (push)
+```
+
+In order to add a remote to a Git repository, you can use the following command:
+```
+~/sources/perceval$ git remote add upstream https://github.com/chaoss/grimoirelab-perceval
+```
+
+Then, you can download the [PyCharm community edition](https://www.jetbrains.com/pycharm/download/#section=linux), and create a project in the 
+grimoirelab-sirmordred directory. PyCharm will automatically create a virtual env, where you should install the dependencies listed in each 
+requirements.txt, excluding the ones concerning the grimoirelab components.
+
+To install the dependencies, you can click on `File` -> `Settings` -> `Project` -> `Project Interpreter`, and then the `+` located on the top right corner (see figure below).
+
+![captura_22](https://user-images.githubusercontent.com/6515067/63195511-12299d80-c073-11e9-9774-5f274891720a.png)
+
+Later, you can add the dependencies to the grimoirelab components via `File` -> `Settings` -> `Project` -> `Project Structure`. 
+The final results should be something similar to the image below.
+
+![captura_23](https://user-images.githubusercontent.com/6515067/63195579-4b620d80-c073-11e9-888b-3cdb67c04523.png)
+
+Finally, you can use the docker-compose shown at Section [source-code-and-docker](#source-code-and-docker-), define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/projects.json), and
+run the following commands, which will collect and enrich the data coming from the git and cocom sections and upload the corresponding panels to Kibiter:
+```
+micro.py --raw --enrich --cfg ./setup.cfg --backends git cocom
+micro.py --panels --cfg ./setup.cfg
+```
+
+Optionally, you can create a configuration in PyCharm to speed up the executions (`Run` -> `Edit configuration` -> `+`). The final results should be something similar to the image below.
+
+![captura_24](https://user-images.githubusercontent.com/6515067/63195767-ccb9a000-c073-11e9-805a-e828a3ce1dc9.png)
+ 
+## Troubleshooting [&uarr;](/README.md#contents)
 
 Following is a list of common problems encountered while setting up GrimoireLab
+* [Low Virtual Memory](#low-virtual-memory-)
+* [Conflicts With Searchguard](#processes-have-conflicts-with-searchguard-)
+* [Permission Denied](#permission-denied-)
+* [Empty Index](#empty-index-)
+* [Low File Descriptors](#low-file-descriptors-)
+
 
 ---
 **NOTE**
@@ -10,7 +211,7 @@ starting/(re)creating/building/attaching containers for a service.
 
 ---
 
-#### Low Virtual Memory
+#### Low Virtual Memory [&uarr;](#troubleshooting-)
 
 * Indications:gi
   Cannot open ```https://localhost:9200/``` in browser. Shows ```Secure connection Failed```,
@@ -29,7 +230,7 @@ starting/(re)creating/building/attaching containers for a service.
     Note that this is valid only for current session. To set this value permanently, update the ```vm.max_map_count``` setting
     in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
 
-#### Processes have conflicts with SearchGuard
+#### Processes have conflicts with SearchGuard [&uarr;](#troubleshooting-)
 
 * Indications:
     - Cannot open ```localhost:9200``` in browser, shows ```Secure connection Failed```
@@ -54,7 +255,7 @@ starting/(re)creating/building/attaching containers for a service.
         Note: With this docker-compose, access to the Kibiter and ElasticSearch don't require credentials.
         Re-run ```docker-compose up``` and check if ```localhost:9200``` shows up.
 
-#### Permission Denied 
+#### Permission Denied [&uarr;](#troubleshooting-)
 
 * Indications:
   Can't create indices in Kibana. Nothing happens after clicking create index.
@@ -75,7 +276,7 @@ starting/(re)creating/building/attaching containers for a service.
   Try logging in to Kibana (the login button is on the bottom left corner).
   The credentials used for login should be username: `admin` and password: `admin`.
 
-#### Empty Index
+#### Empty Index [&uarr;](#troubleshooting-)
 
 * Indications and Diagnosis:
   Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/utils/micro.py)
@@ -106,7 +307,7 @@ starting/(re)creating/building/attaching containers for a service.
   local clone, latest-items param should be disabled. Another option is to delete the local clone (which is stored at ```~/.perceval/repositories```),
   and by doing so the platform will clone the repo again and extract all commits. 
  
-## Low File Descriptors
+#### Low File Descriptors [&uarr;](#troubleshooting-)
 
 * Indications:
     - Cannot open ```localhost:9200``` in browser, shows ```Secure connection Failed```
