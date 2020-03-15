@@ -1,8 +1,18 @@
 # SirMordred [![Build Status](https://travis-ci.org/chaoss/grimoirelab-sirmordred.svg?branch=master)](https://travis-ci.org/chaoss/grimoirelab-sirmordred)[![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)
 
-SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via two main configuration files, the `setup.cfg` and `projects.json`, which are summarized below,
+SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via two main configuration files, the `setup.cfg` and `projects.json`, which are summarized in their corresponding sections.
 
-## Setup.cfg
+## Contents
+
+* [Setup.cfg](#setupcfg-)
+* [Projects.json](#projectsjson-)
+* [Supported data sources](#supported-data-sources-)
+* [Micro Mordred](#micro-mordred-)
+* [Getting started](/Getting-Started.md#getting-started-)
+* [Troubleshooting](/Getting-Started.md#troubleshooting-)
+
+
+## Setup.cfg [&uarr;](#contents)
 
 The setup file holds the configuration to arrange all process underlying GrimoireLab. It is composed of sections which allow to define the general settings such as which phases
 to activate (e.g., collection, enrichment) and where to store the logs, as well as the location and credentials for SortingHat and the ElasticSearch instances where the raw and enriched data 
@@ -85,7 +95,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
  * **strict_mapping** (bool: True): rigorous check of values in identities matching (i.e, well formed email addresses)
  * **unaffiliated_group** (str: Unknown): Name of the organization for unaffiliated identities (**Required**)
  * **user** (str: root): User to access the Sortinghat database (**Required**)
-## [backend-name:tag] (tag is optional)
+### [backend-name:tag] (tag is optional)
 
 * **collect** (bool: True): enable/disable collection phase
 * **raw_index** (str: None): Index name in which to store the raw items (**Required**)
@@ -103,11 +113,12 @@ Further information about Perceval backends parameters are available at:
 
 Note that some backend sections allow to specify specific enrichment options, which are listed below.
 
-##### [jenkins]
+### [jenkins]
 * **node_regex**: regular expression for extracting node name from `builtOn` field. This
   regular expression **must contain at least one group**. First group will be used to extract
   node name. More groups are allowed but not used to extract anything else.
-## [studies-name:tag] (tag is optional)
+  
+### [studies-name:tag] (tag is optional)
 
 * **study-param-1**: ..
 * **study-param-2**: ..
@@ -117,7 +128,7 @@ A template of a study section is shown above. A complete list of studies paramet
 
 * https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
 
-## Projects.json
+## Projects.json [&uarr;](#contents)
 
 The projects.json aims at describing the repositories grouped by project that will be shown on the dashboards.
 
@@ -182,11 +193,11 @@ raw index but it will enriched in the enriched index.
 * In the section `GrimoireLab` the metadata will showed in the enriched index as extra fields.
 * In the section `unknown` the data source `confluence` will be enriched as the project `main`.
 
-### Supported data sources
+## Supported data sources [&uarr;](#contents)
 
-These are the data sources GrimoireLab supports:
+These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [github](#github-), [github2](#github2-), [gitlab](#gitlab-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
 
-#### askbot
+#### askbot [&uarr;](##supported-data-sources-)
 Questions and answers from Askbot site
 - projects.json
 ```
@@ -204,7 +215,7 @@ Questions and answers from Askbot site
 raw_index = askbot_raw
 enriched_index = askbot_enrcihed
 ```
-#### bugzilla
+#### bugzilla [&uarr;](##supported-data-sources-)
 Bugs from Bugzilla
 
 - projects.json
@@ -226,7 +237,7 @@ backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 no-archive = true (suggested)
 ```
-#### bugzillarest
+#### bugzillarest [&uarr;](##supported-data-sources-)
 Bugs from Bugzilla server (>=5.0) using its REST API
 
 - projects.json
@@ -249,7 +260,7 @@ backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 no-archive = true (suggested)
 ```
-#### cocom
+#### cocom [&uarr;](##supported-data-sources-)
 Code complexity integration.
 Some graal dependencies like `cloc` might be required, https://github.com/chaoss/grimoirelab-graal#how-to-installcreate-the-executables
 
@@ -273,7 +284,7 @@ studies = [enrich_cocom_analysis]
 branches = master
 worktree-path = /tmp/cocom/
 ```
-#### colic
+#### colic [&uarr;](##supported-data-sources-)
 Code license backend.
 - projects.json
 ```
@@ -296,7 +307,7 @@ exec-path = /usr/share/fossology/nomos/agent/nomossa
 branches = master
 worktree-path = /tmp/colic
 ```
-#### confluence
+#### confluence [&uarr;](##supported-data-sources-)
 contents from Confluence
 
 - projects.json
@@ -316,7 +327,7 @@ raw_index = confluence_raw
 enriched_index = confluence_enriched
 no-archive = true (suggested)
 ```
-#### crates
+#### crates [&uarr;](##supported-data-sources-)
 packages from Crates.io
 
 - projects.json
@@ -335,7 +346,7 @@ packages from Crates.io
 raw_index = crates_raw
 enriched_index = crates_enriched
 ```
-#### discourse
+#### discourse [&uarr;](##supported-data-sources-)
 Topics from Discourse
 - projects.json
 ```
@@ -354,7 +365,7 @@ raw_index = discourse_raw
 enriched_index = discourse_enriched
 no-archive = true (suggested)
 ```
-#### dockerhub
+#### dockerhub [&uarr;](##supported-data-sources-)
 Repositories info from DockerHub
 - projects.json
 ```
@@ -373,7 +384,7 @@ raw_index = dockerhub_raw
 enriched_index = dockerhub_enriched
 no-archive = true (suggested)
 ```
-#### dockerdeps
+#### dockerdeps [&uarr;](##supported-data-sources-)
 Dependencies extracted from Docker files. Requires https://github.com/crossminer/crossJadolint
 - projects.json
 ```
@@ -394,7 +405,7 @@ category = code_dependencies_jadolint
 exec-path = <jadolint-local-path>/jadolint.jar
 in-paths = [Dockerfile, Dockerfile-full, Dockerfile-secured, Dockerfile-factory, Dockerfile-installed]
 ```
-#### dockersmells
+#### dockersmells [&uarr;](##supported-data-sources-)
 Smells extracted from Docker files. Requires https://github.com/crossminer/crossJadolint 
 - projects.json
 ```
@@ -415,7 +426,7 @@ category = code_quality_jadolint
 exec-path = <jadolint-local-path>/jadolint.jar
 in-paths = [Dockerfile, Dockerfile-full, Dockerfile-secured, Dockerfile-factory, Dockerfile-installed]
 ```
-#### functest
+#### functest [&uarr;](##supported-data-sources-)
 Tests from functest
 - projects.json
 ```
@@ -434,7 +445,7 @@ raw_index = functest_raw
 enriched_index = functest_enriched
 no-archive = true (suggested)
 ```
-#### gerrit
+#### gerrit [&uarr;](##supported-data-sources-)
 Reviews from Gerrit
 
 You have to add your public key in the gerrit server.
@@ -466,7 +477,7 @@ studies = [enrich_demography:gerrit, enrich_onion:gerrit] (optional)
 in_index = gerrit_enriched
 out_index = gerrit-onion_enriched
 ```
-#### git
+#### git [&uarr;](##supported-data-sources-)
 Commits from Git
 
 - projects.json
@@ -506,7 +517,7 @@ json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a14923
 [enrich_forecast_activity]
 out_index = git_study_forecast
 ```
-#### github
+#### github [&uarr;](##supported-data-sources-)
 Issues and PRs from GitHub
 
 ##### issue
@@ -621,7 +632,7 @@ studies = [enrich_extra_data:github]
 [enrich_extra_data:github]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
 ```
-#### github2
+#### github2 [&uarr;](##supported-data-sources-)
 Comments from GitHub
 
 The corresponding dashboards can be automatically uploaded by setting `github-comments`
@@ -704,7 +715,7 @@ attributes = [title, body]
 nlp_rest_url = http://localhost:2901
 ```
 
-#### gitlab
+#### gitlab [&uarr;](##supported-data-sources-)
 Issues and MRs from GitLab
 
 GitLab issues and merge requests need to be configured in two different sections.
@@ -778,7 +789,7 @@ data_source = gitlab-merges
 
 ```
 
-#### google_hits
+#### google_hits [&uarr;](##supported-data-sources-)
 Number of hits for a set of keywords from Google
 - projects.json
 ```
@@ -796,7 +807,7 @@ Number of hits for a set of keywords from Google
 raw_index = google_hits_raw
 enriched_index =google_hits_enriched
 ```
-#### groupsio
+#### groupsio [&uarr;](##supported-data-sources-)
 Messages from Groupsio
 
 To know the lists you are subscribed to: https://gist.github.com/valeriocos/ad33a0b9b2d13a8336230c8c59df3c55
@@ -820,7 +831,7 @@ enriched_index = groupsio_enriched
 email = yyyy
 password = xxxx
 ```
-#### hyperkitty
+#### hyperkitty [&uarr;](##supported-data-sources-)
 Messages from a HyperKitty
 - projects.json
 ```
@@ -838,7 +849,7 @@ Messages from a HyperKitty
 raw_index = hyperkitty_raw
 enriched_index = hyperkitty_enriched
 ```
-#### jenkins
+#### jenkins [&uarr;](##supported-data-sources-)
 Builds from a Jenkins
 
 - projects.json
@@ -858,7 +869,7 @@ raw_index = jenkins_raw
 enriched_index = jenkins_enriched
 no-archive = true (suggested)
 ```
-#### jira
+#### jira [&uarr;](##supported-data-sources-)
 Issues data from JIRA issue trackers
 
 - projects.json
@@ -880,7 +891,7 @@ no-archive = true (suggested)
 backend-user = yyyy (optional)
 backend-password = xxxx (optional)
 ```
-#### kitsune
+#### kitsune [&uarr;](##supported-data-sources-)
 Questions and answers from KitSune
 
 - projects.json
@@ -900,7 +911,7 @@ raw_index = kitsune_raw
 enriched_index = kitsune_enriched
 ```
 
-#### mattermost
+#### mattermost [&uarr;](##supported-data-sources-)
 Messages from Mattermost channels
 - projects.json
 ```
@@ -919,7 +930,7 @@ raw_index = mattermost_raw
 enriched_index = mattermost_enriched
 api-token = xxxx
 ```
-#### mbox
+#### mbox [&uarr;](##supported-data-sources-)
 Messages from MBox files
 
 For mbox files, it is needed the name of the mailing list and the path where the mboxes can be found. In the example
@@ -940,7 +951,7 @@ below, the name of the mailing list is set to "mirageos-devel".
 raw_index = mbox_raw
 enriched_index = mbox_enriched
 ```
-#### mediawiki
+#### mediawiki [&uarr;](##supported-data-sources-)
 Pages and revisions from MediaWiki
 
 -projects.json
@@ -960,7 +971,7 @@ raw_index = mediawiki_raw
 enriched_index = mediawiki_enriched
 no-archive = true (suggested)
 ```
-#### meetup
+#### meetup [&uarr;](##supported-data-sources-)
 Events from Meetup groups
 
 For meetup groups it is only needed the identifier of the meetup group
@@ -987,7 +998,7 @@ sleep-time = "300" (optional)
 no-archive = true (suggested)
 
 ```
-#### mozillaclub
+#### mozillaclub [&uarr;](##supported-data-sources-)
 Events from Mozillaclub
 - projects.json
 ```
@@ -1005,7 +1016,7 @@ Events from Mozillaclub
 raw_index = mozillaclub_raw
 enriched_index = mozillaclub_enriched
 ```
-#### nntp
+#### nntp [&uarr;](##supported-data-sources-)
 Articles from NNTP newsgroups
 
 The way to setup netnews is adding the server and the news channel to be monitored. In the example below,
@@ -1029,7 +1040,7 @@ the `news.myproject.org` is the server name.
 raw_index = nntp_raw
 enriched_index =  nntp_enriched
 ```
-#### phabricator
+#### phabricator [&uarr;](##supported-data-sources-)
 Tasks from Phabricator
 
 - projects.json
@@ -1050,7 +1061,7 @@ enriched_index = phabricator_enriched
 api-token = xxxx
 no-archive = true (suggested)
 ```
-#### pipermail
+#### pipermail [&uarr;](##supported-data-sources-)
 Messages from Pipermail
 
 - projects.json
@@ -1069,7 +1080,7 @@ Messages from Pipermail
 raw_index = pipermail_raw
 enriched_index = pipermail_enriched
 ```
-#### puppetforge
+#### puppetforge [&uarr;](##supported-data-sources-)
 Modules and their releases from Puppet's forge
 
 - projects.json
@@ -1088,7 +1099,7 @@ Modules and their releases from Puppet's forge
 raw_index = puppetforge_raw
 enriched_index = puppetforge_enriched
 ```
-#### redmine
+#### redmine [&uarr;](##supported-data-sources-)
 Issues from Redmine
 - project.json
 ```
@@ -1107,7 +1118,7 @@ raw_index = redmine_raw
 enriched_index = redmine_enriched
 api-token = XXXXX
 ```
-#### remo
+#### remo [&uarr;](##supported-data-sources-)
 Events, people and activities from ReMo
 - project.json
 ```
@@ -1126,7 +1137,7 @@ raw_index = remo_raw
 enriched_index = remo_enriched
 ```
 
-#### rss
+#### rss [&uarr;](##supported-data-sources-)
 Entries from RSS feeds
 
 - project.json
@@ -1145,7 +1156,7 @@ Entries from RSS feeds
 raw_index = rss_raw
 enriched_index = rss_enriched
 ```
-#### slack
+#### slack [&uarr;](##supported-data-sources-)
 Messages from Slack channels
 
 The information needed to monitor slack channels is the channel id.
@@ -1168,7 +1179,7 @@ enriched_index = slack_enriched
 api-token = xxxx
 no-archive = true (suggested)
 ```
-#### stackexchange
+#### stackexchange [&uarr;](##supported-data-sources-)
 Questions, answers and comments from StackExchange
 
 - projects.json
@@ -1193,7 +1204,7 @@ enriched_index = stackexchange_enriched
 api-token = xxxx
 no-archive = true (suggested)
 ```
-#### supybot
+#### supybot [&uarr;](##supported-data-sources-)
 Messages from Supybot log files
 
 For supybot files, it is needed the name of the IRC channel and the path where the logs can be found. In the example
@@ -1215,7 +1226,7 @@ raw_index = supybot_raw
 enriched_index = supybot_enriched
 ```
 
-#### telegram
+#### telegram [&uarr;](##supported-data-sources-)
 Messages from Telegram
 
 You need to have an API token: https://github.com/chaoss/grimoirelab-perceval#telegram
@@ -1237,7 +1248,7 @@ raw_index = telegram_raw
 enriched_index = telegram_enriched
 api-token = XXXXX
 ```
-#### twitter
+#### twitter [&uarr;](##supported-data-sources-)
 Messages from Twitter
 
 You need to provide a [search query](https://developer.twitter.com/en/docs/tweets/search/guides/build-standard-query) and an API token (which requires to create an [app](https://developer.twitter.com/en/docs/basics/apps/overview)). The script at https://gist.github.com/valeriocos/7d4d28f72f53fbce49f1512ba77ef5f6 helps obtaining a token.
@@ -1260,102 +1271,7 @@ enriched_index = twitter_enriched
 api-token = XXXX
 ```
 
-## Troubleshooting
-
-Following is a list of common problems encountered while setting up GrimoireLab
-
----
-**NOTE**
-
-In order to see the logs, run ```docker-compose up``` without the ```-d``` or ```--detach``` option while starting/(re)creating/building/attaching containers for a service.
-
----
-
-#### Low Virtual Memory
-
-* Indications:
-  Cannot open ```https://localhost:9200/``` in browser. Shows ```Secure connection Failed```, ```PR_END_OF_FILE_ERROR```, ```SSL_ERROR_SYSCALL in connection to localhost:9200``` messages.
-
-* Diagnosis:
-    Check for the following log in the output of ```docker-compose up```
-   ```
-   elasticsearch_1  | ERROR: [1] bootstrap checks failed
-   elasticsearch_1  | [1]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
-   ````
-* Solution:
-    Increase the kernel ```max_map_count``` parameter of vm. Execute the following command
-    ```sudo sysctl -w vm.max_map_count=262144```
-    Now stop the container services and re-run ```docker-compose up```.
-    Note that this is valid only for current session. To set this value permanently, update the ```vm.max_map_count``` setting in /etc/sysctl.conf. To verify after rebooting, run sysctl vm.max_map_count.
-
-#### Processes have conflicts with SearchGuard
-
-* Indications:
-    - Cannot open ```localhost:9200``` in browser, shows ```Secure connection Failed```
-    - ```curl -XGET localhost:9200 -k``` gives
-    ```curl: (52) Empty reply from server```
-
-* Diagnosis:
-    Check for the following log in the output of ```docker-compose up```
-    ```
-    elasticsearch_1  | [2020-03-12T13:05:34,959][WARN ][c.f.s.h.SearchGuardHttpServerTransport] [Xrb6LcS] Someone (/172.18.0.1:59838) speaks http plaintext instead of ssl, will close the channel
-    ```
-    Check for conflicting processes by running ```sudo lsof -i:58888``` (e.g.  58888 is the port number)
-
-* Solution:
-    1. Try to close the conflicting processes:
-        You can do this easily with fuser (```sudo apt-get install fuser```), 
-        run ```fuser -k 58888/tcp``` (e.g. 58888 is the port number).
-        Re-run ```docker-compose up``` and check if ```localhost:9200``` shows up.
-    2. Use a docker-compose without SearchGuard:
-        Use the docker-compose below, this doesn't include SearchGuard.
-        <https://github.com/chaoss/grimoirelab-sirmordred#docker-compose-without-searchguard>.
-        Note: With this docker-compose, access to the Kibiter and ElasticSearch don't require credentials.
-        Re-run ```docker-compose up``` and check if ```localhost:9200``` shows up.
-
-#### Permission Denied 
-
-* Indications:
-  Can't create indices in Kibana. Nothing happens after clicking create index.
-
-* Diagnosis:
-  Check for the following log in the output of ```docker-compose up```
-  ```
-  elasticsearch_1 |[INFO ][c.f.s.c.PrivilegesEvaluator] No index-level perm match for User [name=readall, roles=[readall], requestedTenant=null] [IndexType [index=.kibana, type=doc]] [Action [[indices:data/write/index]]] [RolesChecked [sg_own_index, sg_readall]]
-
-  elasticsearch_1 | [c.f.s.c.PrivilegesEvaluator] No permissions for {sg_own_index=[IndexType [index=.kibana, type=doc]], sg_readall=[IndexType [index=.kibana, type=doc]]}
-
-  kibiter_1 | {"type":"response","@timestamp":CURRENT_TIME,"tags":[],"pid":1,"method":"post","statusCode":403,"req":{"url":"/api/saved_objects/index-pattern?overwrite=false","method":"post","headers":{"host":"localhost:5601","user-agent":YOUR_USER_AGENT,"accept":"application/json, text/plain, /","accept-language":"en-US,en;q=0.5","accept-encoding":"gzip, deflate","referer":"http://localhost:5601/app/kibana","content-type":"application/json;charset=utf-8","kbn-version":"6.1.4-1","content-length":"59","connection":"keep-alive"},"remoteAddress":YOUR_IP,"userAgent":YOUR_IP,"referer":"http://localhost:5601/app/kibana"},"res":{"statusCode":403,"responseTime":25,"contentLength":9},"message":"POST /api/saved_objects/index-pattern?overwrite=false 403 25ms - 9.0B"} 
-  ```
-  or any type of 403 error.
-  
-* Solution:
-  This message generally appears when you try to create an index pattern but you are not logged in Kibana. Try logging in to Kibana (the login button is on the bottom left corner).
-  The credentials used for login should be username: `admin` and password: `admin`.
-
-#### Empty Index
-
-* Indications and Diagnosis:
-  Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/utils/micro.py) using ```micro.py --raw --enrich --panels --cfg ./setup.cfg --backends git```(Here, using git as backend)
-  ```
-  [git] Problem executing study enrich_areas_of_code:git, RequestError(400, 'search_phase_execution_exception', 'No mapping   found for [metadata__timestamp] in order to sort on')
-  ```
-* Solution:
-  This error appears when the index is empty (here, ```git-aoc_chaoss_enriched``` index is empty). An index can be empty when   the local clone of the repository being analyzed is in sync with the upstream repo, so there will be no new commits to       ingest to grimoirelab.
-  
-  There are 2 methods to solve this problem:
- 
-  Method 1: Disable the param [latest-items](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg#L78) by setting it to false.
-  
-  Method 2: Delete the local clone of the repo (which is stored in ```~/.perceval/repositories```).
- 
-  Some extra details to better understand this behavior:
-  
-  The Git backend of perceval creates a clone of the repository (which is stored in ```~/.perceval/repositories```) and keeps the local copy in sync with the upstream one. This clone is then used to ingest the commits data to grimoirelab.
-  Grimoirelab periodically collects data from different data sources (in this specific case, a git repository) in an           incremental way. 
-  A typical execution of grimoirelab for a git repository consists of ingesting only the new commits to the platform. These   commits are obtained by comparing the local copy with the upstream one, thus if the two repos are synchronized, then no commits are returned and hence Index will be empty. In the case where all commits need to be extracted even if there is already a local clone, latest-items param should be disabled. Another option is to delete the local clone (which is stored at ```~/.perceval/repositories```), and by doing so the platform will clone the repo again and extract all commits. 
- 
-## Micro Mordred
+## Micro Mordred [&uarr;](#contents)
 
 Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
 
@@ -1381,192 +1297,3 @@ cd .../grimoirelab-sirmordred/utils/
 micro.py --raw --enrich --cfg ./setup.cfg --backends git #  execute the Raw and Enrich tasks for the Git cfg section
 micro.py --panels # execute the Panels task to load the Sigils panels to Kibiter
 ``` 
-
-## Getting started
-
-SirModred relies on ElasticSearch, Kibiter and MySQL/MariaDB. The current versions used are:
-- ElasticSearch 6.1.0
-- Kibiter 6.1.4
-- MySQL/MariaDB (5.7.24/10.0)
-There are 3 options to get started with SirMordred:
-
-### Source code
-
-You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/MariaDB database (5.7.24/10.0), and the following components:
-
-- [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
-- [ELK](https://github.com/chaoss/grimoirelab-elk)
-- [Graal](https://github.com/chaoss/grimoirelab-graal)
-- [Perceval](https://github.com/chaoss/grimoirelab-perceval)
-- [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
-- [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
-- [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
-- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
-- [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
-- [Sigils](https://github.com/chaoss/grimoirelab-sigils)
-- [Kidash](https://github.com/chaoss/grimoirelab-kidash)
-- [Toolkit](https://github.com/chaoss/grimoirelab-toolkit)
-- [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
-- [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
-
-### Source code and docker
-
-You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibiter and MariaDB.
-Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
-
-#### docker-compose (with SearchGuard)
-Note: For accessing Kibiter and/or creating indexes login is required, the `username:password` is `admin:admin`.
-```
-elasticsearch:
-  restart: on-failure:5
-  image: bitergia/elasticsearch:6.1.0-secured
-  command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
-  environment:
-    - ES_JAVA_OPTS=-Xms2g -Xmx2g
-  ports:
-    - 9200:9200
-
-kibiter:
-  restart: on-failure:5
-  image: bitergia/kibiter:secured-v6.1.4-5
-  environment:
-    - PROJECT_NAME=Development
-    - NODE_OPTIONS=--max-old-space-size=1000
-    - ELASTICSEARCH_URL=https://elasticsearch:9200
-    - ELASTICSEARCH_USER=kibanaserver
-    - ELASTICSEARCH_PASSWORD=kibanaserver
-  links:
-    - elasticsearch
-  ports:
-    - 5601:5601
-    
-mariadb:
-  restart: on-failure:5
-  image: mariadb:10.0
-  expose:
-    - "3306"
-  ports:
-    - "3306:3306"
-  environment:
-    - MYSQL_ROOT_PASSWORD=
-    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-    - MYSQL_DATABASE=test_sh
-  command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
-  log_driver: "json-file"
-  log_opt:
-      max-size: "100m"
-      max-file: "3"
-```
-#### docker-compose (without SearchGuard)
-Note: Here, access to kibiter and elasticsearch don't need credentials.
-```
-version: '2.2'
-
-services:
-    elasticsearch:
-      image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.4
-      command: /elasticsearch/bin/elasticsearch -E network.bind_host=0.0.0.0
-      ports:
-        - 9200:9200
-      environment:
-        - ES_JAVA_OPTS=-Xms2g -Xmx2g
-
-    kibiter:
-      restart: on-failure:5
-      image: bitergia/kibiter:optimized-v6.1.4-4
-      environment:
-        - PROJECT_NAME=Demo
-        - NODE_OPTIONS=--max-old-space-size=1000
-        - ELASTICSEARCH_URL=http://elasticsearch:9200
-      links:
-        - elasticsearch
-      ports:
-        - 5601:5601
-
-    mariadb:
-      restart: on-failure:5
-      image: mariadb:10.0
-      expose:
-        - "3306"
-      ports:
-        - "3306:3306"
-      environment:
-        - MYSQL_ROOT_PASSWORD=
-        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-        - MYSQL_DATABASE=test_sh
-      command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
-```
-
-Save the above into a docker-compose.yml file and run
-```
-docker-compose up -d
-```
-to get ElasticSearch, Kibiter and MariaDB. Comment/remove the mariadb section in case you have MariaDB or MySQL already installed in your system.
-
-You can read more about docker and docker-compose [here](https://docs.docker.com/compose/)
-
-### Only docker
-
-Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/sirmordred/container.html)
-
-
-### Setting up a Pycharm dev environment
-
-This section provides details about how to set up a dev environment using PyCharm. The first step consists in forking
-the GitHub repos below and cloning them to a target local folder (e.g., `sources`).
-
-- [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
-- [ELK](https://github.com/chaoss/grimoirelab-elk)
-- [Graal](https://github.com/chaoss/grimoirelab-graal)
-- [Perceval](https://github.com/chaoss/grimoirelab-perceval)
-- [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
-- [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
-- [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
-- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
-- [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
-- [Sigils](https://github.com/chaoss/grimoirelab-sigils)
-- [Kidash](https://github.com/chaoss/grimoirelab-kidash)
-- [Toolkit](https://github.com/chaoss/grimoirelab-toolkit)
-- [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
-- [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
-
-
-Each local repo should have two `remotes`: `origin` points to the forked repo, while `upstream` points to the original CHAOSS repo. An example
-is provided below.
-```
-~/sources/perceval$ git remote -v
-origin	https://github.com/valeriocos/perceval (fetch)
-origin	https://github.com/valeriocos/perceval (push)
-upstream	https://github.com/chaoss/grimoirelab-perceval (fetch)
-upstream	https://github.com/chaoss/grimoirelab-perceval (push)
-```
-
-In order to add a remote to a Git repository, you can use the following command:
-```
-~/sources/perceval$ git remote add upstream https://github.com/chaoss/grimoirelab-perceval
-```
-
-Then, you can download the [PyCharm community edition](https://www.jetbrains.com/pycharm/download/#section=linux), and create a project in the 
-grimoirelab-sirmordred directory. PyCharm will automatically create a virtual env, where you should install the dependencies listed in each 
-requirements.txt, excluding the ones concerning the grimoirelab components.
-
-To install the dependencies, you can click on `File` -> `Settings` -> `Project` -> `Project Interpreter`, and then the `+` located on the top right corner (see figure below).
-
-![captura_22](https://user-images.githubusercontent.com/6515067/63195511-12299d80-c073-11e9-9774-5f274891720a.png)
-
-Later, you can add the dependencies to the grimoirelab components via `File` -> `Settings` -> `Project` -> `Project Structure`. 
-The final results should be something similar to the image below.
-
-![captura_23](https://user-images.githubusercontent.com/6515067/63195579-4b620d80-c073-11e9-888b-3cdb67c04523.png)
-
-Finally, you can use the docker-compose shown at Section [source-code-and-docker](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/README.md#source-code-and-docker), define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/projects.json), and
-run the following commands, which will collect and enrich the data coming from the git and cocom sections and upload the corresponding panels to Kibiter:
-```
-micro.py --raw --enrich --cfg ./setup.cfg --backends git cocom
-micro.py --panels --cfg ./setup.cfg
-```
-
-Optionally, you can create a configuration in PyCharm to speed up the executions (`Run` -> `Edit configuration` -> `+`). The final results should be something similar to the image below.
-
-![captura_24](https://user-images.githubusercontent.com/6515067/63195767-ccb9a000-c073-11e9-805a-e828a3ce1dc9.png)
- 
