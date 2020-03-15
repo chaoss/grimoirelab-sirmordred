@@ -1463,26 +1463,13 @@ Note: Here, access to kibiter and elasticsearch don't need credentials.
 version: '2.2'
 
 services:
-    mariadb:
-      restart: on-failure:5
-      image: mariadb:10.0
-      expose:
-        - "3306"
-      ports:
-        - "3306:3306"
-      environment:
-        - MYSQL_ROOT_PASSWORD=
-        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-        - MYSQL_DATABASE=test_sh
-      command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
-
     elasticsearch:
       image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.4
       command: /elasticsearch/bin/elasticsearch -E network.bind_host=0.0.0.0
       ports:
         - 9200:9200
       environment:
-        - ES_JAVA_OPTS=-Xms1g -Xmx1g
+        - ES_JAVA_OPTS=-Xms2g -Xmx2g
 
     kibiter:
       restart: on-failure:5
@@ -1495,6 +1482,19 @@ services:
         - elasticsearch
       ports:
         - 5601:5601
+
+    mariadb:
+      restart: on-failure:5
+      image: mariadb:10.0
+      expose:
+        - "3306"
+      ports:
+        - "3306:3306"
+      environment:
+        - MYSQL_ROOT_PASSWORD=
+        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+        - MYSQL_DATABASE=test_sh
+      command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
 ```
 
 Save the above into a docker-compose.yml file and run
