@@ -201,6 +201,8 @@ Following is a list of common problems encountered while setting up GrimoireLab
 * [Permission Denied](#permission-denied-)
 * [Empty Index](#empty-index-)
 * [Low File Descriptors](#low-file-descriptors-)
+* [Rate Limit Exhausted](#rate-limit-exhausted-)
+* [No Swap Space](#no-swap-space-)
 
 
 ---
@@ -347,3 +349,25 @@ starting/(re)creating/building/attaching containers for a service.
           soft: 65536
           hard: 65536
         ```
+#### Rate Limit Exhausted [&uarr;](#troubleshooting-)
+
+
+* Indication: See error message ```RuntimeError: Rate limit exhausted.; 3581.0 seconds to rate reset```
+
+* Solution : Enable the ```sleep-for-rate``` parameter. It increases rate by sleeping between API call retries.
+
+
+
+#### No Swap Space [&uarr;](#troubleshooting-)
+
+
+* Indication: While composing docker , NO SWAP SPACE would be displayed.
+
+* Solution:  Edit the ```/etc/default/grub file``` with sudo previleges.
+	
+	```
+	    GRUB_CMDLINE_LINUX="cgroup_enable=memory swapaccount=1" 
+		sudo update-grub
+	```
+    And restart the system.
+
