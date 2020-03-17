@@ -1288,12 +1288,16 @@ Micro Mordred is located in the [/utils](https://github.com/chaoss/grimoirelab-s
 --panels: activate panels task
 
 --cfg: path of the onfiguration file
+
 --backends: list of cfg sections where the active tasks will be executed
+
+--logs-dir: single parameter denoting the path of folder in which logs are to be stored
 ```
 
 Examples of possible executions are shown below:
 ```
 cd .../grimoirelab-sirmordred/utils/
-micro.py --raw --enrich --cfg ./setup.cfg --backends git #  execute the Raw and Enrich tasks for the Git cfg section
+micro.py --raw --enrich --cfg ./setup.cfg --backends git # execute the Raw and Enrich tasks for the Git cfg section
 micro.py --panels # execute the Panels task to load the Sigils panels to Kibiter
+micro.py --raw --enrich --debug --cfg ./setup.cfg --backends groupsio --logs-dir logs # execute the raw and enriched tasks for the groupsio cfg section with debug mode on and logs being saved in the folder logs in the same directory as micro.py
 ``` 

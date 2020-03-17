@@ -22,6 +22,8 @@
 
 import argparse
 import logging
+import os
+
 import colorlog
 import sys
 
@@ -32,8 +34,9 @@ from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
 
-DEBUG_LOG_FORMAT = "\033[1m %(log_color)s [%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
-INFO_LOG_FORMAT = "\033[1m %(log_color)s %(asctime)s %(message)s"
+DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
+INFO_LOG_FORMAT = "%(asctime)s %(message)s"
+COLOR_LOG_FORMAT_SUFFIX = "\033[1m %(log_color)s "
 LOG_COLORS = {'DEBUG': 'white', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'red,bg_white'}
 
 
@@ -140,25 +143,38 @@ def get_panels(config):
     logging.info("Panels creation finished!")
 
 
-def config_logging(debug):
+def config_logging(debug, logs_dir):
     """Config logging level output output"""
 
     if debug:
-        format = DEBUG_LOG_FORMAT
-        logging.basicConfig(level=logging.DEBUG,
-                            format=DEBUG_LOG_FORMAT)
-        logging.debug("Debug mode activated")
+        fmt = DEBUG_LOG_FORMAT
+        logging_mode = logging.DEBUG
     else:
-        format = INFO_LOG_FORMAT
-        logging.basicConfig(level=logging.INFO, format=INFO_LOG_FORMAT)
+        fmt = INFO_LOG_FORMAT
+        logging_mode = logging.INFO
 
-    # Setting the color scheme into the root logger
+    # Setting the color scheme and level into the root logger
+    logging.basicConfig(level=logging_mode)
     stream = logging.root.handlers[0]
-    formatter = colorlog.ColoredFormatter(fmt=format, log_colors=LOG_COLORS)
+    formatter = colorlog.ColoredFormatter(fmt=COLOR_LOG_FORMAT_SUFFIX + fmt,
+                                          log_colors=LOG_COLORS)
     stream.setFormatter(formatter)
+
+    # Creating a file handler and adding it to root
+    if logs_dir:
+        fh_filepath = os.path.join(logs_dir, 'all.log')
+        fh = logging.FileHandler(fh_filepath, mode='w')
+        fh.setLevel(logging_mode)
+        formatter = logging.Formatter(fmt)
+        fh.setFormatter(formatter)
+        logging.getLogger().addHandler(fh)
 
     # ES logger is set to INFO since, it produces a really verbose output if set to DEBUG
     logging.getLogger('elasticsearch').setLevel(logging.INFO)
+
+    # Show if debug mode is activated
+    if debug:
+        logging.debug("Debug mode activated")
 
 
 def get_params_parser():
@@ -184,6 +200,7 @@ def get_params_parser():
                         help="Configuration file path")
     parser.add_argument("--backends", dest='backend_sections', default=[],
                         nargs='*', help="Backend sections to execute")
+    parser.add_argument("--logs-dir", dest='logs_dir', default='', help='Logs Directory')
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -209,8 +226,7 @@ def get_params():
 
 if __name__ == '__main__':
     args = get_params()
-    config_logging(args.debug)
-
+    config_logging(args.debug, args.logs_dir)
     micro_mordred(args.cfg_path, args.backend_sections,
                   args.raw,
                   args.identities_load,
