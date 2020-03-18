@@ -169,8 +169,36 @@ In order to add a remote to a Git repository, you can use the following command:
 ~/sources/perceval$ git remote add upstream https://github.com/chaoss/grimoirelab-perceval
 ```
 
-Then, you can download the [PyCharm community edition](https://www.jetbrains.com/pycharm/download/#section=linux), and create a project in the 
-grimoirelab-sirmordred directory. PyCharm will automatically create a virtual env, where you should install the dependencies listed in each 
+Then, you can download the [PyCharm community edition](https://www.jetbrains.com/pycharm/download/#section=linux), using any of the following alternatives:
+
+* **Alternative 1: Install PyCharm via Snap Package Management**
+    
+    Install Snap Package Management using the below command.
+
+     `sudo apt install snapd snapd-xdg-open`
+    
+    Now that `Snap` is installed, run the command below to install the community version of PyCharm.
+    
+     `sudo snap install pycharm-community --classic`
+
+* **Alternative 2: Install PyCharm via Ubuntu Software Center**
+
+    Open Ubuntu Software Center and search for PyCharm. Then, select and install the community version of PyCharm.
+
+* **Alternative 3: Download PyCharm tar file**
+
+    Go to the official website of [JetBrains]((https://www.jetbrains.com/pycharm/download/#section=linux)) and download the community version of PyCharm for your system.
+    Then, extract the downloaded `tarfile` file using the below command.
+    
+    `tar -xzf tarfile`
+
+    Go to the `bin` directory and run the PyCharm shell.
+
+After the installation is complete, this [tutorial](https://www.jetbrains.com/help/pycharm/quick-start-guide.html)
+can be followed to gain familiarity with PyCharm.
+
+Once PyCharm is installed create a project in the grimoirelab-sirmordred directory. 
+PyCharm will automatically create a virtual env, where you should install the dependencies listed in each 
 requirements.txt, excluding the ones concerning the grimoirelab components.
 
 To install the dependencies, you can click on `File` -> `Settings` -> `Project` -> `Project Interpreter`, and then the `+` located on the top right corner (see figure below).
