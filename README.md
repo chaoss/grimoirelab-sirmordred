@@ -10,6 +10,7 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
 * [Micro Mordred](#micro-mordred-)
 * [Getting started](/Getting-Started.md#getting-started-)
 * [Troubleshooting](/Getting-Started.md#troubleshooting-)
+* [How to](/Getting-Started.md#how-to-)
 
 
 ## Setup.cfg [&uarr;](#contents)
