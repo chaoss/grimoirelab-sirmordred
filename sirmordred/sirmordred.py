@@ -323,9 +323,6 @@ class SirMordred:
                     self.execute_batch_tasks(all_tasks_cls,
                                              sleep_for,
                                              self.conf['general']['min_update_delay'])
-                    self.execute_batch_tasks(all_tasks_cls,
-                                             sleep_for,
-                                             self.conf['general']['min_update_delay'])
                     break
                 else:
                     self.execute_nonstop_tasks(all_tasks_cls)
