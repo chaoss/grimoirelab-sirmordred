@@ -279,9 +279,8 @@ starting/(re)creating/building/attaching containers for a service.
         You can do this easily with fuser (```sudo apt-get install fuser```), 
         run ```fuser -k 58888/tcp``` (e.g. 58888 is the port number).
         Re-run ```docker-compose up``` and check if ```localhost:9200``` shows up.
-    2. Use a docker-compose without SearchGuard:
-        Use the docker-compose below, this doesn't include SearchGuard.
-        <https://github.com/chaoss/grimoirelab-sirmordred#docker-compose-without-searchguard>.
+    2. Use a [docker-compose without SearchGuard](#docker-compose-without-searchguard-):
+        Use the docker-compose above, this doesn't include SearchGuard.
         Note: With this docker-compose, access to the Kibiter and ElasticSearch don't require credentials.
         Re-run ```docker-compose up``` and check if ```localhost:9200``` shows up.
 
