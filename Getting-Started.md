@@ -404,7 +404,7 @@ Following are some tutorials for ElasticSearch and Kibiter:
 
 * [Build a data table visualization in Kibiter](#build-a-data-table-visualization-in-kibiter-)
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
-
+* [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
 
 #### Build a data table visualization in Kibiter [&uarr;](#how-to-)
 
@@ -499,3 +499,36 @@ Alternatively, a data table visualization can be created using the steps mention
 Kibiter then automatically generates a query as shown below.
 
 ![Creating data query through request](https://user-images.githubusercontent.com/32506591/77188682-5e065e80-6afc-11ea-9b00-a927690cc76e.png)
+
+#### Remove existing dockers and start a fresh environment [&uarr;](#how-to-)
+
+   - Stop and remove all the containers with `docker-compose down --remove-orphans`.
+   
+   - Run `docker ps` and ensure that there is no entry in the output.
+    
+   - Remove all unused containers, images, and volumes with  `docker system prune -a --volumes`.
+
+   - Now, execute `docker-compose up -d` using the source code (see - https://github.com/chaoss/grimoirelab-sirmordred/blob/master/Getting-Started.md#source-code-and-docker- )
+
+   - Check connection to Elasticsearch with `curl -XGET <elasticsearch-url> -k`.
+        The output should be the similar to :
+   
+   ```
+  {
+  "name" : "b_fX4NK",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "gbFL_zlZQiWzHuTV-fek2g",
+  "version" : {
+    "number" : "6.1.4",
+    "build_hash" : "d838f2d",
+    "build_date" : "2018-03-14T08:28:22.470Z",
+    "build_snapshot" : false,
+    "lucene_version" : "7.1.0",
+    "minimum_wire_compatibility_version" : "5.6.0",
+    "minimum_index_compatibility_version" : "5.0.0"
+  },
+  "tagline" : "You Know, for Search"
+  }
+
+   ```
+   - Execute micro mordred (see - https://github.com/chaoss/grimoirelab-sirmordred#micro-mordred-)
