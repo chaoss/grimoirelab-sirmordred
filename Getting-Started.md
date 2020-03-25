@@ -405,6 +405,7 @@ Following are some tutorials for ElasticSearch and Kibiter:
 * [Build a data table visualization in Kibiter](#build-a-data-table-visualization-in-kibiter-)
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
 * [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
+* [Modify the menu](#modify-menu)
 
 #### Build a data table visualization in Kibiter [&uarr;](#how-to-)
 
@@ -532,3 +533,180 @@ Kibiter then automatically generates a query as shown below.
 
    ```
    - Execute micro mordred (see - https://github.com/chaoss/grimoirelab-sirmordred#micro-mordred-)
+
+#### Modify the menu [&uarr;](#how-to-)
+
+- Get the current menu: `GET <elasticsearch_url>/.kibana/doc/metadashboard`. It will return a json with the following structure:
+
+```
+{
+  "metadashboard": [
+      {
+        "name": "Panel 1",
+        "title": "Panel 1"
+        "description": "This is a link to a panel",
+        "panel_id": "panel_1",
+        "type": "entry",
+      },
+      {
+        "name": "Tab 1",
+        "title": "Tab 1"
+        "description": "This is a tab, when clicked a submenu with the panels will appear",
+        "type": "menu",
+        "dashboards": [
+          {
+            "description": "This is a link to a panel",
+            "panel_id": "panel_1_tab_1",
+            "type": "entry",
+            "name": "Panel 1 of the Tab 1",
+            "title": "Panel 1 of the Tab 1"
+          },
+          ...
+        ],
+      },
+      ...
+  ]
+}
+```
+
+- If you want to add an **entry** (a link to a dashboard) you can do it in two different ways:
+
+  1. Adding a link in the root menu:
+    ```
+    {
+      "metadashboard": [
+          {
+            "name": "Panel 1",
+            "title": "Panel 1"
+            "description": "This is a link to a panel",
+            "panel_id": "panel_1",
+            "type": "entry",
+          },
+          //////////New entry///////////
+          {
+            "name": "New entry",
+            "title": "New entry"
+            "description": "This is a link to a panel",
+            "panel_id": "<id_of_the_dashboard>",
+            "type": "entry",
+          },
+          /////////////////////////////
+          {
+            "name": "Tab 1",
+            "title": "Tab 1"
+            "description": "This is a tab, when clicked a submenu with the panels will appear",
+            "type": "menu",
+            "dashboards": [
+              {
+                "description": "This is a link to a panel",
+                "panel_id": "panel_1_tab_1",
+                "type": "entry",
+                "name": "Panel 1 of the Tab 1",
+                "title": "Panel 1 of the Tab 1"
+              },
+              ...
+            ],
+          },
+          ...
+      ]
+    }
+    ```
+    2. Adding a link in a submenu of a tab:
+    ```
+    {
+      "metadashboard": [
+          {
+            "name": "Panel 1",
+            "title": "Panel 1"
+            "description": "This is a link to a panel",
+            "panel_id": "panel_1",
+            "type": "entry",
+          },
+          {
+            "name": "Tab 1",
+            "title": "Tab 1"
+            "description": "This is a tab, when clicked a submenu with the panels will appear",
+            "type": "menu",
+            "dashboards": [
+              {
+                "description": "This is a link to a panel",
+                "panel_id": "panel_1_tab_1",
+                "type": "entry",
+                "name": "Panel 1 of the Tab 1",
+                "title": "Panel 1 of the Tab 1"
+              },
+              //////////New entry///////////
+              {
+                "name": "New entry",
+                "title": "New entry"
+                "description": "This is a link to a panel",
+                "panel_id": "<id_of_the_dashboard>",
+                "type": "entry",
+              },
+              /////////////////////////////
+              ...
+            ],
+          },
+          ...
+      ]
+    }
+    ```
+  
+- If you want to add a new **tab** (item that will show a submenu with entries) you must do it in the root menu:
+
+```
+{
+  "metadashboard": [
+      {
+        "name": "Panel 1",
+        "title": "Panel 1"
+        "description": "This is a link to a panel",
+        "panel_id": "panel_1",
+        "type": "entry",
+      },
+      {
+        "name": "Tab 1",
+        "title": "Tab 1"
+        "description": "This is a tab, when clicked a submenu with the panels will appear",
+        "type": "menu",
+        "dashboards": [
+          {
+            "description": "This is a link to a panel",
+            "panel_id": "panel_1_tab_1",
+            "type": "entry",
+            "name": "Panel 1 of the Tab 1",
+            "title": "Panel 1 of the Tab 1"
+          },
+          ...
+        ],
+      },
+      //////////New tab///////////
+      {
+        "name": "New tab",
+        "title": "New tab"
+        "description": "This is a tab, when clicked a submenu with the panels will appear",
+        "type": "menu",
+        "dashboards": [
+          {
+            "description": "This is a link to a panel",
+            "panel_id": "<id_of_the_dashboard>",
+            "type": "entry",
+            "name": "Panel 1 of the New tab",
+            "title": "Panel 1 of the New tab"
+          },
+          ...
+        ],
+      },
+      ////////////////////////////
+      ...
+  ]
+}
+```
+
+
+- Once the json of the menu has been modified, the final step is to upload it updating the version: `PUT <elasticsearch_url>/.kibana/doc/metadashboard`
+
+
+> :warning: **If you change the structure or delete it** you won't see the menu.
+
+> **Note**: the `<id_of_the_dashboard>` must be the identifier that Kibana/Kibiter put to a saved dashboard.
