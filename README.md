@@ -102,6 +102,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
 * **raw_index** (str: None): Index name in which to store the raw items (**Required**)
 * **enriched_index** (str: None): Index name in which to store the enriched items (**Required**)
 * **studies** (list: []): List of studies to be executed
+* **anonymize** (bool: False): enable/disable anonymization of personal user information
 * **backend-param-1**: ..
 * **backend-param-2**: ..
 * **backend-param-n**: ..

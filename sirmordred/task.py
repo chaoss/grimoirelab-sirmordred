@@ -36,8 +36,8 @@ class Task():
     """ Basic class shared by all tasks """
 
     NO_BACKEND_FIELDS = ['enriched_index', 'raw_index', 'es_collection_url',
-                         'collect', 'pair-programming', 'fetch-archive', 'studies',
-                         'node_regex']
+                         'collect', 'pair-programming', 'fetch-archive',
+                         'studies', 'node_regex', 'anonymize']
     PARAMS_WITH_SPACES = ['blacklist-jobs']
 
     def __init__(self, config):
