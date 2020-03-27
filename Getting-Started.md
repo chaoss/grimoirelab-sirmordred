@@ -549,6 +549,7 @@ Following are some tutorials for ElasticSearch and Kibiter:
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
 * [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
 * [Modify the menu](#modify-menu)
+* [Dump a mapping/data from an index](#dump-data/mapping-)
 
 #### Build a data table visualization in Kibiter [&uarr;](#how-to-)
 
@@ -853,3 +854,57 @@ Kibiter then automatically generates a query as shown below.
 > :warning: **If you change the structure or delete it** you won't see the menu.
 
 > **Note**: the `<id_of_the_dashboard>` must be the identifier that Kibana/Kibiter put to a saved dashboard.
+
+#### Dump a mapping/data from an index [&uarr;](#dump-data/mapping-)
+
+**elasticdump installation**
+
+```
+sudo apt install npm
+sudo -i
+npm install elasticdump -g
+
+```
+
+![elasticdump_installation](https://user-images.githubusercontent.com/53489999/77806917-23786500-70ac-11ea-9d09-dbdb38caf6aa.png)
+
+CTRL+D to logout from root user
+
+***
+
+> Use the 'type' argument to either fetch data or mapping.
+
+
+**To get data from the index**
+
+```
+elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --type=data
+```
+
+![elasticdump_data](https://user-images.githubusercontent.com/53489999/77806813-d4cacb00-70ab-11ea-9a58-dcb3c7715e9d.png)
+
+**To get mapping from the index**
+
+```
+elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
+```
+
+![elasticdump_mapping](https://user-images.githubusercontent.com/53489999/77806637-40f8ff00-70ab-11ea-8fe5-766fbde93fcf.png)
+
+This will generate output files 
+
+![op_files](https://user-images.githubusercontent.com/53489999/77806689-6128be00-70ab-11ea-93b0-62de201f912e.png)
+
+## OUTPUT 
+
+"data" File
+
+![data](https://user-images.githubusercontent.com/53489999/77806716-7b629c00-70ab-11ea-8e1f-c5a71ee40afd.png)
+
+"mapping" File
+
+![mapping](https://user-images.githubusercontent.com/53489999/77806840-eca24f00-70ab-11ea-9b0c-3f9ce5592315.png)
+
+
+
+
