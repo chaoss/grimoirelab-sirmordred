@@ -56,7 +56,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
  * **kibiter_url** (str): Kibiter URL (**Required**)
  * **kibiter_version** (str: None): Kibiter version
  * **kafka** (bool: False): Include KIP section in dashboard
- * **github-comments** (bool: False): Enable GitHub comments menu. Note that if enabled, the github2:issue and github2:pulls sections in the setup.cfg and projects.json should be declared
+ * **github-comments** (bool: False): Enable GitHub comments menu. Note that if enabled, the github2:issue and github2:pull sections in the setup.cfg and projects.json should be declared
  * **github-repos** (bool: False): Enable GitHub repo stats menu. Note that if enabled, the github:repo section in the setup.cfg and projects.json should be declared
  * **gitlab-issues** (bool: False): Enable GitLab issues menu. Note that if enabled, the gitlab:issue section in the setup.cfg and projects.json should be declared
  * **gitlab-merges** (bool: False): Enable GitLab merge requests menu. Note that if enabled, the gitlab:merge sections in the setup.cfg and projects.json should be declared
