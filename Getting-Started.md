@@ -46,16 +46,16 @@ Installation for Ubuntu
 [Reference for Docker installation](https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04)
 
 ```
-Sudo apt-get update
+sudo apt-get update
 ```
 ```
-Sudo apt install docker.io
+sudo apt install docker.io
 ```
 ![docker_in1](https://user-images.githubusercontent.com/53489999/77804454-8d414080-70a5-11ea-9d47-1e18541c885f.png)
 
 ```
-Sudo systemctl start docker
-Sudo systemctl enable docker
+sudo systemctl start docker
+sudo systemctl enable docker
 ```
 ![docker_in2](https://user-images.githubusercontent.com/53489999/77804492-a8ac4b80-70a5-11ea-8d36-b92abba57404.png)
 
