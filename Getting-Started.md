@@ -37,87 +37,6 @@ You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/Mari
 You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibiter and MariaDB.
 Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
 
-***
-
-#### Docker installation
-
-Installation for Ubuntu 
-
-[Reference for Docker installation](https://phoenixnap.com/kb/how-to-install-docker-on-ubuntu-18-04)
-
-```
-sudo apt-get update
-```
-```
-sudo apt install docker.io
-```
-![docker_in1](https://user-images.githubusercontent.com/53489999/77804454-8d414080-70a5-11ea-9d47-1e18541c885f.png)
-
-```
-sudo systemctl start docker
-sudo systemctl enable docker
-```
-![docker_in2](https://user-images.githubusercontent.com/53489999/77804492-a8ac4b80-70a5-11ea-8d36-b92abba57404.png)
-
-To check whether docker has installed correctly.
-
-```
-Docker --version 
-```
-
-![docker_version_check](https://user-images.githubusercontent.com/53489999/77804520-bcf04880-70a5-11ea-88e1-c439a872f65f.png)
-
-Add user 
-```
-sudo gpasswd -a $USER docker
-```
-Create a group
-
-```
-newgrp docker
-```
-
-Run your first image (hello-world)
-
-> If the image is not available locally - docker gets the image from dockerhub.
-
-```
-docker run hello-world
-```
-![docker-hello_world_image](https://user-images.githubusercontent.com/53489999/77804566-e4471580-70a5-11ea-9e07-0daed701706a.png)
-
-***
-
-#### Docker-compose installation
-
-Select Linux  at 
-[Install Docker compose](https://docs.docker.com/compose/install/)
-
-
-```
-sudo curl -L "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-```
-
-```
-sudo chmod +x /usr/local/bin/docker-compose
-
-docker-compose --version
-```
-
-![docker-compose1](https://user-images.githubusercontent.com/53489999/77804770-5586c880-70a6-11ea-9972-5bfef57d8f4c.png)
-
-```
-docker-compose ps
-
-docker-compose ps -a
-
-docker-stop <container-id>
-```
-
-![docker-compose2](https://user-images.githubusercontent.com/53489999/77804808-70593d00-70a6-11ea-9370-201e26c73e52.png)
-
-***
-
 #### docker-compose (with SearchGuard) [&uarr;](#source-code-and-docker-)
 Note: For accessing Kibiter and/or creating indexes login is required, the `username:password` is `admin:admin`.
 ```
@@ -314,8 +233,6 @@ Following is a list of common problems encountered while setting up GrimoireLab
 * [No Swap Space](#no-swap-space-)
 * [SSL error](#ssl-)
 * [cloc installation](#cloc-installation-)
-* [git 'latest-item'](#latest-item-)
-
 
 ---
 **NOTE**
@@ -485,6 +402,10 @@ starting/(re)creating/building/attaching containers for a service.
 
 #### SLL error [&uarr;](#ssl-)
 
+* Indication: localhost:9200 refuses connection error.
+
+* Diagnosis: 
+
 ![ssl_error](https://user-images.githubusercontent.com/53489999/77805355-aea32c00-70a7-11ea-9222-5073851bdc60.png)
 
 * Solution:
@@ -496,7 +417,7 @@ starting/(re)creating/building/attaching containers for a service.
   # arthur = true
   # arthur_url = http://127.0.0.1:8080
   # redis_url = redis://localhost/8
-  url = http://ocalhost:9200
+  url = http://localhost:9200
 
   [es_enrichment]
   url = http://localhost:9200
@@ -505,38 +426,17 @@ starting/(re)creating/building/attaching containers for a service.
 
 #### cloc installation [&uarr;](#cloc-installation-)
 
+* Diagnosis:
+
 ![cloc_error](https://user-images.githubusercontent.com/53489999/77805464-f45ff480-70a7-11ea-90ef-04e1c588f2fd.png)
 
 * Solution:
 
-  Execute the following -
-
-  [Refer](https://github.com/chaoss/grimoirelab-graal#how-to-installcreate-the-executables)
+  Execute the following command to install `cloc` (more details are available in the [Graal](https://github.com/chaoss/grimoirelab-graal#how-to-installcreate-the-executables) repo) 
 
   ```
   sudo apt-get install cloc
   ```
-
-#### git 'latest-item' error [&uarr;](#latest-item-)
-
- ![git_latest_item_error](https://user-images.githubusercontent.com/53489999/77805646-73552d00-70a8-11ea-98ad-bcc46ae463cb.png)
-
- * Solution:
- 
-   * Make the following changes in setup.cfg
-
-    ```
-    latest-items = false
-    ```
-
-    ```
-    [git]
-    raw_index = git_chaoss
-    enriched_index = git_chaoss_enriched
-    latest-items = false
-    category = commit
-    studies = [enrich_demography:git, enrich_areas_of_code:git, enrich_onion:git]
-    ```
 
 ***
 
@@ -549,7 +449,7 @@ Following are some tutorials for ElasticSearch and Kibiter:
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
 * [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
 * [Modify the menu](#modify-menu)
-* [Dump a mapping/data from an index](#dump-data/mapping-)
+* [Dump the index mapping/data with elasticdump](#dump-data/mapping-)
 
 #### Build a data table visualization in Kibiter [&uarr;](#how-to-)
 
@@ -855,7 +755,9 @@ Kibiter then automatically generates a query as shown below.
 
 > **Note**: the `<id_of_the_dashboard>` must be the identifier that Kibana/Kibiter put to a saved dashboard.
 
-#### Dump a mapping/data from an index [&uarr;](#dump-data/mapping-)
+#### Dump the index mapping/data with elasticdump [&uarr;](#dump-data/mapping-)
+
+Indexes and mappings can be dumped (or uploaded) using [elasticdump](https://github.com/taskrabbit/elasticsearch-dump). The commands to install elasticdump, dump an index and its index pattern to a file are shown below.
 
 **elasticdump installation**
 
@@ -863,10 +765,7 @@ Kibiter then automatically generates a query as shown below.
 sudo apt install npm
 sudo -i
 npm install elasticdump -g
-
 ```
-
-![elasticdump_installation](https://user-images.githubusercontent.com/53489999/77806917-23786500-70ac-11ea-9d09-dbdb38caf6aa.png)
 
 CTRL+D to logout from root user
 
@@ -875,7 +774,7 @@ CTRL+D to logout from root user
 > Use the 'type' argument to either fetch data or mapping.
 
 
-**To get data from the index**
+**Dump the index data**
 
 ```
 elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --type=data
@@ -883,7 +782,7 @@ elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --t
 
 ![elasticdump_data](https://user-images.githubusercontent.com/53489999/77806813-d4cacb00-70ab-11ea-9a58-dcb3c7715e9d.png)
 
-**To get mapping from the index**
+**Dump the index mapping**
 
 ```
 elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
@@ -891,11 +790,8 @@ elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json 
 
 ![elasticdump_mapping](https://user-images.githubusercontent.com/53489999/77806637-40f8ff00-70ab-11ea-8fe5-766fbde93fcf.png)
 
-This will generate output files 
 
-![op_files](https://user-images.githubusercontent.com/53489999/77806689-6128be00-70ab-11ea-93b0-62de201f912e.png)
-
-## OUTPUT 
+OUTPUT FILES 
 
 "data" File
 
