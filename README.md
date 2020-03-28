@@ -1288,7 +1288,7 @@ Micro Mordred is located in the [/utils](https://github.com/chaoss/grimoirelab-s
 
 --panels: activate panels task
 
---cfg: path of the onfiguration file
+--cfg: path of the configuration file
 
 --backends: list of cfg sections where the active tasks will be executed
 
