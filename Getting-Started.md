@@ -231,8 +231,8 @@ Following is a list of common problems encountered while setting up GrimoireLab
 * [Low File Descriptors](#low-file-descriptors-)
 * [Rate Limit Exhausted](#rate-limit-exhausted-)
 * [No Swap Space](#no-swap-space-)
-* [SSL error](#ssl-)
-* [cloc installation](#cloc-installation-)
+* [SSL error](#ssl-error-)
+* [Cloc installation](#cloc-installation-)
 
 ---
 **NOTE**
@@ -400,13 +400,16 @@ starting/(re)creating/building/attaching containers for a service.
     And restart the system.
 
 
-#### SLL error [&uarr;](#ssl-)
+#### SSL error [&uarr;](#troubleshooting-)
 
 * Indication: localhost:9200 refuses connection error.
 
 * Diagnosis: 
 
-![ssl_error](https://user-images.githubusercontent.com/53489999/77805355-aea32c00-70a7-11ea-9222-5073851bdc60.png)
+```
+Retrying (Retry(total=10,connected=21,read=0,redirect=5,status=None)) after connection broken by 
+'SSLError(SSLError{1,'[SSL: WRONG_VERSION_NUMBER] wrong version number {_ssl.c:852}'},)': /
+```
 
 * Solution:
 
@@ -424,11 +427,13 @@ starting/(re)creating/building/attaching containers for a service.
   ```
 
 
-#### cloc installation [&uarr;](#cloc-installation-)
+#### Cloc installation [&uarr;](#troubleshooting-)
 
 * Diagnosis:
 
-![cloc_error](https://user-images.githubusercontent.com/53489999/77805464-f45ff480-70a7-11ea-90ef-04e1c588f2fd.png)
+```
+: [Errno 2]No such file or directory : 'cloc': 'cloc'
+```
 
 * Solution:
 
@@ -780,26 +785,12 @@ CTRL+D to logout from root user
 elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --type=data
 ```
 
-![elasticdump_data](https://user-images.githubusercontent.com/53489999/77806813-d4cacb00-70ab-11ea-9a58-dcb3c7715e9d.png)
-
 **Dump the index mapping**
 
 ```
 elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
 ```
 
-![elasticdump_mapping](https://user-images.githubusercontent.com/53489999/77806637-40f8ff00-70ab-11ea-8fe5-766fbde93fcf.png)
-
-
-OUTPUT FILES 
-
-"data" File
-
-![data](https://user-images.githubusercontent.com/53489999/77806716-7b629c00-70ab-11ea-8e1f-c5a71ee40afd.png)
-
-"mapping" File
-
-![mapping](https://user-images.githubusercontent.com/53489999/77806840-eca24f00-70ab-11ea-9b0c-3f9ce5592315.png)
 
 
 
