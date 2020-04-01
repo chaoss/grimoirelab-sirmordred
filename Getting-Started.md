@@ -455,6 +455,11 @@ Following are some tutorials for ElasticSearch and Kibiter:
 * [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
 * [Modify the menu](#modify-menu)
 * [Dump the index mapping/data with elasticdump](#dump-data/mapping-)
+* [Share a dashboard](#share-a-dashboard-)
+* [Edit the name of a Visualization](#edit-the-name-of-a-visualization-)
+* [Edit a Visualization](#edit-a-visualization-)
+* [Check that the data is up to date](#check-that-the-data-is-up-to-date-)
+
 
 #### Build a data table visualization in Kibiter [&uarr;](#how-to-)
 
@@ -793,5 +798,42 @@ elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json 
 
 
 
+#### Share a dashboard [&uarr;](#how-to-)
+
+1. Click on `share` on top right corner of the browser. 
+
+2. There will be 2 options: Share saved Dashboard or share snapshot.
+
+3. Copy the link present under 'Link' under 'Share Saved dashboard' and use it anywhere. This will be a shortened url, and can be easily used accross browsers.
+
+4. You can also extract the embedded iframe and add it to the HTML source. 
+
+
+#### Edit the name of a visualization [&uarr;](#how-to-)
+
+1. Go to `Save` visualization on top right of browser window.
+
+2. Enter the new name. The default name is 'New Visualization'.
+
+3. Uncheck the option that says 'save as a new visualization'. 
+
+4. Now you can see the changed name of the visualization.
+
+
+#### Edit a visualization [&uarr;](#how-to-)
+
+1. Go to 'Visualize' option given on the left sidebar.
+
+2. Open the saved visualization file. 
+
+3. Make changes as per needs.
+
+4. Save again by Clicking 'Save'.
+
+#### Check that the data is up to date [&uarr;](#how-to-)
+
+1. Go to `Data Status` on top right of browser window.
+
+2. Check the last retrieval date to know the last date of data retrieval.
 
 
