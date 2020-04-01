@@ -5,39 +5,28 @@ SirModred relies on ElasticSearch, Kibiter and MySQL/MariaDB. The current versio
 - Kibiter 6.1.4
 - MySQL/MariaDB (5.7.24/10.0)
 
-There are 3 options to get started with SirMordred:
-- [Source code](#source-code-)
-- [Source code and docker](#source-code-and-docker-)
-- [Only docker](#only-docker-)
+There are mainly 2 options to get started with SirMordred:
+- [Source code and docker](#source-code-and-docker-):
+In this method, the applications (ElasticSearch, Kibiter and MariaDB) are installed using docker and the GrimoireLab Components are installed using the source code.
+- [Only docker](#only-docker-):
+In this method, the applications (ElasticSearch, Kibiter and MariaDB) and the GrimoireLab Components are installed using docker.
 
-You can also [set up a development environment in pycharm](#setting-up-a-pycharm-dev-environment-) and develop from there if you are comfortable with the Pycharm IDE.
+## Source code and docker [&uarr;](#getting-started-)
 
+### Getting the containers [&uarr;](#source-code-and-docker-)
 
-### Source code [&uarr;](#getting-started-)
+You will have to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/MariaDB database (5.7.24/10.0). You can use the following docker-compose to have them running.
 
-You will need to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/MariaDB database (5.7.24/10.0), and the following components:
+> Help: You need to install docker and docker-compose for this. Please refer the documentation.
+> - https://docs.docker.com/install/linux/docker-ce/ubuntu/
+> - https://docs.docker.com/compose/install/
 
-- [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
-- [ELK](https://github.com/chaoss/grimoirelab-elk)
-- [Graal](https://github.com/chaoss/grimoirelab-graal)
-- [Perceval](https://github.com/chaoss/grimoirelab-perceval)
-- [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
-- [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
-- [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
-- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
-- [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
-- [Sigils](https://github.com/chaoss/grimoirelab-sigils)
-- [Kidash](https://github.com/chaoss/grimoirelab-kidash)
-- [Toolkit](https://github.com/chaoss/grimoirelab-toolkit)
-- [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
-- [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
+> Note: 
+> 1. You can omit (comment/remove) the `mariadb` section in case you have MariaDB or MySQL already installed in your system.
+> 2. It is not mandatory to use docker to install ElasticSearch, Kibiter and MySQL/MariaDB database. They can be installed by other means too (source code). We are not much concerned about the method they are installed. Docker is the easiest way as it mostly avoids the errors caused by them.
 
-### Source code and docker [&uarr;](#getting-started-)
+#### docker-compose (with SearchGuard) [&uarr;](#getting-the-containers-)
 
-You will have to install the GrimoireLab components listed above, and use the following docker-compose to have ElasticSearch, Kibiter and MariaDB.
-Note that you can omit the `mariadb` section in case you have MySQL/MariaDB already installed in your system.
-
-#### docker-compose (with SearchGuard) [&uarr;](#source-code-and-docker-)
 Note: For accessing Kibiter and/or creating indexes login is required, the `username:password` is `admin:admin`.
 ```
 elasticsearch:
@@ -80,7 +69,9 @@ mariadb:
       max-size: "100m"
       max-file: "3"
 ```
-#### docker-compose (without SearchGuard) [&uarr;](#source-code-and-docker-)
+
+#### docker-compose (without SearchGuard) [&uarr;](#getting-the-containers-)
+
 Note: Here, access to kibiter and elasticsearch don't need credentials.
 ```
 version: '2.2'
@@ -122,21 +113,13 @@ services:
 
 Save the above into a docker-compose.yml file and run
 ```
-docker-compose up -d
+$ docker-compose up -d
 ```
-to get ElasticSearch, Kibiter and MariaDB. Comment/remove the mariadb section in case you have MariaDB or MySQL already installed in your system.
+to get ElasticSearch, Kibiter and MariaDB running on your system.
 
-You can read more about docker and docker-compose [here](https://docs.docker.com/compose/)
+### Cloning the repositories [&uarr;](#source-code-and-docker-)
 
-### Only docker [&uarr;](#getting-started-)
-
-Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/sirmordred/container.html)
-
-
-### Setting up a Pycharm dev environment [&uarr;](#getting-started-)
-
-This section provides details about how to set up a dev environment using PyCharm. The first step consists in forking
-the GitHub repos below and cloning them to a target local folder (e.g., `sources`).
+In the next step, you will need to fork all the GitHub repos below and clone them to a target local folder (e.g., `sources`).
 
 - [SirModred](https://github.com/chaoss/grimoirelab-sirmordred)
 - [ELK](https://github.com/chaoss/grimoirelab-elk)
@@ -153,11 +136,11 @@ the GitHub repos below and cloning them to a target local folder (e.g., `sources
 - [Cereslib](https://github.com/chaoss/grimoirelab-cereslib)
 - [Manuscripts](https://github.com/chaoss/grimoirelab-manuscripts)
 
+Each local repo should have two `remotes`: `origin` points to the forked repo, while `upstream` points to the original CHAOSS repo.
 
-Each local repo should have two `remotes`: `origin` points to the forked repo, while `upstream` points to the original CHAOSS repo. An example
-is provided below.
+An example is provided below.
 ```
-~/sources/perceval$ git remote -v
+$ git remote -v
 origin	https://github.com/valeriocos/perceval (fetch)
 origin	https://github.com/valeriocos/perceval (push)
 upstream	https://github.com/chaoss/grimoirelab-perceval (fetch)
@@ -166,61 +149,62 @@ upstream	https://github.com/chaoss/grimoirelab-perceval (push)
 
 In order to add a remote to a Git repository, you can use the following command:
 ```
-~/sources/perceval$ git remote add upstream https://github.com/chaoss/grimoirelab-perceval
+$ git remote add upstream https://github.com/chaoss/grimoirelab-perceval
 ```
 
-Then, you can download the [PyCharm community edition](https://www.jetbrains.com/pycharm/download/#section=linux), using any of the following alternatives:
+#### ProTip [&uarr;](#cloning-the-repositories-)
 
-* **Alternative 1: Install PyCharm via Snap Package Management**
-    
-    Install Snap Package Management using the below command.
+You can use this use this [script](https://gist.github.com/vchrombie/4403193198cd79e7ee0079259311f6e8) to automate this whole process.
+```
+$ python3 glab-dev-env-setup.py --create --token xxxx --source sources
+```
 
-     `sudo apt install snapd snapd-xdg-open`
-    
-    Now that `Snap` is installed, run the command below to install the community version of PyCharm.
-    
-     `sudo snap install pycharm-community --classic`
+### Setting up PyCharm [&uarr;](#source-code-and-docker-)
 
-* **Alternative 2: Install PyCharm via Ubuntu Software Center**
-
-    Open Ubuntu Software Center and search for PyCharm. Then, select and install the community version of PyCharm.
-
-* **Alternative 3: Download PyCharm tar file**
-
-    Go to the official website of [JetBrains]((https://www.jetbrains.com/pycharm/download/#section=linux)) and download the community version of PyCharm for your system.
-    Then, extract the downloaded `tarfile` file using the below command.
-    
-    `tar -xzf tarfile`
-
-    Go to the `bin` directory and run the PyCharm shell.
-
-After the installation is complete, this [tutorial](https://www.jetbrains.com/help/pycharm/quick-start-guide.html)
-can be followed to gain familiarity with PyCharm.
+> Help: 
+> You need to install PyCharm (**Community Edition**) for this. Please refer the documentation.
+> - https://www.jetbrains.com/help/pycharm/installation-guide.html
+>
+> You can follow this [tutorial](https://www.jetbrains.com/help/pycharm/quick-start-guide.html) to get familiar with PyCharm.
 
 Once PyCharm is installed create a project in the grimoirelab-sirmordred directory. 
 PyCharm will automatically create a virtual env, where you should install the dependencies listed in each 
-requirements.txt, excluding the ones concerning the grimoirelab components.
+requirements.txt, **excluding** the ones concerning the grimoirelab components.
 
 To install the dependencies, you can click on `File` -> `Settings` -> `Project` -> `Project Interpreter`, and then the `+` located on the top right corner (see figure below).
 
-![captura_22](https://user-images.githubusercontent.com/6515067/63195511-12299d80-c073-11e9-9774-5f274891720a.png)
+![project-interpreter-configuration](https://user-images.githubusercontent.com/25265451/78168870-3e612580-746e-11ea-9df1-7ba94b84d07b.gif)
 
 Later, you can add the dependencies to the grimoirelab components via `File` -> `Settings` -> `Project` -> `Project Structure`. 
 The final results should be something similar to the image below.
 
-![captura_23](https://user-images.githubusercontent.com/6515067/63195579-4b620d80-c073-11e9-888b-3cdb67c04523.png)
+![project-structure-configuration](https://user-images.githubusercontent.com/25265451/78168879-41f4ac80-746e-11ea-9e40-dbdb1b5d32f2.gif)
 
-Finally, you can use the docker-compose shown at Section [source-code-and-docker](#source-code-and-docker-), define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/projects.json), and
-run the following commands, which will collect and enrich the data coming from the git and cocom sections and upload the corresponding panels to Kibiter:
+### Execution [&uarr;](#source-code-and-docker-)
+
+Now that you have the ElasticSearch, Kibiter and MariaDB running on your system and the project configured in the PyCharm, we can execute micro-mordred/sirmordred. 
+
+To execute micro-mordred, define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/projects.json), and
+run the following commands, which will collect and enrich the data coming from the git sections and upload the corresponding panels to Kibiter:
 ```
 micro.py --raw --enrich --cfg ./setup.cfg --backends git cocom
 micro.py --panels --cfg ./setup.cfg
 ```
 
-Optionally, you can create a configuration in PyCharm to speed up the executions (`Run` -> `Edit configuration` -> `+`). The final results should be something similar to the image below.
+Optionally, you can create a configuration in PyCharm to speed up the executions (`Run` -> `Edit configuration` -> `+`).
 
-![captura_24](https://user-images.githubusercontent.com/6515067/63195767-ccb9a000-c073-11e9-805a-e828a3ce1dc9.png)
- 
+![add-micro-configuration](https://user-images.githubusercontent.com/25265451/78168875-402ae900-746e-11ea-8bd8-4b3e68992bdf.gif)
+
+The final results should be something similar to the image below.
+
+![result](https://user-images.githubusercontent.com/25265451/78175973-60ac7080-7479-11ea-9b5e-a3c7483585ac.png)
+
+## Only docker [&uarr;](#getting-started-)
+
+Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/sirmordred/container.html)
+
+---
+
 ## Troubleshooting [&uarr;](/README.md#contents)
 
 Following is a list of common problems encountered while setting up GrimoireLab
@@ -234,13 +218,7 @@ Following is a list of common problems encountered while setting up GrimoireLab
 * [SSL error](#ssl-error-)
 * [Cloc installation](#cloc-installation-)
 
----
-**NOTE**
-
-In order to see the logs, run ```docker-compose up``` without the ```-d``` or ```--detach``` option while
-starting/(re)creating/building/attaching containers for a service.
-
----
+> **NOTE**: In order to see the logs, run ```docker-compose up``` without the ```-d``` or ```--detach``` option while starting/(re)creating/building/attaching containers for a service.
 
 #### Low Virtual Memory [&uarr;](#troubleshooting-)
 
@@ -443,8 +421,7 @@ Retrying (Retry(total=10,connected=21,read=0,redirect=5,status=None)) after conn
   sudo apt-get install cloc
   ```
 
-***
-
+---
 
 ## How to [&uarr;](/README.md#contents)
 
