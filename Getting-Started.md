@@ -453,8 +453,8 @@ Following are some tutorials for ElasticSearch and Kibiter:
 * [Build a data table visualization in Kibiter](#build-a-data-table-visualization-in-kibiter-)
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
 * [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
-* [Modify the menu](#modify-menu)
-* [Dump the index mapping/data with elasticdump](#dump-data/mapping-)
+* [Modify the menu](#modify-the-menu-)
+* [Dump the index mapping/data with elasticdump](#dump-the-index-mappingdata-with-elasticdump-)
 * [Share a dashboard](#share-a-dashboard-)
 * [Edit the name of a Visualization](#edit-the-name-of-a-visualization-)
 * [Edit a Visualization](#edit-a-visualization-)
@@ -765,7 +765,7 @@ Kibiter then automatically generates a query as shown below.
 
 > **Note**: the `<id_of_the_dashboard>` must be the identifier that Kibana/Kibiter put to a saved dashboard.
 
-#### Dump the index mapping/data with elasticdump [&uarr;](#dump-data/mapping-)
+#### Dump the index mapping/data with elasticdump [&uarr;](#how-to-)
 
 Indexes and mappings can be dumped (or uploaded) using [elasticdump](https://github.com/taskrabbit/elasticsearch-dump). The commands to install elasticdump, dump an index and its index pattern to a file are shown below.
 
