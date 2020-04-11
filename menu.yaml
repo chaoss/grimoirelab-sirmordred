@@ -319,3 +319,11 @@
   menu:
   - name: Overview
     panel: panels/json/testing_all.json
+- name: Gitter
+  source: gitter
+  icon: default.png
+  index-patterns:
+  - panels/json/gitter-index-pattern.json
+  menu:
+  - name: Overview
+    panel: panels/json/gitter.json

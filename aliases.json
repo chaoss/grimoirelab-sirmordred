@@ -359,6 +359,24 @@
       }
     ]
   },
+  "gitter": {
+    "raw": [
+      {
+        "alias": "gitter-raw"
+      }
+    ],
+    "enrich": [
+      {
+        "alias": "gitter"
+      },
+      {
+        "alias": "affiliations"
+      },
+      {
+        "alias": "all_enriched"
+      }
+    ]
+  },
   "google_hits": {
     "raw": [
       {
