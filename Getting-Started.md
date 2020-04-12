@@ -477,7 +477,7 @@ GET _search
  distinct author are calculated using `cardinality` of `author_id`.
  
  Output:
- ```json
+ ```
 {
   "took": 0,
   "timed_out": false,
@@ -542,6 +542,7 @@ elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --t
 elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
 ```
 
+### Kibiter
 
 #### Build a data table visualization in Kibiter [&uarr;](#how-to-)
 
@@ -568,13 +569,12 @@ to create a data table visualization on `mbox` index which is split row by the t
 
 ![Data table visualization](https://user-images.githubusercontent.com/32506591/77189179-29df6d80-6afd-11ea-8f90-cf0d22973e39.png)
 
-### Kibiter
 
 #### Modify the menu [&uarr;](#how-to-)
 
 - Get the current menu: `GET <elasticsearch_url>/.kibana/doc/metadashboard`. It will return a json with the following structure:
 
-```json
+```
 {
   "metadashboard": [
       {
@@ -608,7 +608,7 @@ to create a data table visualization on `mbox` index which is split row by the t
 - If you want to add an **entry** (a link to a dashboard) you can do it in two different ways:
 
   1. Adding a link in the root menu:
-    ```json
+    ```
     {
       "metadashboard": [
           {
@@ -648,7 +648,7 @@ to create a data table visualization on `mbox` index which is split row by the t
     }
     ```
     2. Adding a link in a submenu of a tab:
-    ```json
+    ```
     {
       "metadashboard": [
           {
@@ -690,7 +690,7 @@ to create a data table visualization on `mbox` index which is split row by the t
   
 - If you want to add a new **tab** (item that will show a submenu with entries) you must do it in the root menu:
 
-```json
+```
 {
   "metadashboard": [
       {
@@ -818,7 +818,7 @@ Hyperlink -
    - Check connection to Elasticsearch with `curl -XGET <elasticsearch-url> -k`.
         The output should be the similar to :
    
-   ```json
+   ```
   {
   "name" : "b_fX4NK",
   "cluster_name" : "docker-cluster",
