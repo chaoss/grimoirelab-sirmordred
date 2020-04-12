@@ -427,41 +427,20 @@ Retrying (Retry(total=10,connected=21,read=0,redirect=5,status=None)) after conn
 
 Following are some tutorials for ElasticSearch and Kibiter:
 
-* [Build a data table visualization in Kibiter](#build-a-data-table-visualization-in-kibiter-)
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
-* [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
-* [Modify the menu](#modify-the-menu-)
 * [Dump the index mapping/data with elasticdump](#dump-the-index-mappingdata-with-elasticdump-)
+* [Build a data table visualization in Kibiter](#build-a-data-table-visualization-in-kibiter-)
+* [Modify the menu](#modify-the-menu-)
 * [Share a dashboard](#share-a-dashboard-)
+* [Rename titles and resize a panel](#rename-titles-and-resize-a-panel-)
+* [Update format of attributes](#update-format-of-attributes-)
 * [Edit the name of a Visualization](#edit-the-name-of-a-visualization-)
+* [Share a dashboard](#share-a-dashboard-)
 * [Edit a Visualization](#edit-a-visualization-)
 * [Check that the data is up to date](#check-that-the-data-is-up-to-date-)
+* [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
 
-
-#### Build a data table visualization in Kibiter [&uarr;](#how-to-)
-
-1. Go to your Kibiter dashboard and select `Visualize` from the left navigation menu.
-
-1. Click on the '+' icon next to the search bar to create a new visualization.
-
-1. Select 'Data Table' to display the values in a table.
-
-1. Select the index which is to be visualized.
-
-1. Under the `Bucket` options click on `Split Row` to split the table into rows(or `Split Table` to split the table into additional tables) and set the following options:
-
-* `Aggregation` - Set it to `Terms`. This selects the fields in the table based on a term present in the index.
-* `Field` - Select the fields which are to be included in the table.
-* `Order` - Order in which fields are displayed. 
-* `Size` - Maximum number of fields to be included in the table.
-
-7 . Click the apply changes button to get the date table visualization. You can also save the
-    visualizations for future references.
-    
-The below image uses the [CHAOSS community dashboard](https://chaoss.biterg.io/app/kibana#/visualize/new?_g=())
-to create a data table visualization on `mbox` index which is split row by the term `body_extract`.
-
-![Data table visualization](https://user-images.githubusercontent.com/32506591/77189179-29df6d80-6afd-11ea-8f90-cf0d22973e39.png)
+### Elasticsearch
 
 #### Query data in ElasticSearch [&uarr;](#how-to-)
 
@@ -470,7 +449,6 @@ the required query in the console.
 
 The below query counts the number of unique authors on a Git repository from 2018-01-01 until 2019-01-01.
 ```
-
 GET _search
 {
   "size":"0",
@@ -499,7 +477,7 @@ GET _search
  distinct author are calculated using `cardinality` of `author_id`.
  
  Output:
- ```
+ ```json
 {
   "took": 0,
   "timed_out": false,
@@ -532,44 +510,71 @@ Kibiter then automatically generates a query as shown below.
 
 ![Creating data query through request](https://user-images.githubusercontent.com/32506591/77188682-5e065e80-6afc-11ea-9b00-a927690cc76e.png)
 
-#### Remove existing dockers and start a fresh environment [&uarr;](#how-to-)
 
-   - Stop and remove all the containers with `docker-compose down --remove-orphans`.
-   
-   - Run `docker ps` and ensure that there is no entry in the output.
+#### Dump the index mapping/data with elasticdump [&uarr;](#how-to-)
+
+Indexes and mappings can be dumped (or uploaded) using [elasticdump](https://github.com/taskrabbit/elasticsearch-dump). The commands to install elasticdump, dump an index and its index pattern to a file are shown below.
+
+**elasticdump installation**
+
+```
+sudo apt install npm
+sudo -i
+npm install elasticdump -g
+```
+
+CTRL+D to logout from root user
+
+***
+
+> Use the 'type' argument to either fetch data or mapping.
+
+
+**Dump the index data**
+
+```
+elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --type=data
+```
+
+**Dump the index mapping**
+
+```
+elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
+```
+
+
+#### Build a data table visualization in Kibiter [&uarr;](#how-to-)
+
+1. Go to your Kibiter dashboard and select `Visualize` from the left navigation menu.
+
+1. Click on the '+' icon next to the search bar to create a new visualization.
+
+1. Select 'Data Table' to display the values in a table.
+
+1. Select the index which is to be visualized.
+
+1. Under the `Bucket` options click on `Split Row` to split the table into rows(or `Split Table` to split the table into additional tables) and set the following options:
+
+* `Aggregation` - Set it to `Terms`. This selects the fields in the table based on a term present in the index.
+* `Field` - Select the fields which are to be included in the table.
+* `Order` - Order in which fields are displayed. 
+* `Size` - Maximum number of fields to be included in the table.
+
+7 . Click the apply changes button to get the date table visualization. You can also save the
+    visualizations for future references.
     
-   - Remove all unused containers, images, and volumes with  `docker system prune -a --volumes`.
+The below image uses the [CHAOSS community dashboard](https://chaoss.biterg.io/app/kibana#/visualize/new?_g=())
+to create a data table visualization on `mbox` index which is split row by the term `body_extract`.
 
-   - Now, execute `docker-compose up -d` using the source code (see - https://github.com/chaoss/grimoirelab-sirmordred/blob/master/Getting-Started.md#source-code-and-docker- )
+![Data table visualization](https://user-images.githubusercontent.com/32506591/77189179-29df6d80-6afd-11ea-8f90-cf0d22973e39.png)
 
-   - Check connection to Elasticsearch with `curl -XGET <elasticsearch-url> -k`.
-        The output should be the similar to :
-   
-   ```
-  {
-  "name" : "b_fX4NK",
-  "cluster_name" : "docker-cluster",
-  "cluster_uuid" : "gbFL_zlZQiWzHuTV-fek2g",
-  "version" : {
-    "number" : "6.1.4",
-    "build_hash" : "d838f2d",
-    "build_date" : "2018-03-14T08:28:22.470Z",
-    "build_snapshot" : false,
-    "lucene_version" : "7.1.0",
-    "minimum_wire_compatibility_version" : "5.6.0",
-    "minimum_index_compatibility_version" : "5.0.0"
-  },
-  "tagline" : "You Know, for Search"
-  }
-
-   ```
-   - Execute micro mordred (see - https://github.com/chaoss/grimoirelab-sirmordred#micro-mordred-)
+### Kibiter
 
 #### Modify the menu [&uarr;](#how-to-)
 
 - Get the current menu: `GET <elasticsearch_url>/.kibana/doc/metadashboard`. It will return a json with the following structure:
 
-```
+```json
 {
   "metadashboard": [
       {
@@ -603,7 +608,7 @@ Kibiter then automatically generates a query as shown below.
 - If you want to add an **entry** (a link to a dashboard) you can do it in two different ways:
 
   1. Adding a link in the root menu:
-    ```
+    ```json
     {
       "metadashboard": [
           {
@@ -643,7 +648,7 @@ Kibiter then automatically generates a query as shown below.
     }
     ```
     2. Adding a link in a submenu of a tab:
-    ```
+    ```json
     {
       "metadashboard": [
           {
@@ -685,7 +690,7 @@ Kibiter then automatically generates a query as shown below.
   
 - If you want to add a new **tab** (item that will show a submenu with entries) you must do it in the root menu:
 
-```
+```json
 {
   "metadashboard": [
       {
@@ -696,7 +701,7 @@ Kibiter then automatically generates a query as shown below.
         "type": "entry",
       },
       {
-        "name": "Tab 1",
+        "name": "Tab 1",https://user-images.githubusercontent.com/35267629/79070495-efc84c80-7cf3-11ea-8543-66989e84c094.gif
         "title": "Tab 1"
         "description": "This is a tab, when clicked a submenu with the panels will appear",
         "type": "menu",
@@ -742,38 +747,22 @@ Kibiter then automatically generates a query as shown below.
 
 > **Note**: the `<id_of_the_dashboard>` must be the identifier that Kibana/Kibiter put to a saved dashboard.
 
-#### Dump the index mapping/data with elasticdump [&uarr;](#how-to-)
+#### Rename titles and resize a panel [&uarr;](#how-to-)
 
-Indexes and mappings can be dumped (or uploaded) using [elasticdump](https://github.com/taskrabbit/elasticsearch-dump). The commands to install elasticdump, dump an index and its index pattern to a file are shown below.
+1. All the gitter panel titles can be renamed and resized as shown.
 
-**elasticdump installation**
+![Resize and Rename](https://user-images.githubusercontent.com/35267629/79070495-efc84c80-7cf3-11ea-8543-66989e84c094.gif)
 
-```
-sudo apt install npm
-sudo -i
-npm install elasticdump -g
-```
+#### Update format of attributes [&uarr;](#how-to-)
 
-CTRL+D to logout from root user
+1. In order to convert URLs in a table visualization from plain text to a link you need to update the format of the attribute in index pattern as shown.
 
-***
+![Update format](https://user-images.githubusercontent.com/6515067/79062792-79006480-7c9d-11ea-9f71-fc2372bbc326.gif)
 
-> Use the 'type' argument to either fetch data or mapping.
-
-
-**Dump the index data**
-
-```
-elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --type=data
-```
-
-**Dump the index mapping**
-
-```
-elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
-```
-
-
+Plain text URL -
+![Plain Text](https://user-images.githubusercontent.com/35267629/79062222-b244ce80-7cb5-11ea-90fe-dd6082893ad3.png)
+Hyperlink -
+![Link](https://user-images.githubusercontent.com/35267629/79062221-b07b0b00-7cb5-11ea-88b3-677264e9918d.png)
 
 #### Share a dashboard [&uarr;](#how-to-)
 
@@ -814,3 +803,37 @@ elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json 
 2. Check the last retrieval date to know the last date of data retrieval.
 
 
+### Others
+
+#### Remove existing dockers and start a fresh environment [&uarr;](#how-to-)
+
+   - Stop and remove all the containers with `docker-compose down --remove-orphans`.
+   
+   - Run `docker ps` and ensure that there is no entry in the output.
+    
+   - Remove all unused containers, images, and volumes with  `docker system prune -a --volumes`.
+
+   - Now, execute `docker-compose up -d` using the source code (see - https://github.com/chaoss/grimoirelab-sirmordred/blob/master/Getting-Started.md#source-code-and-docker- )
+
+   - Check connection to Elasticsearch with `curl -XGET <elasticsearch-url> -k`.
+        The output should be the similar to :
+   
+   ```json
+  {
+  "name" : "b_fX4NK",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "gbFL_zlZQiWzHuTV-fek2g",
+  "version" : {
+    "number" : "6.1.4",
+    "build_hash" : "d838f2d",
+    "build_date" : "2018-03-14T08:28:22.470Z",
+    "build_snapshot" : false,
+    "lucene_version" : "7.1.0",
+    "minimum_wire_compatibility_version" : "5.6.0",
+    "minimum_index_compatibility_version" : "5.0.0"
+  },
+  "tagline" : "You Know, for Search"
+  }
+
+   ```
+   - Execute micro mordred (see - https://github.com/chaoss/grimoirelab-sirmordred#micro-mordred-)
