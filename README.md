@@ -25,16 +25,12 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
 
 ### [es_collection] 
 
- * **password** (str: None): Password for connection to Elasticsearch
  * **url** (str: http://172.17.0.1:9200): Elasticsearch URL (**Required**)
- * **user** (str: None): User for connection to Elasticsearch
 ### [es_enrichment] 
 
  * **autorefresh** (bool: True): Execute the autorefresh of identities
  * **autorefresh_interval** (int: 2): Time interval (days) to autorefresh identities
- * **password** (str: None): Password for connection to Elasticsearch
  * **url** (str: http://172.17.0.1:9200): Elasticsearch URL (**Required**)
- * **user** (str: None): User for connection to Elasticsearch
 ### [general] 
 
  * **bulk_size** (int: 1000): Number of items to write in Elasticsearch using bulk operations
@@ -732,7 +728,7 @@ replaced by `%2F`. For instance, for a repository with a structure similar to th
 ```
 {
     "Chaoss": {
-        "gitlab:issues": [
+        "gitlab:issue": [
             "https://gitlab.com/Molly/first",
             "https://gitlab.com/Molly/lab%2Fsecond"
         ]
