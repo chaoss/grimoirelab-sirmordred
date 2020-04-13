@@ -210,18 +210,6 @@ class Config():
         # Config provided by tasks
         params_collection = {
             "es_collection": {
-                "password": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "Password for connection to Elasticsearch"
-                },
-                "user": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "User for connection to Elasticsearch"
-                },
                 "url": {
                     "optional": False,
                     "default": "http://172.17.0.1:9200",
@@ -250,18 +238,6 @@ class Config():
                     "default": 2,
                     "type": int,
                     "description": "Set time interval (days) for autorefresh identities"
-                },
-                "user": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "User for connection to Elasticsearch"
-                },
-                "password": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "Password for connection to Elasticsearch"
                 }
             }
         }
