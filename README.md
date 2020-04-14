@@ -193,7 +193,7 @@ raw index but it will enriched in the enriched index.
 
 ## Supported data sources [&uarr;](#contents)
 
-These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [github](#github-), [github2](#github2-), [gitlab](#gitlab-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
+These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [github](#github-), [github2](#github2-), [gitlab](#gitlab-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
 
 #### askbot [&uarr;](#supported-data-sources-)
 Questions and answers from Askbot site
@@ -1037,6 +1037,29 @@ the `news.myproject.org` is the server name.
 [nntp]
 raw_index = nntp_raw
 enriched_index =  nntp_enriched
+```
+#### pagure [&uarr;](#supported-data-sources-)
+Issues from Pagure repositories
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "pagure": [
+            "https://pagure.io/Test-group/Project-example-namespace"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[pagure]
+raw_index = pagure_raw
+enriched_index = pagure_enriched
+api-token = xxxx
+sleep-for-rate = true
+sleep-time = "300" (optional)
+no-archive = true (suggested)
 ```
 #### phabricator [&uarr;](#supported-data-sources-)
 Tasks from Phabricator

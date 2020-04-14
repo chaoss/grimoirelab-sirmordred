@@ -581,6 +581,24 @@
       }
     ]
   },
+  "pagure": {
+    "raw": [
+      {
+        "alias": "pagure-raw"
+      }
+    ],
+    "enrich": [
+      {
+        "alias": "pagure"
+      },
+      {
+        "alias": "affiliations"
+      },
+      {
+        "alias": "all_enriched"
+      }
+    ]
+  },
   "phabricator": {
     "raw": [
       {
