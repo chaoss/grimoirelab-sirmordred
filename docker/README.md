@@ -109,7 +109,7 @@ unaffiliated_group = Unknown
 ```
 
 In order to load identities from a file or url or export the identities to a
-GitHub repository, extra params are nedded:
+GitHub repository, extra params are needed:
 
 ```
 identities_file = [sh_identities.json]
@@ -118,7 +118,7 @@ identities_export_url = "https://github.com/<owner>/<repo>/blob/master/sh_identi
 github_api_token = "42207XXXXXXXX"
 ```
 
-For builidng the dashboard, sirmordred configures Kibiter. No config is needed
+For building the dashboard, sirmordred configures Kibiter. No config is needed
 by default but sometimes is useful to change the default time frame is shown.
 
 [panels]
