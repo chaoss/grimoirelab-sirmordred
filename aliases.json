@@ -204,6 +204,18 @@
       }
     ]
   },
+  "githubql": {
+    "raw": [
+      {
+        "alias": "github_events-raw"
+      }
+    ],
+    "enrich": [
+      {
+        "alias": "github_events"
+      }
+    ]
+  },
   "github:repo": {
     "raw": [
       {

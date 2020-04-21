@@ -292,6 +292,12 @@ class Config():
                     "type": bool,
                     "description": "Enable GitHub comments menu"
                 },
+                "github-events": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "Enable GitHub events menu"
+                },
                 "github-repos": {
                     "optional": True,
                     "default": False,
