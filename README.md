@@ -500,6 +500,7 @@ studies = [enrich_demography:git, enrich_git_branches:git, enrich_areas_of_code:
 [enrich_demography:git] (optional)
 
 [enrich_git_branches:git] (optional)
+run_month_days = [1, 23] (optional)
 
 [enrich_areas_of_code:git] (optional)
 in_index = git_raw
