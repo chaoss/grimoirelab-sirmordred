@@ -120,6 +120,20 @@ GITHUB_COMMENTS_MENU = {
     ]
 }
 
+GITHUB_EVENTS = "github-events"
+GITHUB_CLOSED_EVENTS_PANEL = "panels/json/github_events_closed.json"
+GITHUB_CLOSED_EVENTS_IP = "panels/json/github_events-index-pattern.json"
+
+GITHUB_EVENTS_MENU = {
+    'name': 'GitHub Events',
+    'source': GITHUB_EVENTS,
+    'icon': 'default.png',
+    'index-patterns': [GITHUB_CLOSED_EVENTS_IP],
+    'menu': [
+        {'name': 'Closed events', 'panel': GITHUB_CLOSED_EVENTS_PANEL}
+    ]
+}
+
 GITHUB_REPOS = "github-repos"
 GITHUB_REPOS_PANEL_OVERALL = "panels/json/github_repositories.json"
 GITHUB_REPOS_IP = "panels/json/github_repositories-index-pattern.json"
@@ -292,6 +306,9 @@ class TaskPanels(Task):
         if self.conf['panels'][GITHUB_COMMENTS]:
             self.panels[GITHUB_COMMENTS] = [GITHUB_ISSUE_COMMENTS_PANEL, GITHUB_PULL_COMMENTS_PANEL,
                                             GITHUB_ISSUE_COMMENTS_IP, GITHUB_PULL_COMMENTS_IP]
+
+        if self.conf['panels'][GITHUB_EVENTS]:
+            self.panels[GITHUB_EVENTS] = [GITHUB_CLOSED_EVENTS_PANEL, GITHUB_CLOSED_EVENTS_IP]
 
         if self.conf['panels'][GITHUB_REPOS]:
             self.panels[GITHUB_REPOS] = [GITHUB_REPOS_PANEL_OVERALL, GITHUB_REPOS_IP]
@@ -525,6 +542,9 @@ class TaskPanelsMenu(Task):
         if self.conf['panels'][GITHUB_COMMENTS]:
             self.panels_menu.append(GITHUB_COMMENTS_MENU)
 
+        if self.conf['panels'][GITHUB_EVENTS]:
+            self.panels_menu.append(GITHUB_EVENTS_MENU)
+
         if self.conf['panels'][GITHUB_REPOS]:
             self.panels_menu.append(GITHUB_REPOS_MENU)
 
@@ -564,7 +584,7 @@ class TaskPanelsMenu(Task):
         for entry in self.panels_menu:
             ds = entry['source']
             if ds in self.conf.keys() or ds in [COMMUNITY_SOURCE, KAFKA_SOURCE, GITLAB_ISSUES, GITLAB_MERGES,
-                                                MATTERMOST, GITHUB_COMMENTS, GITHUB_REPOS,
+                                                MATTERMOST, GITHUB_COMMENTS, GITHUB_REPOS, GITHUB_EVENTS,
                                                 COCOM_SOURCE, COLIC_SOURCE]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)

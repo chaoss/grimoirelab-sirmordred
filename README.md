@@ -53,6 +53,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
  * **kibiter_version** (str: None): Kibiter version
  * **kafka** (bool: False): Include KIP section in dashboard
  * **github-comments** (bool: False): Enable GitHub comments menu. Note that if enabled, the github2:issue and github2:pull sections in the setup.cfg and projects.json should be declared
+ * **github-events** (bool: False): Enable GitHub events menu. Note that if enabled, the github:event section in the setup.cfg and projects.json should be declared
  * **github-repos** (bool: False): Enable GitHub repo stats menu. Note that if enabled, the github:repo section in the setup.cfg and projects.json should be declared
  * **gitlab-issues** (bool: False): Enable GitLab issues menu. Note that if enabled, the gitlab:issue section in the setup.cfg and projects.json should be declared
  * **gitlab-merges** (bool: False): Enable GitLab merge requests menu. Note that if enabled, the gitlab:merge sections in the setup.cfg and projects.json should be declared
@@ -631,6 +632,36 @@ studies = [enrich_extra_data:github]
 [enrich_extra_data:github]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
 ```
+#### githubql [&uarr;](#supported-data-sources-)
+Events from GitHub
+
+The corresponding dashboards can be automatically uploaded by setting `github-events`
+to `true` in the `panels` section within the `setup.cfg`
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "githubql": [
+            "https://github.com/chaoss/grimoirelab-toolkit"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[panels]
+github-events = true
+
+[githubql]
+raw_index = github_event_raw
+enriched_index = github_event_enriched
+api-token = xxxxx
+sleep-for-rate = true
+sleep-time = "300" (optional)
+no-archive = true (suggested)
+```
+
 #### github2 [&uarr;](#supported-data-sources-)
 Comments from GitHub
 
