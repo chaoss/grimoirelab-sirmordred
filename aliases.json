@@ -170,7 +170,7 @@
     ],
     "enrich": [
       {
-        "alias": "finosmeetings"
+        "alias": "gerrit"
       },
       {
         "alias": "affiliations"
