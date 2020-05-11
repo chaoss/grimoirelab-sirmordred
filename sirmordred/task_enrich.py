@@ -165,7 +165,7 @@ class TaskEnrich(Task):
                     self.conf[self.backend_section]['studies']:
                 studies_args = self.__load_studies()
 
-            logger.info('[%s] enrichment starts for %s', self.backend_section, repo)
+            logger.info('[%s] enrichment starts for %s', self.backend_section, self.anonymize_url(repo))
             es_enrich_aliases = self.select_aliases(cfg, self.backend_section)
 
             try:
@@ -206,7 +206,7 @@ class TaskEnrich(Task):
                 logger.error("Exception: %s", ex)
                 raise DataEnrichmentError('Failed to produce enriched data for ' + self.backend_section)
 
-            logger.info('[%s] enrichment finished for %s', self.backend_section, repo)
+            logger.info('[%s] enrichment finished for %s', self.backend_section, self.anonymize_url(repo))
 
         spent_time = str(datetime.now() - time_start).split('.')[0]
         logger.info('[%s] enrichment phase finished in %s', self.backend_section, spent_time)

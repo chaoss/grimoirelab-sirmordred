@@ -111,7 +111,7 @@ class TaskRawDataCollection(Task):
             url = p2o_args['url']
             backend_args = self._compose_perceval_params(self.backend_section, repo)
             logger.debug(backend_args)
-            logger.info('[%s] collection starts for %s', self.backend_section, repo)
+            logger.info('[%s] collection starts for %s', self.backend_section, self.anonymize_url(repo))
             es_col_url = self._get_collection_url()
             ds = self.backend_section
             backend = self.get_backend(self.backend_section)
@@ -136,7 +136,7 @@ class TaskRawDataCollection(Task):
                              "Using the backend_args: %s " % (ds, url, str(backend_args)))
                 traceback.print_exc()
                 raise DataCollectionError('Failed to collect data from %s' % url)
-            logger.info('[%s] collection finished for %s', self.backend_section, repo)
+            logger.info('[%s] collection finished for %s', self.backend_section, self.anonymize_url(repo))
 
         t3 = time.time()
         spent_time = time.strftime("%H:%M:%S", time.gmtime(t3 - t2))
