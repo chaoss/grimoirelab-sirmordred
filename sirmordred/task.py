@@ -60,7 +60,7 @@ class Task():
 
     @staticmethod
     def anonymize_url(url):
-        anonymized = re.sub('^http.*@', 'http://', url)
+        anonymized = re.sub('://.*@', '://', url)
 
         return anonymized
 
