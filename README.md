@@ -90,7 +90,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
  * **password** (str: ): Password to access the Sortinghat database (**Required**)
  * **reset_on_load** (bool: False): Unmerge and remove affiliations for all identities on load
  * **sleep_for** (int: 3600): Delay between task identities executions (**Required**)
- * **strict_mapping** (bool: True): rigorous check of values in identities matching (i.e, well formed email addresses)
+ * **strict_mapping** (bool: True): rigorous check of values in identities matching (i.e, well formed email addresses, non-overlapping enrollment periods)
  * **unaffiliated_group** (str: Unknown): Name of the organization for unaffiliated identities (**Required**)
  * **user** (str: root): User to access the Sortinghat database (**Required**)
 ### [backend-name:tag] (tag is optional)
