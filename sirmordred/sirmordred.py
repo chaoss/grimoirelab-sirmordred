@@ -46,7 +46,7 @@ from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_identities import TaskIdentitiesExport, TaskIdentitiesLoad, TaskIdentitiesMerge, TaskInitSortingHat
 from sirmordred.task_manager import TasksManager
-from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
+from sirmordred.task_panels import TaskPanels
 from sirmordred.task_projects import TaskProjects
 
 logger = logging.getLogger(__name__)
@@ -249,7 +249,7 @@ class SirMordred:
         """
 
         if self.conf['phases']['panels']:
-            tasks_cls = [TaskPanels, TaskPanelsMenu]
+            tasks_cls = [TaskPanels]
             self.execute_tasks(tasks_cls)
         if self.conf['phases']['identities']:
             tasks_cls = [TaskInitSortingHat]

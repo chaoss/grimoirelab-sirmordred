@@ -268,77 +268,35 @@ class Config():
                     "type": str,
                     "description": "Kibiter URL"
                 },
+                "kibiter_index": {
+                    "optional": False,
+                    "default": '.kibana_1',
+                    "type": str,
+                    "description": "Kibiter index where to store the top menu and project name data"
+                },
                 "kibiter_version": {
                     "optional": True,
                     "default": None,
                     "type": str,
                     "description": "Kibiter version"
                 },
-                "community": {
-                    "optional": True,
-                    "default": True,
-                    "type": bool,
-                    "description": "Enable community structure menu"
-                },
-                "kafka": {
-                    "optional": True,
+                "import_panels": {
+                    "optional": False,
                     "default": False,
                     "type": bool,
-                    "description": "Enable kafka menu"
+                    "description": "Import panels"
                 },
-                "github-comments": {
-                    "optional": True,
+                "set_top_menu": {
+                    "optional": False,
                     "default": False,
                     "type": bool,
-                    "description": "Enable GitHub comments menu"
+                    "description": "Set the top menu to navigate through the panels"
                 },
-                "github-events": {
-                    "optional": True,
+                "set_project_name": {
+                    "optional": False,
                     "default": False,
                     "type": bool,
-                    "description": "Enable GitHub events menu"
-                },
-                "github-repos": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Enable GitHub repo stats menu"
-                },
-                "gitlab-issues": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Enable GitLab issues menu"
-                },
-                "gitlab-merges": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Enable GitLab merge requests menu"
-                },
-                "mattermost": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Enable Mattermost menu"
-                },
-                "code-license": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Enable Code License menu"
-                },
-                "code-complexity": {
-                    "optional": True,
-                    "default": False,
-                    "type": bool,
-                    "description": "Enable Code Complexity menu"
-                },
-                "contact": {
-                    "optional": True,
-                    "default": None,
-                    "type": str,
-                    "description": "Support repository URL"
+                    "description": "Set the project name"
                 }
             }
         }

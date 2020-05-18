@@ -1,329 +1,113 @@
----
-- name: Git
-  source: git
-  icon: default.png
-  index-patterns:
-  - panels/json/git-index-pattern.json
-  - panels/json/git_areas_of_code-index-pattern.json
-  - panels/json/demographics-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/git.json
-  - name: Attraction/Retention
-    panel: panels/json/git_demographics.json
-  - name: Areas of code
-    panel: panels/json/git_areas_of_code.json
-  - name: Lifecycle
-    panel: panels/json/lifecyle.json
-- name: Gerrit
-  source: gerrit
-  icon: default.png
-  index-patterns:
-  - panels/json/gerrit-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/gerrit.json
-  - name: Backlog
-    panel: panels/json/gerrit_backlog.json
-  - name: Timing
-    panel: panels/json/gerrit_timing.json
-  - name: Efficiency
-    panel: panels/json/gerrit_efficiency.json
-  - name: Approvals
-    panel: panels/json/gerrit_approvals.json
-- name: GitHub PRs
-  source: github
-  icon: default.png
-  index-patterns:
-  - panels/json/github_issues-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/github_pull_requests.json
-  - name: Backlog
-    panel: panels/json/github_pull_requests_backlog.json
-  - name: Timing
-    panel: panels/json/github_pull_requests_timing.json
-  - name: Efficiency
-    panel: panels/json/github_pull_requests_efficiency.json
-- name: GitHub Issues
-  source: github
-  icon: default.png
-  index-patterns:
-  - panels/json/github_issues-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/github_issues.json
-  - name: Backlog
-    panel: panels/json/github_issues_backlog.json
-  - name: Timing
-    panel: panels/json/github_issues_timing.json
-  - name: Efficiency
-    panel: panels/json/github_issues_efficiency.json
-- name: Phabricator
-  source: phabricator
-  icon: default.png
-  index-patterns:
-  - panels/json/maniphest-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/maniphest.json
-  - name: Backlog
-    panel: panels/json/maniphest_backlog.json
-  - name: Timing
-    panel: panels/json/maniphest_timing.json
-- name: Redmine
-  source: redmine
-  icon: default.png
-  index-patterns:
-  - panels/json/redmine-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/redmine.json
-  - name: Backlog
-    panel: panels/json/redmine_backlog.json
-  - name: Timing
-    panel: panels/json/redmine_timing.json
-- name: Jira
-  source: jira
-  icon: default.png
-  index-patterns:
-  - panels/json/jira-index-pattern.json
-  - panels/json/jira_resolution_date-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/jira.json
-  - name: Backlog
-    panel: panels/json/jira_backlog.json
-  - name: Timing
-    panel: panels/json/jira_timing.json
-- name: Bugzilla
-  source: bugzilla
-  icon: default.png
-  index-patterns:
-  - panels/json/bugzilla-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/bugzilla.json
-  - name: Backlog
-    panel: panels/json/bugzilla_backlog.json
-  - name: Timing
-    panel: panels/json/bugzilla_timing.json
-- name: Bugzilla
-  source: bugzillarest
-  icon: default.png
-  index-patterns:
-  - panels/json/bugzilla-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/bugzilla.json
-  - name: Backlog
-    panel: panels/json/bugzilla_backlog.json
-  - name: Timing
-    panel: panels/json/bugzilla_timing.json
-- name: Confluence
-  source: confluence
-  icon: default.png
-  index-patterns:
-  - panels/json/confluence-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/confluence.json
-- name: MediaWiki
-  source: mediawiki
-  icon: default.png
-  index-patterns:
-  - panels/json/mediawiki-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/mediawiki.json
-- name: Mailing Lists
-  source: groupsio
-  icon: default.png
-  index-patterns:
-  - panels/json/mbox-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/mailinglists.json
-- name: Mailing Lists
-  source: hyperkitty
-  icon: default.png
-  index-patterns:
-  - panels/json/mbox-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/mailinglists.json
-- name: Mailing Lists
-  source: mbox
-  icon: default.png
-  index-patterns:
-  - panels/json/mbox-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/mailinglists.json
-- name: Mailing Lists
-  source: nntp
-  icon: default.png
-  index-patterns:
-  - panels/json/mbox-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/mailinglists.json
-- name: Mailing Lists
-  source: pipermail
-  icon: default.png
-  index-patterns:
-  - panels/json/mbox-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/mailinglists.json
-- name: Discourse
-  source: discourse
-  icon: default.png
-  index-patterns:
-  - panels/json/discourse-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/discourse.json
-- name: Blogs (RSS)
-  source: rss
-  icon: default.png
-  index-patterns:
-  - panels/json/rss-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/rss.json
-- name: IRC
-  source: supybot
-  icon: default.png
-  index-patterns:
-  - panels/json/irc-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/irc.json
-- name: Slack
-  source: slack
-  icon: default.png
-  index-patterns:
-  - panels/json/slack-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/slack.json
-- name: Telegram
-  source: telegram
-  icon: default.png
-  index-patterns:
-  - panels/json/telegram-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/telegram.json
-- name: Twitter
-  source: twitter
-  icon: default.png
-  index-patterns:
-  - panels/json/twitter-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/twitter.json
-- name: Askbot Q&A
-  source: askbot
-  icon: default.png
-  index-patterns:
-  - panels/json/askbot-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/askbot.json
-- name: StackOverflow
-  source: stackexchange
-  icon: default.png
-  index-patterns:
-  - panels/json/stackoverflow-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/stackoverflow.json
-- name: Jenkins
-  source: jenkins
-  icon: default.png
-  index-patterns:
-  - panels/json/jenkins-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/jenkins.json
-  - name: Jobs
-    panel: panels/json/jenkins_jobs.json
-  - name: Nodes
-    panel: panels/json/jenkins_nodes.json
-  - name: Categories
-    panel: panels/json/jenkins_job_categories.json
-  - name: Export
-    panel: panels/json/jenkins_export.json
-- name: Mozilla Club
-  source: mozillaclub
-  icon: default.png
-  index-patterns:
-  - panels/json/mozilla_club-index-pattern.json
-  menu:
-  - name: Events
-    panel: panels/json/mozilla_club.json
-- name: Mozilla Reps
-  source: remo
-  icon: default.png
-  index-patterns:
-  - panels/json/remo-activities-index-pattern.json
-  - panels/json/remo-activities_metadata__timestamp-index-pattern.json
-  - panels/json/remo-events-index-pattern.json
-  - panels/json/remo-events_metadata__timestamp-index-pattern.json
-  menu:
-  - name: Events
-    panel: panels/json/reps_events.json
-  - name: Activities
-    panel: panels/json/reps_activities.json
-- name: Meetup
-  source: meetup
-  icon: default.png
-  index-patterns:
-  - panels/json/meetup-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/meetup.json
-  - name: Locations
-    panel: panels/json/meetup_locations.json
-- name: Google Hits
-  source: google_hits
-  icon: default.png
-  index-patterns:
-  - panels/json/google-hits-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/google-hits.json
-- name: DockerHub
-  source: dockerhub
-  icon: default.png
-  index-patterns:
-  - panels/json/dockerhub-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/dockerhub.json
-- name: Apache
-  source: apache
-  icon: default.png
-  index-patterns:
-  - panels/json/apache-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/apache.json
-- name: Testing
-  source: functest
-  icon: default.png
-  index-patterns:
-  - panels/json/functest-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/testing_all.json
-- name: Gitter
-  source: gitter
-  icon: default.png
-  index-patterns:
-  - panels/json/gitter-index-pattern.json
-  menu:
-  - name: Overview
-    panel: panels/json/gitter.json
+project: CHAOSS
+tabs:
+- dashboard-id: Overview
+  description: Summary of basic metrics on all analyzed sources.
+  tab: Overview
+- sections:
+  - dashboard-id: Git
+    description: Metrics focused on Git commits.
+    name: Git Overview
+  - dashboard-id: GitHub-Pull-Requests
+    description: Activity and community metrics focused on Pull Requests.
+    name: GitHub PRs Overview
+  - dashboard-id: GitHub-Issues
+    description: Activity and community metrics focused on Issues.
+    name: GitHub Issues Overview
+  - dashboard-id: MailingLists
+    description: ''
+    name: Mailing lists Overview
+  - dashboard-id: Twitter
+    description: Twitter Overview panel by Bitergia.
+    name: Twitter
+  - dashboard-id: IRC
+    description: IRC Overview panel by Bitergia
+    name: IRC
+  tab: Data Sources
+- sections:
+  - dashboard-id: 4434c9a0-18dd-11e9-ba47-d5cbef43f8d3
+    description: ''
+    name: Contributors Growth
+  - dashboard-id: Git-Demographics
+    description: Attraction and retention of developers specifically for Git.
+    name: Attraction/Retention
+  - dashboard-id: Overall-Community-Structure
+    description: Find who are your core, regular and casual contributors.
+    name: Structure
+  - dashboard-id: ab68fe20-17f2-11e9-872f-e17019e68d6d
+    description: ''
+    name: Organizational Diversity
+  - dashboard-id: 6e0e2900-18c0-11e9-872f-e17019e68d6d
+    description: ''
+    name: Organizational Diversity by Domains
+  - dashboard-id: Community-Structure-by-Project
+    description: ''
+    name: Projects
+  - dashboard-id: Community-Structure-by-Organization
+    description: ''
+    name: Organizations
+  - dashboard-id: 15e4b020-d075-11e8-8aac-ef7fd4d8cbad
+    description: Attraction and retention of contributors.
+    name: Demographics
+  - dashboard-id: Affiliations
+    description: ''
+    name: Affiliations
+  tab: Community
+- sections:
+  - dashboard-id: b7b169e0-14e3-11e9-8aac-ef7fd4d8cbad
+    description: ''
+    name: Engagement
+  - dashboard-id: f13af0e0-18e5-11e9-ba47-d5cbef43f8d3
+    description: Panel focused on the number of lines of code changed.
+    name: Lines of Code
+  - dashboard-id: a7b3fd70-ef16-11e8-9be6-c962f0cee9ae
+    description: Panel focused on the number of Pull Requests merged.
+    name: Pull Requests Merged
+  - dashboard-id: Git-Areas-of-Code
+    description: ''
+    name: Areas of code
+  - dashboard-id: 999ea330-f7b2-11e8-865a-85ff6467a442
+    description: Level of activity in git repositories
+    name: Lifecycle
+  tab: Activity
+- sections:
+  - dashboard-id: 69208f40-18cb-11e9-ba47-d5cbef43f8d3
+    description: ''
+    name: Efficiency
+  - dashboard-id: 206c9180-1d86-11e9-ba47-d5cbef43f8d3
+    description: Panel focused on the time to response after a pull request took place.
+    name: Maintainer Response to Merge
+  - dashboard-id: 00fa7e30-1b0a-11e9-ba47-d5cbef43f8d3
+    description: This panel focuses on pull requests merge duration, defined by the
+      time between code merge request and code commit.
+    name: Pull Request Merge Duration
+  - dashboard-id: GitHub-Pull-Requests-Backlog
+    description: Focused on pending (open) pull requests.
+    name: GitHub PRs Backlog
+  - dashboard-id: GitHub-Pull-Requests-Timing
+    description: Metrics focused on how long pull requests remain open.
+    name: GitHub PRs Timing
+  - dashboard-id: 9663d5a0-e1dc-11e8-8aac-ef7fd4d8cbad
+    description: Efficiency closing Pull Requests.
+    name: GitHub PRs Efficiency
+  - dashboard-id: GitHub-Issues-Backlog
+    description: Focused on pending (open) issues.
+    name: GitHub Issues Backlog
+  - dashboard-id: GitHub-Issues-Timing
+    description: Metrics focused on how long issues remain open.
+    name: GitHub Issues Timing
+  - dashboard-id: c3da5c20-e1c3-11e8-8aac-ef7fd4d8cbad
+    description: Efficiency closing issues on GitHub.
+    name: GitHub Issues Efficiency
+  tab: Performance
+- dashboard-id: Data-Status
+  description: Data Status panel
+  tab: Data Status
+- sections:
+  - dashboard-id: About
+    description: Panel with information about the usage of the interface, an information
+      about the panel itself and acknowledgments
+    name: About the dashboard
+  - dashboard-id: https://gitlab.com/Bitergia/c/CHAOSS/support
+    description: Direct link to the support repository
+    name: Contact
+  tab: About

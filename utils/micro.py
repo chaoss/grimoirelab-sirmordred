@@ -31,7 +31,7 @@ from sirmordred.config import Config
 from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_identities import TaskIdentitiesMerge, TaskIdentitiesLoad
 from sirmordred.task_enrich import TaskEnrich
-from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
+from sirmordred.task_panels import TaskPanels
 from sirmordred.task_projects import TaskProjects
 
 DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
@@ -135,9 +135,6 @@ def get_panels(config):
     """
 
     task = TaskPanels(config)
-    task.execute()
-
-    task = TaskPanelsMenu(config)
     task.execute()
 
     logging.info("Panels creation finished!")
