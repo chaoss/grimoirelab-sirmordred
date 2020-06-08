@@ -73,7 +73,21 @@ class TestTask(unittest.TestCase):
         config = Config(CONF_FILE)
         task = Task(config)
         params = task._compose_p2o_params("stackexchange", "https://stackoverflow.com/questions/tagged/example")
-        self.assertEqual(params, {'url': "https://stackoverflow.com/questions/tagged/example"})
+        self.assertDictEqual(params, {'url': "https://stackoverflow.com/questions/tagged/example"})
+
+        params = task._compose_p2o_params("mediawiki",
+                                          "https://wiki-archive.opendaylight.org "
+                                          "https://wiki-archive.opendaylight.org/view")
+        self.assertDictEqual(params, {'url': "https://wiki-archive.opendaylight.org "
+                                             "https://wiki-archive.opendaylight.org/view"})
+
+        params = task._compose_p2o_params("mediawiki",
+                                          "https://wiki-archive.opendaylight.org "
+                                          "https://wiki-archive.opendaylight.org/view "
+                                          "--filter-no-collection=true")
+        self.assertDictEqual(params, {'url': "https://wiki-archive.opendaylight.org "
+                                             "https://wiki-archive.opendaylight.org/view",
+                                      "filter-no-collection": "true"})
 
     def test_compose_perceval_params(self):
         """Test whether perceval params are built correctly for a backend and a repository"""
