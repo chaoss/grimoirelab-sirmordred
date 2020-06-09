@@ -247,12 +247,6 @@
             ]
           }
         }
-      },
-      {
-        "alias": "affiliations"
-      },
-      {
-        "alias": "all_enriched"
       }
     ]
   },
@@ -265,12 +259,6 @@
     "enrich": [
       {
         "alias": "github2_pull_requests"
-      },
-      {
-        "alias": "affiliations"
-      },
-      {
-        "alias": "all_enriched"
       }
     ]
   },
