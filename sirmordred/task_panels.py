@@ -122,15 +122,17 @@ GITHUB_COMMENTS_MENU = {
 
 GITHUB_EVENTS = "github-events"
 GITHUB_CLOSED_EVENTS_PANEL = "panels/json/github_events_closed.json"
-GITHUB_CLOSED_EVENTS_IP = "panels/json/github_events-index-pattern.json"
+GITHUB_LABEL_EVENTS_PANEL = "panels/json/github_events_labels.json"
+GITHUB_EVENTS_IP = "panels/json/github_events-index-pattern.json"
 
 GITHUB_EVENTS_MENU = {
     'name': 'GitHub Events',
     'source': GITHUB_EVENTS,
     'icon': 'default.png',
-    'index-patterns': [GITHUB_CLOSED_EVENTS_IP],
+    'index-patterns': [GITHUB_EVENTS_IP],
     'menu': [
-        {'name': 'Closed events', 'panel': GITHUB_CLOSED_EVENTS_PANEL}
+        {'name': 'Closed events', 'panel': GITHUB_CLOSED_EVENTS_PANEL},
+        {'name': 'Label events', 'panel': GITHUB_LABEL_EVENTS_PANEL}
     ]
 }
 
@@ -308,7 +310,7 @@ class TaskPanels(Task):
                                             GITHUB_ISSUE_COMMENTS_IP, GITHUB_PULL_COMMENTS_IP]
 
         if self.conf['panels'][GITHUB_EVENTS]:
-            self.panels[GITHUB_EVENTS] = [GITHUB_CLOSED_EVENTS_PANEL, GITHUB_CLOSED_EVENTS_IP]
+            self.panels[GITHUB_EVENTS] = [GITHUB_CLOSED_EVENTS_PANEL, GITHUB_LABEL_EVENTS_PANEL, GITHUB_EVENTS_IP]
 
         if self.conf['panels'][GITHUB_REPOS]:
             self.panels[GITHUB_REPOS] = [GITHUB_REPOS_PANEL_OVERALL, GITHUB_REPOS_IP]
