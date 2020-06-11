@@ -1,8 +1,8 @@
 ## Getting started [&uarr;](/README.md#contents)
 
 SirModred relies on ElasticSearch, Kibiter and MySQL/MariaDB. The current versions used are:
-- ElasticSearch 6.1.0
-- Kibiter 6.1.4
+- ElasticSearch 6.8.6
+- Kibiter 6.8.6
 - MySQL/MariaDB (5.7.24/10.0)
 
 There are mainly 2 options to get started with SirMordred:
@@ -15,7 +15,7 @@ In this method, the applications (ElasticSearch, Kibiter and MariaDB) and the Gr
 
 ### Getting the containers [&uarr;](#source-code-and-docker-)
 
-You will have to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/MariaDB database (5.7.24/10.0). You can use the following docker-compose to have them running.
+You will have to install ElasticSearch (6.8.6), Kibiter (6.8.6) and a MySQL/MariaDB database (5.7.24/10.0). You can use the following docker-compose to have them running.
 
 > Help: You need to install docker and docker-compose for this. Please refer the documentation.
 > - https://docs.docker.com/install/linux/docker-ce/ubuntu/
@@ -29,45 +29,37 @@ You will have to install ElasticSearch (6.1.0), Kibiter (6.1.4) and a MySQL/Mari
 
 Note: For accessing Kibiter and/or creating indexes login is required, the `username:password` is `admin:admin`.
 ```
-elasticsearch:
-  restart: on-failure:5
-  image: bitergia/elasticsearch:6.1.0-secured
-  command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
-  environment:
-    - ES_JAVA_OPTS=-Xms2g -Xmx2g
-  ports:
-    - 9200:9200
+services:
+    mariadb:
+      image: mariadb:10.0
+      expose:
+        - "3306"
+      environment:
+        - MYSQL_ROOT_PASSWORD=
+        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
 
-kibiter:
-  restart: on-failure:5
-  image: bitergia/kibiter:secured-v6.1.4-5
-  environment:
-    - PROJECT_NAME=Development
-    - NODE_OPTIONS=--max-old-space-size=1000
-    - ELASTICSEARCH_URL=https://elasticsearch:9200
-    - ELASTICSEARCH_USER=kibanaserver
-    - ELASTICSEARCH_PASSWORD=kibanaserver
-  links:
-    - elasticsearch
-  ports:
-    - 5601:5601
-    
-mariadb:
-  restart: on-failure:5
-  image: mariadb:10.0
-  expose:
-    - "3306"
-  ports:
-    - "3306:3306"
-  environment:
-    - MYSQL_ROOT_PASSWORD=
-    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-    - MYSQL_DATABASE=test_sh
-  command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
-  log_driver: "json-file"
-  log_opt:
-      max-size: "100m"
-      max-file: "3"
+    elasticsearch:
+      image: bitergia/elasticsearch:6.8.6-secured
+      command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
+      ports:
+        - 9200:9200
+      environment:
+        - ES_JAVA_OPTS=-Xms2g -Xmx2g
+
+    kibiter:
+      restart: on-failure:5
+      image: bitergia/kibiter:secured-v6.8.6-3
+      environment:
+        - PROJECT_NAME=Demo
+        - NODE_OPTIONS=--max-old-space-size=1000
+        - ELASTICSEARCH_USER=kibanaserver
+        - ELASTICSEARCH_PASSWORD=kibanaserver
+        - ELASTICSEARCH_URL=["https://elasticsearch:9200"]
+        - LOGIN_SUBTITLE=If you have forgotten your username or password ...
+      links:
+        - elasticsearch
+      ports:
+        - 5601:5601
 ```
 
 #### docker-compose (without SearchGuard) [&uarr;](#getting-the-containers-)
@@ -78,16 +70,17 @@ version: '2.2'
 
 services:
     elasticsearch:
-      image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.1.4
-      command: /elasticsearch/bin/elasticsearch -E network.bind_host=0.0.0.0
+      image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.6
+      command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
       ports:
         - 9200:9200
       environment:
         - ES_JAVA_OPTS=-Xms2g -Xmx2g
+        - ANONYMOUS_USER=true
 
     kibiter:
       restart: on-failure:5
-      image: bitergia/kibiter:optimized-v6.1.4-3
+      image: bitergia/kibiter:community-v6.8.6-3
       environment:
         - PROJECT_NAME=Demo
         - NODE_OPTIONS=--max-old-space-size=1000
@@ -820,15 +813,17 @@ Hyperlink -
    
    ```
   {
-  "name" : "b_fX4NK",
-  "cluster_name" : "docker-cluster",
-  "cluster_uuid" : "gbFL_zlZQiWzHuTV-fek2g",
+  "name" : "1STIspn",
+  "cluster_name" : "bitergia_elasticsearch",
+  "cluster_uuid" : "NNHIQCbDQHG5sg2MX_WRjA",
   "version" : {
-    "number" : "6.1.4",
-    "build_hash" : "d838f2d",
-    "build_date" : "2018-03-14T08:28:22.470Z",
+    "number" : "6.8.6",
+    "build_flavor" : "oss",
+    "build_type" : "tar",
+    "build_hash" : "3d9f765",
+    "build_date" : "2019-12-13T17:11:52.013738Z",
     "build_snapshot" : false,
-    "lucene_version" : "7.1.0",
+    "lucene_version" : "7.7.2",
     "minimum_wire_compatibility_version" : "5.6.0",
     "minimum_index_compatibility_version" : "5.0.0"
   },
