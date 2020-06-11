@@ -159,47 +159,6 @@ class TestTaskPanels(unittest.TestCase):
         task = MockedTaskPanels(config)
         task.execute()
 
-    @httpretty.activate
-    def test_create_dashboard_multi_ds_kibiter_5(self):
-        """ Test the creation of dashboards with filtered data sources """
-
-        config = Config(CONF_FILE)
-        version = "5.6.0"
-
-        es_url = config.conf['es_enrichment']['url']
-        config_search_url = urljoin(es_url + "/", '.kibana/config/_search')
-        config_version_url = urljoin(es_url + "/", '.kibana/config/' + version)
-
-        data_search = {
-            "took": 0,
-            "timed_out": False,
-            "_shards": {
-                "total": 1,
-                "successful": 1,
-                "skipped": 0,
-                "failed": 0
-            },
-            "hits": {
-                "total": 0,
-                "max_score": None,
-                "hits": [
-                    {"_id": version}
-                ]
-            }
-        }
-
-        httpretty.register_uri(httpretty.GET,
-                               config_search_url,
-                               body=json.dumps(data_search),
-                               status=200)
-
-        httpretty.register_uri(httpretty.POST,
-                               config_version_url,
-                               status=200)
-
-        task = MockedTaskPanels(config)
-        task.execute()
-
 
 class TestTaskPanelsMenu(unittest.TestCase):
     """TaskPanelsMenu tests"""
@@ -219,5 +178,4 @@ class TestTaskPanelsMenu(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
     unittest.main(warnings='ignore')
