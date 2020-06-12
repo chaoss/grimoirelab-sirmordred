@@ -190,7 +190,7 @@ Optionally, you can create a configuration in PyCharm to speed up the executions
 
 The final results should be something similar to the image below.
 
-![result](https://user-images.githubusercontent.com/25265451/78175973-60ac7080-7479-11ea-9b5e-a3c7483585ac.png)
+![result](https://user-images.githubusercontent.com/25265451/84477839-ee90ad00-acad-11ea-932f-cc7ce81e05a7.png)
 
 ## Only docker [&uarr;](#getting-started-)
 
