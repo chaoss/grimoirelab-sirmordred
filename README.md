@@ -660,6 +660,19 @@ api-token = xxxxx
 sleep-for-rate = true
 sleep-time = "300" (optional)
 no-archive = true (suggested)
+studies = [enrich_duration_analysis:kanban]
+
+[enrich_duration_analysis:kanban]
+start_event_type = MovedColumnsInProjectEvent
+fltr_attr = board_name
+target_attr = board_column
+fltr_event_types = [MovedColumnsInProjectEvent, AddedToProjectEvent]
+
+[enrich_duration_analysis:label]
+start_event_type = UnlabeledEvent
+target_attr = label
+fltr_attr = label
+fltr_event_types = [LabeledEvent]
 ```
 
 #### github2 [&uarr;](#supported-data-sources-)
