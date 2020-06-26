@@ -210,6 +210,7 @@ Following is a list of common problems encountered while setting up GrimoireLab
 * [No Swap Space](#no-swap-space-)
 * [SSL error](#ssl-error-)
 * [Cloc installation](#cloc-installation-)
+* [Not getting a full data set](#incomplete-data)
 
 > **NOTE**: In order to see the logs, run ```docker-compose up``` without the ```-d``` or ```--detach``` option while starting/(re)creating/building/attaching containers for a service.
 
@@ -413,6 +414,14 @@ Retrying (Retry(total=10,connected=21,read=0,redirect=5,status=None)) after conn
   ```
   sudo apt-get install cloc
   ```
+#### Incomplete data [&uarr;](#incomplete-data)
+
+* Indication: Not all the data is being retrieved when rebuilding an index - only from a point in time forward.
+
+* Diagnosis: After a rebuild of git-based indices you are not receiving a full dataset as expected, but only from the date of the re-index forward. That data is complete, but anything prior to that is missing.
+
+* Solution: The `setup.cfg`  file has an option under the Git configuration section: `latest-items = true` - set this to `latest-items = false` to pull in all data from the beginnning. Once this has been processed, remember to set it back to `latest-items = true`!
+
 
 ---
 
