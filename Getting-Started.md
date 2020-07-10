@@ -762,8 +762,11 @@ to create a data table visualization on `mbox` index which is split row by the t
 ![Update format](https://user-images.githubusercontent.com/6515067/79062792-79006480-7c9d-11ea-9f71-fc2372bbc326.gif)
 
 Plain text URL -
+
 ![Plain Text](https://user-images.githubusercontent.com/35267629/79062222-b244ce80-7cb5-11ea-90fe-dd6082893ad3.png)
+
 Hyperlink -
+
 ![Link](https://user-images.githubusercontent.com/35267629/79062221-b07b0b00-7cb5-11ea-88b3-677264e9918d.png)
 
 #### Share a dashboard [&uarr;](#how-to-)
