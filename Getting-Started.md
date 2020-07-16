@@ -431,6 +431,7 @@ Following are some tutorials for ElasticSearch and Kibiter:
 
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
 * [Dump the index mapping/data with elasticdump](#dump-the-index-mappingdata-with-elasticdump-)
+* [Save changes made in dashboard by mounting the volume in ES](#save-changes-made-in-dashboard-by-mounting-the-volume-in-es-)
 * [Build a data table visualization in Kibiter](#build-a-data-table-visualization-in-kibiter-)
 * [Modify the menu](#modify-the-menu-)
 * [Share a dashboard](#share-a-dashboard-)
@@ -543,6 +544,45 @@ elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --t
 ```
 elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
 ```
+#### Save changes made in dashboard by mounting the volume in ES [&uarr;](#how-to-)
+
+Creating new dashboard or new visualisation in the Kibana Dashabord can be saved permanently using volume mount in ElasticSearch
+
+Using docker-compose:
+
+1.Configure the docker-compose yml file:
+
+```
+services:
+   elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.8.6
+      command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
+      ports:
+        - 9200:9200
+      environment:
+        - ES_JAVA_OPTS=-Xms2g -Xmx2g
+        - ANONYMOUS_USER=true
+      volumes:
+        - <volumename>:/usr/share/elasticsearch/data
+volumes:
+  <volumename>:
+```
+	
+2.Execute `docker-compose up -d`
+
+3.Go to `localhost:5601` and create new dashboard according to your requirements 
+
+4.Click on save 
+
+5.Save with some new name for the created dashboard
+
+6.Stop the container by `docker-compose down `command
+
+7.Start again by `docker-compose up -d`
+
+You can see all the changes are persistently stored in the local folder and hence cannot be deleted even if all the containers are stopped, reason being volumes are created.
+
+`Note` : If you do not want to use volumes for storage then you should use `docker-compose stop` instead of `docker-compose down` , so that none of the containers is removed.
 
 ### Kibiter
 
