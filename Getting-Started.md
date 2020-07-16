@@ -431,6 +431,7 @@ Following are some tutorials for ElasticSearch and Kibiter:
 
 * [Query data in ElasticSearch](#query-data-in-elasticsearch-)
 * [Dump the index mapping/data with elasticdump](#dump-the-index-mappingdata-with-elasticdump-)
+* [Save changes made in dashboard by mounting the volume in ES](#save-changes-made-in-dashboard-by-mounting-the-volume-in-es-)
 * [Build a data table visualization in Kibiter](#build-a-data-table-visualization-in-kibiter-)
 * [Modify the menu](#modify-the-menu-)
 * [Share a dashboard](#share-a-dashboard-)
@@ -543,9 +544,9 @@ elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_data.json --t
 ```
 elasticdump --input=http://localhost:9200/git_chaoss/ --output=git_mapping.json --type=mapping
 ```
-#### Save new changes made in Dashboard by mounting the volume in ElasticSearch [&uarr;](#how-to-)
+#### Save changes made in dashboard by mounting the volume in ES [&uarr;](#how-to-)
 
-Creating new dashboard or new visualisation in the Kibana Dashabord can be saved permanently using volume mount in elastic search
+Creating new dashboard or new visualisation in the Kibana Dashabord can be saved permanently using volume mount in ElasticSearch
 
 Using docker-compose:
 
@@ -564,7 +565,7 @@ services:
       volumes:
         - <volumename>:/usr/share/elasticsearch/data
 volumes:
-  <volumename>
+  <volumename>:
 ```
 	
 2.Execute `docker-compose up -d`
@@ -579,9 +580,9 @@ volumes:
 
 7.Start again by `docker-compose up -d`
 
-You can see all the changes are persistently stored in the local folder and hence cannot be deleted even if all the containers are stopped,reason being volumes are created.
+You can see all the changes are persistently stored in the local folder and hence cannot be deleted even if all the containers are stopped, reason being volumes are created.
 
-`Note:` If you do not want to use volumes for storage then you have to use `docker-compose restart` command , so that none of the containers are killed and just reconfigured the changes.
+`Note` : If you do not want to use volumes for storage then you should use `docker-compose stop` instead of `docker-compose down` , so that none of the containers is removed.
 
 ### Kibiter
 
