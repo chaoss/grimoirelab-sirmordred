@@ -441,6 +441,8 @@ Following are some tutorials for ElasticSearch and Kibiter:
 * [Share a dashboard](#share-a-dashboard-)
 * [Edit a Visualization](#edit-a-visualization-)
 * [Check that the data is up to date](#check-that-the-data-is-up-to-date-)
+* [Handle identities assigned to "Unknown" organization](#handle-identities-assigned-to-unknown-organization-)
+* [Add a new organization/domain entry via Hatstall](#add-a-new-organizationdomain-entry-via-hatstall-)
 * [Remove Dockers and start a fresh environment](#remove-existing-dockers-and-start-a-fresh-environment-)
 
 ### Elasticsearch
@@ -847,6 +849,54 @@ Hyperlink -
 
 2. Check the last retrieval date to know the last date of data retrieval.
 
+
+### Identity management
+
+#### Handle identities assigned to "Unknown" organization [&uarr;](#how-to-)
+
+To provide some context, [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat) is the GrimoireLab tool
+behind the scenes which is in charge of managing the identities information from the sources you are analyzing. 
+
+SortingHat allows to manage affiliation information too, including the organization(s) a person/user belongs to
+and the date periods for each of them. The organization a user belongs to can be inferred using the email domains
+from every user, for instance: if we have a user who contributed to one of the sources with an email with domain
+`@mozilla.com`, it will be automatically affiliated to `Mozilla` organization.
+
+This automatic affiliation works because there is an entry in SortingHat registry matching `mozilla.com` domain
+with `Mozilla` organization. When this automatic affiliation cannot be applied, that user will not have any 
+affiliation information (at least for the period of time you are visualizing on the dashboard after setting a date
+range with the time-picker), it will appear as `Unknown` on the dashboard.
+
+<img src="https://user-images.githubusercontent.com/63613092/87360165-cb397600-c569-11ea-8dd5-141618e8c826.png" alt="example-unknown" width="600"/><br>
+
+This could be happening because:
+* (1) There is no email domain information for those users.
+* (2) Their email domain(s) are not linked to any organization in SortingHat.
+* (3) The same user can have different identities (e.g. contributions coming from different sources or accounts)
+and they are considered as different individuals.
+
+About possible solutions:
+* (2) can be solved by adding the corresponding entry to SortingHat, i.e. via Hatstall.
+* (3) can be solved by merging those identities under the same individual, which can be done via SortingHat too.
+
+Note: by default, SortingHat is importing the list of organizations and domains
+[from this file](https://github.com/chaoss/grimoirelab/blob/master/default-grimoirelab-settings/organizations.json).
+
+#### Add a new organization/domain entry via Hatstall [&uarr;](#how-to-)
+
+[Hatstall](https://github.com/chaoss/grimoirelab-hatstall) is a web interface to interact with SortingHat.
+ 
+Tip: if you are executing GrimoireLab [via `docker-compose`](https://github.com/chaoss/grimoirelab/tree/master/docker-compose),
+you can access Hatstall from  `http://127.0.0.1:8000/`. Default credentials are `admin`-`admin`, as explained in 
+[this README section](https://github.com/chaoss/grimoirelab/tree/master/docker-compose#getting-started-in-3-steps). 
+
+For adding a new organization domain from Hatstall, you have to click on `Organizations` tab on the nav bar, and then:
+* First, look for the organization you are interested in (you can navigate though the pages or you can use the search bar).
+  * If the organization you are looking for does not appear, click on `Add` button and add the new organization first.
+* Once you have located the organization, click on `edit` and then a menu will pop-up on the right. There, you will be 
+able to add new domains for that organization.
+
+![example-add-domain](https://user-images.githubusercontent.com/9032790/87524852-ff578880-c688-11ea-8331-9e6a9062cf8d.png)
 
 ### Others
 
