@@ -194,7 +194,7 @@ raw index but it will enriched in the enriched index.
 
 ## Supported data sources [&uarr;](#contents)
 
-These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [gitlab](#gitlab-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
+These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [githubqm](#githubqm-), [gitlab](#gitlab-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
 
 #### askbot [&uarr;](#supported-data-sources-)
 Questions and answers from Askbot site
@@ -778,7 +778,53 @@ json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a14923
 attributes = [title, body]
 nlp_rest_url = http://localhost:2901
 ```
+#### githubqm [&uarr;](#supported-data-sources-)
+Issues and PRs from GitHub (QM Enricher)
 
+##### issue
+- projects.json
+```
+{
+    "Chaoss": {
+        "githubqm:issue": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[githubqm:issue]
+raw_index = github_raw
+enriched_index = githubqm_enriched
+api-token = xxxx
+category = issue
+sleep-for-rate = true
+no-archive = true (suggested)
+```
+##### pull request
+- projects.json
+```
+{
+    "Chaoss": {
+        "githubqm:pull": [
+            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https:/github.com/chaoss/grimoirelab-sirmordred"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[githubqm:pull]
+raw_index = github-pull_raw
+enriched_index = githubqm-pull_enriched
+api-token = xxxx
+category = pull_request
+sleep-for-rate = true
+no-archive = true (suggested)
+```
 #### gitlab [&uarr;](#supported-data-sources-)
 Issues and MRs from GitLab
 
