@@ -194,7 +194,7 @@ raw index but it will enriched in the enriched index.
 
 ## Supported data sources [&uarr;](#contents)
 
-These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [githubqm](#githubqm-), [gitlab](#gitlab-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
+These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [githubqm](#githubqm-), [gitlab](#gitlab-), [gitlabqm](#gitlabqm-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
 
 #### askbot [&uarr;](#supported-data-sources-)
 Questions and answers from Askbot site
@@ -897,6 +897,57 @@ in_index = gitlab-mrs_enriched
 out_index = gitlab-mrs-onion_enriched
 data_source = gitlab-merges
 
+```
+#### gitlabqm [&uarr;](#supported-data-sources-)
+Issues and MRs from GitLab (QM Enricher)
+
+If a given GitLab repository is under more than 1 level, all the slashes `/` starting from the second level have to be
+replaced by `%2F`. For instance, for a repository with a structure similar to this one
+`https://gitlab.com/Molly/lab/first`.
+
+##### issue
+- projects.json
+```
+{
+    "Chaoss": {
+        "gitlabqm:issue": [
+            "https://gitlab.com/Molly/first",
+            "https://gitlab.com/Molly/lab%2Fsecond"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[gitlabqm:issue]
+category = issue
+raw_index = gitlab-issues_raw
+enriched_index = gitlabqm-issues_enriched
+api-token = xxxx
+sleep-for-rate = true
+no-archive = true (suggested)
+```
+##### merge request
+- projects.json
+```
+{
+    "Chaoss": {
+        "gitlabqm:merge": [
+            "https://gitlab.com/Molly/first",
+            "https://gitlab.com/Molly/lab%2Fsecond"
+        ],
+    }
+}
+```
+- setup.cfg
+```
+[gitlabqm:merge]
+category = merge_request
+raw_index = gitlab-mrs_raw
+enriched_index = gitlabqm-mrs_enriched
+api-token = xxxx
+sleep-for-rate = true
+no-archive = true (suggested)
 ```
 #### gitter [&uarr;](#supported-data-sources-)
 Messages from gitter rooms 
