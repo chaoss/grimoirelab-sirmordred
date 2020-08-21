@@ -194,7 +194,7 @@ raw index but it will enriched in the enriched index.
 
 ## Supported data sources [&uarr;](#contents)
 
-These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [githubqm](#githubqm-), [gitlab](#gitlab-), [gitlabqm](#gitlabqm-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [meetupqm](#meetupqm-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
+These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [githubqm](#githubqm-), [gitlab](#gitlab-), [gitlabqm](#gitlabqm-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [meetupqm](#meetupqm-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [pipermailqm](#pipermailqm-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
 
 #### askbot [&uarr;](#supported-data-sources-)
 Questions and answers from Askbot site
@@ -1312,6 +1312,25 @@ Messages from Pipermail
 [pipermail]
 raw_index = pipermail_raw
 enriched_index = pipermail_enriched
+```
+#### pipermailqm [&uarr;](#supported-data-sources-)
+Messages from Pipermail (QM Enricher)
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "pipermailqm": [
+            "https://lists.linuxfoundation.org/pipermail/grimoirelab-discussions/"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[pipermailqm]
+raw_index = pipermail_raw
+enriched_index = pipermailqm_enriched
 ```
 #### puppetforge [&uarr;](#supported-data-sources-)
 Modules and their releases from Puppet's forge
