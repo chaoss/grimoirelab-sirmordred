@@ -194,7 +194,7 @@ raw index but it will enriched in the enriched index.
 
 ## Supported data sources [&uarr;](#contents)
 
-These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [githubqm](#githubqm-), [gitlab](#gitlab-), [gitlabqm](#gitlabqm-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
+These are the data sources GrimoireLab supports: [askbot](#askbot-), [bugzilla](#bugzilla-), [bugzillarest](#bugzillarest-), [cocom](#cocom-), [colic](#colic-), [confluence](#confluence-), [crates](#crates-), [discourse](#discourse-), [dockerhub](#dockerhub-), [dockerdeps](#dockerdeps-), [dockersmells](#dockersmells-), [functest](#functest-), [gerrit](#gerrit-), [git](#git-), [gitqm](#gitqm-), [github](#github-), [github2](#github2-), [githubqm](#githubqm-), [gitlab](#gitlab-), [gitlabqm](#gitlabqm-), [gitter](#gitter-), [google_hits](#google_hits-), [groupsio](#groupsio-), [hyperkitty](#hyperkitty-), [jenkins](#jenkins-), [jira](#jira-), [kitsune](#kitsune-), [mattermost](#mattermost-), [mbox](#mbox-), [mediawiki](#mediawiki-), [meetup](#meetup-), [meetupqm](#meetupqm-), [mozillaclub](#mozillaclub-), [nntp](#nntp-), [pagure](#pagure-), [phabricator](#phabricator-), [pipermail](#pipermail-), [puppetforge](#puppetforge-), [redmine](#redmine-), [remo](#remo-), [rocketchat](#rocketchat-), [rss](#rss-), [slack](#slack-), [stackexchange](#stackexchange-), [supybot](#supybot-), [telegram](#telegram-), [twitter](#twitter-)
 
 #### askbot [&uarr;](#supported-data-sources-)
 Questions and answers from Askbot site
@@ -1180,6 +1180,33 @@ sleep-for-rate = true
 sleep-time = "300" (optional)
 no-archive = true (suggested)
 
+```
+#### meetupqm [&uarr;](#supported-data-sources-)
+Events from Meetup groups (QM Enricher)
+
+For meetup groups it is only needed the identifier of the meetup group
+and an API token: https://chaoss.github.io/grimoirelab-tutorial/gelk/meetup.html#gathering-meetup-groups-data
+
+- projects.json
+```
+{
+    "Chaoss": {
+        "meetupqm": [
+            "Alicante-Bitergia-Users-Group",
+            "South-East-Bitergia-User-Group"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[meetupqm]
+raw_index = meetup_raw
+enriched_index = meetupqm_enriched
+api-token = xxxx
+sleep-for-rate = true
+sleep-time = "300" (optional)
+no-archive = true (suggested)
 ```
 #### mozillaclub [&uarr;](#supported-data-sources-)
 Events from Mozillaclub
