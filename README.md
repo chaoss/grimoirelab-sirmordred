@@ -468,13 +468,17 @@ user = xxxx
 no-archive = true (suggested)
 blacklist-ids = [] (optional)
 max-reviews = 500 (optional)
-studies = [enrich_demography:gerrit, enrich_onion:gerrit] (optional)
+studies = [enrich_demography:gerrit, enrich_onion:gerrit, enrich_demography_contribution:gerrit] (optional)
 
 [enrich_demography:gerrit] (optional)
 
 [enrich_onion:gerrit] (optional)
 in_index = gerrit_enriched
 out_index = gerrit-onion_enriched
+
+[enrich_demography_contribution:gerrit] (optional)
+date_field = grimoire_creation_date
+author_field = author_uuid
 ```
 #### git [&uarr;](#supported-data-sources-)
 Commits from Git

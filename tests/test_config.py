@@ -64,6 +64,7 @@ class TestConfig(unittest.TestCase):
         enrich_onion_github_params = config.conf['enrich_onion:github'].keys()
         enrich_onion_gerrit_params = config.conf['enrich_onion:gerrit'].keys()
         enrich_demography_gerrit_params = config.conf['enrich_demography:gerrit'].keys()
+        enrich_demography_contribution_gerrit_params = config.conf['enrich_demography_contribution:gerrit'].keys()
 
         self.assertIn('general', top_sections)
         self.assertIn('projects', top_sections)
@@ -112,6 +113,11 @@ class TestConfig(unittest.TestCase):
         self.assertIn('sort_on_field', enrich_onion_github_params)
         self.assertIn('no_incremental', enrich_onion_github_params)
         self.assertIn('seconds', enrich_onion_github_params)
+
+        self.assertIn('gerrit', top_sections)
+        self.assertIn('enrich_demography_contribution:gerrit', top_sections)
+        self.assertIn('date_field', enrich_demography_contribution_gerrit_params)
+        self.assertIn('author_field', enrich_demography_contribution_gerrit_params)
 
         self.assertIn('gerrit', top_sections)
         self.assertIn('enrich_demography:gerrit', top_sections)
