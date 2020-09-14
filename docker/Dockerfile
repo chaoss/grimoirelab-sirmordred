@@ -1,7 +1,7 @@
 # Copyright (C) 2016-2017 Bitergia
 # GPLv3 License
 
-FROM debian:stretch-slim
+FROM debian:buster-slim
 MAINTAINER Jesus M. Gonzalez-Barahona <jgb@bitergia.com>, Alvaro del Castillo <acs@bitergia.com>
 
 ENV DEBIAN_FRONTEND noninteractive
