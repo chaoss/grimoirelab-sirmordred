@@ -20,6 +20,7 @@
 #       Alvaro del Castillo <acs@bitergia.com>
 #       Luis Cañas-Díaz <lcanas@bitergia.com>
 #       Quan Zhou <quan@bitergia.com>
+#       Miguel Ángel Fernández <mafesan@bitergia.com>
 #
 
 import configparser
@@ -531,7 +532,8 @@ class Config():
                    "enrich_pull_requests", "enrich_git_branches", "enrich_cocom_analysis",
                    "enrich_colic_analysis", "enrich_geolocation", "enrich_forecast_activity",
                    "enrich_extra_data", "enrich_feelings", "enrich_backlog_analysis",
-                   "enrich_duration_analysis", "enrich_demography_contribution")
+                   "enrich_duration_analysis", "enrich_demography_contribution",
+                   "enrich_reference_analysis")
 
         return studies
 

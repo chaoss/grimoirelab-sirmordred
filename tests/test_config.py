@@ -18,6 +18,7 @@
 #
 # Authors:
 #     Valerio Cosentino <valcos@bitergia.com>
+#     Miguel Ángel Fernández <mafesan@bitergia.com>
 
 import sys
 import tempfile
@@ -133,6 +134,9 @@ class TestConfig(unittest.TestCase):
         self.assertIn('sort_on_field', enrich_onion_gerrit_params)
         self.assertIn('no_incremental', enrich_onion_gerrit_params)
         self.assertIn('seconds', enrich_onion_gerrit_params)
+
+        self.assertIn('githubql', top_sections)
+        self.assertIn('enrich_reference_analysis', top_sections)
 
     def test_create_config_file(self):
         """Test whether a config file is correctly created"""
