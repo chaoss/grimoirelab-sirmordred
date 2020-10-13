@@ -1386,6 +1386,33 @@ enriched_index = twitter_enriched
 api-token = XXXX
 ```
 
+#### weblate [&uarr;](#supported-data-sources-)
+Data from Weblate translation units.
+
+- project.json
+```
+{
+    "Chaoss": {
+        "weblate": [
+            "https://translations.documentfoundation.org"
+        ]
+    }
+}
+```
+- setup.cfg
+```
+[weblate]
+raw_index = weblate_raw
+enriched_index = weblate_enriched
+api-token = xxxx
+no-archive = true (suggested)
+sleep-for-rate = true (suggested)
+from-date = 2020-01-01 (optional)
+studies = [enrich_demography:weblate] (optional)
+
+[enrich_demography:weblate]
+```
+
 ## Micro Mordred [&uarr;](#contents)
 
 Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
