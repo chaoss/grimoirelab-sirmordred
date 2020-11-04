@@ -19,7 +19,6 @@
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
 
-import json
 import sys
 import unittest
 import unittest.mock
@@ -40,14 +39,12 @@ CONF_FILE = 'test.cfg'
 
 
 class MockedTaskPanels(TaskPanels):
-
     VERSION = "5.6.0"
 
     def __init__(self, conf):
         super().__init__(conf)
 
     def es_version(self, url):
-
         return MockedTaskPanels.VERSION.split(".")[0]
 
     def create_dashboard(self, panel_file, data_sources=None, strict=True):
