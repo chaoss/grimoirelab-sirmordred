@@ -82,7 +82,6 @@ class TestTaskPanels(unittest.TestCase):
         panel_file = 'panels/json/stackoverflow.json'
         task.create_dashboard(panel_file, data_sources=["stackexchange"])
 
-    @httpretty.activate
     def test_create_dashboard_multi_ds_kibiter_6(self):
         """ Test the creation of dashboards with filtered data sources """
 
@@ -117,9 +116,10 @@ class TestTaskPanels(unittest.TestCase):
 
         MockedTaskPanels.VERSION = '6.1.0'
         task = MockedTaskPanels(config)
+        httpretty.enable(allow_net_connect=True)
         task.execute()
+        httpretty.disable()
 
-    @httpretty.activate
     def test_create_dashboard_multi_ds_kibiter_6_hhtp_error(self):
         """ Test the creation of dashboards with filtered data sources """
 
@@ -154,7 +154,9 @@ class TestTaskPanels(unittest.TestCase):
 
         MockedTaskPanels.VERSION = '6.1.0'
         task = MockedTaskPanels(config)
+        httpretty.enable(allow_net_connect=True)
         task.execute()
+        httpretty.disable()
 
 
 class TestTaskPanelsMenu(unittest.TestCase):

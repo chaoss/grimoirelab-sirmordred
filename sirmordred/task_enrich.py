@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2019 Bitergia
+# Copyright (C) 2015-2021 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 # Authors:
 #     Luis Cañas-Díaz <lcanas@bitergia.com>
 #     Alvaro del Castillo <acs@bitergia.com>
+#     Quan Zhou <quan@bitergia.com>
 #
 
 import logging
@@ -38,14 +39,12 @@ from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elastic import ElasticSearch
 from grimoire_elk.enriched.git import GitEnrich
 from grimoire_elk.utils import get_elastic
+from grimoire_elk.enriched.sortinghat_gelk import SortingHat
 
 from sirmordred.error import DataEnrichmentError
 from sirmordred.task import Task
 from sirmordred.task_manager import TasksManager
 from sirmordred.task_projects import TaskProjects
-
-from sortinghat import api
-from sortinghat.db.database import Database
 
 
 logger = logging.getLogger(__name__)
@@ -65,7 +64,7 @@ class TaskEnrich(Task):
         if self.db_sh is None and self.db_host is None:
             self.db = None
         else:
-            self.db = Database(**self.sh_kwargs)
+            self.db = self.client
 
         autorefresh_interval = self.conf['es_enrichment']['autorefresh_interval']
         self.last_autorefresh = self.__update_last_autorefresh(days=autorefresh_interval)
@@ -83,7 +82,8 @@ class TaskEnrich(Task):
 
         return found
 
-    def __update_last_autorefresh(self, days=None):
+    @staticmethod
+    def __update_last_autorefresh(days=None):
         if not days:
             return datetime.utcnow()
         else:
@@ -244,8 +244,8 @@ class TaskEnrich(Task):
         next_autorefresh = self.__update_last_autorefresh()
 
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
-        uuids_refresh = api.search_last_modified_unique_identities(self.db, after)
-        ids_refresh = api.search_last_modified_identities(self.db, after)
+        uuids_refresh = SortingHat.search_last_modified_unique_identities(self.client, after)
+        ids_refresh = SortingHat.search_last_modified_identities(self.client, after)
         author_fields = ["author_uuid"]
         try:
             meta_fields = enrich_backend.meta_fields
@@ -367,6 +367,7 @@ class TaskEnrich(Task):
         """
         enrich_es = self.conf['es_enrichment']['url']
         sortinghat_db = self.db
+        sortinghat_client = self.client
         current_data_source = self.get_backend(self.backend_section)
         active_data_sources = self.config.get_active_data_sources()
 
@@ -435,6 +436,7 @@ class TaskEnrich(Task):
 
             if autorefresh and self.db:
                 logger.info('[%s] autorefresh start', self.backend_section)
+                a = self._get_enrich_backend()
                 self.__autorefresh(self._get_enrich_backend())
                 logger.info('[%s] autorefresh end', self.backend_section)
             else:
