@@ -31,13 +31,18 @@ Note: For accessing Kibiter and/or creating indexes login is required, the `user
 ```
 services:
     mariadb:
+      restart: on-failure:5
       image: mariadb:10.0
       expose:
         - "3306"
+      ports:
+        - "3306:3306"
       environment:
         - MYSQL_ROOT_PASSWORD=
         - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-
+        - MYSQL_DATABASE=test_sh
+      command: --wait_timeout=2592000 --interactive_timeout=2592000 --max_connections=300
+        
     elasticsearch:
       image: bitergia/elasticsearch:6.8.6-secured
       command: elasticsearch -Enetwork.bind_host=0.0.0.0 -Ehttp.max_content_length=2000mb
