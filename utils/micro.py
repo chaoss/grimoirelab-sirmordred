@@ -221,6 +221,10 @@ def get_params():
         print("No tasks enabled")
         sys.exit(1)
 
+    if args.cfg_path is None:
+        print("Config file path not provided")
+        sys.exit(1)
+
     return args
 
 
