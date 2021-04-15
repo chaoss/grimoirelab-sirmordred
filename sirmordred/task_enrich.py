@@ -180,7 +180,6 @@ class TaskEnrich(Task):
                                self.backend_section,
                                cfg[self.backend_section]['raw_index'],
                                cfg[self.backend_section]['enriched_index'],
-                               None,  # projects_db is deprecated
                                cfg['projects']['projects_file'],
                                self.db_sh,
                                no_incremental, only_identities,
@@ -298,7 +297,7 @@ class TaskEnrich(Task):
         logger.debug("Doing autorefresh for Areas of Code study")
 
         # Create a GitEnrich backend tweaked to work with AOC index
-        aoc_backend = GitEnrich(self.db_sh, None, cfg['projects']['projects_file'],
+        aoc_backend = GitEnrich(self.db_sh, cfg['projects']['projects_file'],
                                 self.db_user, self.db_password, self.db_host)
         aoc_backend.mapping = None
         aoc_backend.roles = ['author']
