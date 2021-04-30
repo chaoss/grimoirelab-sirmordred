@@ -2,7 +2,8 @@
 
 HOME_DIR='/home/bitergia'
 CONF_DIR="$HOME_DIR/conf"
+CONF_LIST="${MORDRED_CONF_FILES:-$CONF_DIR/setup.cfg}"
 
 rm -f /tmp/.mordred_healthcheck
 
-sirmordred -c $HOME_DIR/conf/setup.cfg
+sirmordred -c ${CONF_LIST}
