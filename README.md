@@ -549,7 +549,8 @@ studies = [enrich_onion:github,
            enrich_geolocation:user, 
            enrich_geolocation:assignee, 
            enrich_extra_data:github,
-           enrich_backlog_analysis] (optional)
+           enrich_backlog_analysis,
+           enrich_demography:github] (optional)
 
 [enrich_onion:github] (optional)
 in_index_iss = github_issues_onion-src
@@ -573,6 +574,8 @@ out_index = github_enrich_backlog
 interval_days = 7
 reduced_labels = [bug,enhancement]
 map_label = [others, bugs, enhancements]
+
+[enrich_demography:github]
 ```
 ##### pull request
 - projects.json
@@ -595,7 +598,10 @@ api-token = xxxx
 category = pull_request
 sleep-for-rate = true
 no-archive = true (suggested)
-studies = [enrich_geolocation:user, enrich_geolocation:assignee, enrich_extra_data:github] (optional)
+studies = [enrich_geolocation:user,
+           enrich_geolocation:assignee,
+           enrich_extra_data:github,
+           enrich_demography:github] (optional)
 
 [enrich_geolocation:user]
 location_field = user_location
@@ -607,6 +613,8 @@ geolocation_field = assignee_geolocation
 
 [enrich_extra_data:github]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+
+[enrich_demography:github]
 ```
 ##### repo
 The number of forks, starts, and subscribers in the repository.
@@ -631,10 +639,12 @@ api-token = xxxx
 category = repository
 sleep-for-rate = true
 no-archive = true (suggested)
-studies = [enrich_extra_data:github]
+studies = [enrich_extra_data:github, enrich_demography:github]
 
 [enrich_extra_data:github]
 json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a149230b11a/raw/5eef38de508e0a99fa9772db8aef114042e82e47/bitergia-example.txt
+
+[enrich_demography:github]
 ```
 #### githubql [&uarr;](#supported-data-sources-)
 Events from GitHub
