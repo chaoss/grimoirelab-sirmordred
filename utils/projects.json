@@ -22,10 +22,10 @@
            "https://build.opnfv.org/ci"
         ],
         "gitlab:issue": [
-            "https://gitlab.com/gitlab-org/gitlab-ce"
+            "https://gitlab.com/gitlab-org/gitlab-development-kit"
         ],
         "gitlab:merge": [
-            "https://gitlab.com/gitlab-org/gitlab-ce"
+            "https://gitlab.com/gitlab-org/gitlab-development-kit"
         ]
     }
 }
