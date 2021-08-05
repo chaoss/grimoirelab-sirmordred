@@ -54,9 +54,10 @@ logger = logging.getLogger(__name__)
 class TaskEnrich(Task):
     """ Basic class shared by all enriching tasks """
 
-    def __init__(self, config, backend_section=None):
+    def __init__(self, config, backend_section=None, allowed_repos=None):
         super().__init__(config)
         self.backend_section = backend_section
+        self.allowed_repos = set(allowed_repos) if allowed_repos else None
         # This will be options in next iteration
         self.clean = False
         # check whether the aliases has beed already created
@@ -140,6 +141,9 @@ class TaskEnrich(Task):
 
         if not repos:
             logger.warning("No enrich repositories for %s", self.backend_section)
+        elif self.allowed_repos is not None:
+            # Filter repos to only those specified
+            repos = sorted(list(set(repos) & self.allowed_repos))
 
         # Get the metadata__timestamp value of the last item inserted in the enriched index before
         # looping over the repos which data is stored in the same index. This is needed to make sure

@@ -40,11 +40,12 @@ COLOR_LOG_FORMAT_SUFFIX = "\033[1m %(log_color)s "
 LOG_COLORS = {'DEBUG': 'white', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'red,bg_white'}
 
 
-def micro_mordred(cfg_path, backend_sections, raw, identities_load, identities_merge, enrich, panels):
+def micro_mordred(cfg_path, backend_sections, repos_to_check, raw, identities_load, identities_merge, enrich, panels):
     """Execute the Mordred tasks using the configuration file (`cfg_path`).
 
     :param cfg_path: the path of a Mordred configuration file
     :param backend_sections: the backend sections where the raw/enrich/identities phases will be executed
+    :param repos_to_check: process a repository only if it is in this list, or `None` for all repos
     :param raw: if true, it activates the collection of raw data
     :param identities_load: if true, it activates the identities loading process
     :param identities_merge: if true, it activates the identities merging process
@@ -56,7 +57,7 @@ def micro_mordred(cfg_path, backend_sections, raw, identities_load, identities_m
 
     if raw:
         for backend in backend_sections:
-            get_raw(config, backend)
+            get_raw(config, backend, repos_to_check)
 
     if identities_load:
         get_identities_load(config)
@@ -66,20 +67,23 @@ def micro_mordred(cfg_path, backend_sections, raw, identities_load, identities_m
 
     if enrich:
         for backend in backend_sections:
-            get_enrich(config, backend)
+            get_enrich(config, backend, repos_to_check)
 
     if panels:
         get_panels(config)
 
 
-def get_raw(config, backend_section):
+def get_raw(config, backend_section, repos_to_check=None):
     """Execute the raw phase for a given backend section
+
+    Repos are only checked if they are in BOTH `repos_to_check` and the `projects.json`
 
     :param config: a Mordred config object
     :param backend_section: the backend section where the raw phase is executed
+    :param repos_to_check: A list of repo URLs to check, or None to check all repos
     """
 
-    task = TaskRawDataCollection(config, backend_section=backend_section)
+    task = TaskRawDataCollection(config, backend_section=backend_section, allowed_repos=repos_to_check)
     TaskProjects(config).execute()
     try:
         task.execute()
@@ -111,15 +115,18 @@ def get_identities_load(config):
     logging.info("Loading identities finished!")
 
 
-def get_enrich(config, backend_section):
+def get_enrich(config, backend_section, repos_to_check=None):
     """Execute the enrich phase for a given backend section
+
+    Repos are only checked if they are in BOTH `repos_to_check` and the `projects.json`
 
     :param config: a Mordred config object
     :param backend_section: the backend section where the enrich phase is executed
+    :param repos_to_check: A list of repo URLs to check, or None to check all repos
     """
 
     TaskProjects(config).execute()
-    task = TaskEnrich(config, backend_section=backend_section)
+    task = TaskEnrich(config, backend_section=backend_section, allowed_repos=repos_to_check)
     try:
         task.execute()
         logging.info("Loading enriched data finished!")
@@ -200,6 +207,8 @@ def get_params_parser():
                         help="Configuration file path")
     parser.add_argument("--backends", dest='backend_sections', default=[],
                         nargs='*', help="Backend sections to execute")
+    parser.add_argument("--repos", dest='repos_to_check', default=None,
+                        nargs='*', help="Limit which repositories are processed (list of URLs)")
     parser.add_argument("--logs-dir", dest='logs_dir', default='', help='Logs Directory')
 
     if len(sys.argv) == 1:
@@ -232,7 +241,7 @@ if __name__ == '__main__':
     args = get_params()
     config_logging(args.debug, args.logs_dir)
     micro_mordred(args.cfg_path, args.backend_sections,
-                  args.raw,
+                  args.repos_to_check, args.raw,
                   args.identities_load,
                   args.identities_merge,
                   args.enrich,
