@@ -527,9 +527,9 @@ class TaskPanelsMenu(Task):
         active_ds = []
         for entry in self.panels_menu:
             ds = entry['source']
-            if ds in self.conf.keys() or ds in [COMMUNITY_SOURCE, KAFKA_SOURCE, GITLAB_ISSUES, GITLAB_MERGES,
-                                                MATTERMOST, GITHUB_COMMENTS, GITHUB_REPOS, GITHUB_EVENTS,
-                                                COCOM_SOURCE, COLIC_SOURCE]:
+            if ds in self.conf or ds in [COMMUNITY_SOURCE, KAFKA_SOURCE, GITLAB_ISSUES, GITLAB_MERGES,
+                                         MATTERMOST, GITHUB_COMMENTS, GITHUB_REPOS, GITHUB_EVENTS,
+                                         COCOM_SOURCE, COLIC_SOURCE]:
                 active_ds.append(ds)
         logger.debug("Active data sources for menu: %s", active_ds)
 
