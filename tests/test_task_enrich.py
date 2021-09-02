@@ -150,32 +150,32 @@ class TestTaskEnrich(unittest.TestCase):
         task = TaskEnrich(config, backend_section=backend_section)
 
         # Configure no studies
-        cfg['git']['studies'] = None
+        cfg.set_param('git', 'studies', None)
         self.assertEqual(task.execute(), None)
 
         # Configure no studies
-        cfg['git']['studies'] = []
+        cfg.set_param('git', 'studies', [])
         self.assertEqual(task.execute(), None)
 
         # Configure a wrong study
-        cfg['git']['studies'] = ['bad_study']
+        cfg.set_param('git', 'studies', ['bad_study'])
         with self.assertRaises(DataEnrichmentError):
             self.assertEqual(task.execute(), None)
 
         # Configure several studies
-        cfg['git']['studies'] = ['enrich_onion']
+        cfg.set_param('git', 'studies', ['enrich_onion'])
         self.assertEqual(task.execute(), None)
 
         # Configure several studies
-        cfg['git']['studies'] = ['enrich_demography:1', 'enrich_areas_of_code']
+        cfg.set_param('git', 'studies', ['enrich_demography:1', 'enrich_areas_of_code'])
         self.assertEqual(task.execute(), None)
 
         # Configure kafka kip study
-        cfg['mbox']['studies'] = ['kafka_kip']
+        cfg.set_param('mbox', 'studies', ['kafka_kip'])
         self.assertEqual(task.execute(), None)
 
         # Configure several studies, one wrong
-        cfg['git']['studies'] = ['enrich_demography:1', "enrich_areas_of_code1"]
+        cfg.set_param('git', 'studies', ['enrich_demography:1', "enrich_areas_of_code1"])
         with self.assertRaises(DataEnrichmentError):
             self.assertEqual(task.execute(), None)
 

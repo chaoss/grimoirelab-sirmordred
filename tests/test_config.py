@@ -187,6 +187,185 @@ class TestConfig(unittest.TestCase):
             config.set_param("twitter", "acme", "true")
             self.assertEqual(cm.output[-1], 'ERROR:sirmordred.config:Config section twitter and param acme not exists')
 
+    def test_backend_composition_by_get_backend_section(self):
+        """Test the ability to parameterize backends as in the docs for get_backend_section"""
+
+        config = Config(CONF_FULL)
+        config.conf = {
+            'backend:param1': {
+                'shared_param': 'value 1',
+                'unique_to_1': 'value 2',
+            },
+            'backend:param2': {
+                'shared_param': 'value 3',
+                'unique_to_2': 'value 4',
+            },
+            'backend:param1:param2': {
+                'param_combo': 'value 5',
+            }
+        }
+
+        self.assertEqual(config.get_backend_section('backend'), dict())
+        self.assertEqual(config.get_backend_section('backend', 'param1'), {
+            'shared_param': 'value 1',
+            'unique_to_1': 'value 2',
+        })
+        self.assertEqual(config.get_backend_section('backend', 'param2'), {
+            'shared_param': 'value 3',
+            'unique_to_2': 'value 4',
+        })
+        self.assertEqual(config.get_backend_section('backend', 'param2', 'param1'), {
+            'shared_param': 'value 1',  # Param1 takes priority
+            'unique_to_1': 'value 2',
+            'unique_to_2': 'value 4',
+        })
+        self.assertEqual(config.get_backend_section('backend', 'param1', 'param2'), {
+            'shared_param': 'value 3',  # Param2 takes priority
+            'unique_to_1': 'value 2',
+            'unique_to_2': 'value 4',
+            'param_combo': 'value 5',  # This shows up because its an exact match
+        })
+
+        config.conf['backend'] = {
+            'unique_to_base': 'value 6',
+            'shared_param': 'value 7',
+        }
+
+        self.assertEqual(config.get_backend_section('backend'), {
+            'unique_to_base': 'value 6',
+            'shared_param': 'value 7',
+        })
+        self.assertEqual(config.get_backend_section('backend', 'nonexistant'), {
+            'unique_to_base': 'value 6',
+            'shared_param': 'value 7',
+        })
+        self.assertEqual(config.get_backend_section('backend', 'param1'), {
+            'unique_to_base': 'value 6',
+            'unique_to_1': 'value 2',
+            'shared_param': 'value 1',
+        })
+
+    def test_backend_composition_by_get_item(self):
+        """Test the ability to parameterize backends as in the docs for get_backend_section"""
+
+        # This code is p much copy-pasted from the above test case, save the way that the
+        # backends are accessed
+
+        config = Config(CONF_FULL)
+        config.conf = {
+            'backend:param1': {
+                'shared_param': 'value 1',
+                'unique_to_1': 'value 2',
+            },
+            'backend:param2': {
+                'shared_param': 'value 3',
+                'unique_to_2': 'value 4',
+            },
+            'backend:param1:param2': {
+                'param_combo': 'value 5',
+            }
+        }
+
+        self.assertEqual(config['backend'], dict())
+        self.assertEqual(config['backend:param1'], {
+            'shared_param': 'value 1',
+            'unique_to_1': 'value 2',
+        })
+        self.assertEqual(config['backend:param2'], {
+            'shared_param': 'value 3',
+            'unique_to_2': 'value 4',
+        })
+        self.assertEqual(config['backend:param2:param1'], {
+            'shared_param': 'value 1',  # Param1 takes priority
+            'unique_to_1': 'value 2',
+            'unique_to_2': 'value 4',
+        })
+        self.assertEqual(config['backend:param1:param2'], {
+            'shared_param': 'value 3',  # Param2 takes priority
+            'unique_to_1': 'value 2',
+            'unique_to_2': 'value 4',
+            'param_combo': 'value 5',  # This shows up because its an exact match
+        })
+
+        config.conf['backend'] = {
+            'unique_to_base': 'value 6',
+            'shared_param': 'value 7',
+        }
+
+        self.assertEqual(config['backend'], {
+            'unique_to_base': 'value 6',
+            'shared_param': 'value 7',
+        })
+        self.assertEqual(config['backend:nonexistant'], {
+            'unique_to_base': 'value 6',
+            'shared_param': 'value 7',
+        })
+        self.assertEqual(config['backend:param1'], {
+            'unique_to_base': 'value 6',
+            'unique_to_1': 'value 2',
+            'shared_param': 'value 1',
+        })
+
+    def test_contains(self):
+
+        config = Config(CONF_FULL)
+        config.conf = {
+            'backend:param1': {
+                'shared_param': 'value 1',
+                'unique_to_1': 'value 2',
+            },
+            'backend:param2': {
+                'shared_param': 'value 3',
+                'unique_to_2': 'value 4',
+            },
+            'backend:param1:param2': {
+                'param_combo': 'value 5',
+            }
+        }
+
+        # Directly contained
+        self.assertIn('backend:param1', config)
+        self.assertIn('backend:param2', config)
+        self.assertIn('backend:param1:param2', config)
+
+        # Implicitly contained
+        self.assertIn('backend:param2:param1', config)
+        self.assertIn('backend:fake:param1', config)
+        self.assertIn('backend:param1:fake', config)
+
+        # Not contained
+        self.assertNotIn('backend', config)
+        self.assertNotIn('backend:fake', config)
+        self.assertNotIn('fake-backend:param1', config)
+
+        # Set the previously missing backend param
+        config.conf['backend'] = {
+            'arbitrary_data': 'idc',
+        }
+
+        # Contained after backend specified
+        self.assertIn('backend', config)
+        self.assertIn('backend:fake', config)
+        self.assertIn('backend:param1', config)
+
+        # Still not contained
+        self.assertNotIn('fake-backend:param1', config)
+        self.assertNotIn('fake-backend', config)
+
+    def test_get(self):
+
+        config = Config(CONF_FULL)
+        config.conf = {
+            'backend:param1': {
+                'dummy': 'data',
+            },
+        }
+
+        self.assertEqual(config.get('backend'), None)
+        self.assertEqual(config.get('backend', 'hiya!'), 'hiya!')
+        self.assertEqual(config.get('backend:param1'), config['backend:param1'])
+        self.assertEqual(config.get('backend:param1', 'inspecific string'), config['backend:param1'])
+
 
 if __name__ == "__main__":
     # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')

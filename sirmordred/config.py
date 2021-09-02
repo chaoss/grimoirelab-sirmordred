@@ -25,6 +25,7 @@
 
 import configparser
 import logging
+from typing import Any, Dict, TypeVar, Union
 
 from sirmordred.task import Task
 from grimoire_elk.utils import get_connectors
@@ -505,8 +506,15 @@ class Config():
             parser.write(f)
 
     def get_conf(self):
-        # TODO: Return a deepcopy to avoid uncontrolled changes in config?
-        return self.conf
+        """
+        Return this object.
+
+        This method exists for legacy reasons, and has been depricated.  Please prefer to
+        just use this object directly.
+
+        .. deprecated:: 0.2.39
+        """
+        return self
 
     def set_param(self, section, param, value):
         """ Change a param in the config """
@@ -597,22 +605,161 @@ class Config():
                         raise RuntimeError(msg)
 
         # And now the backend_section entries
-        # A backend section entry could have specific perceval params which are
-        # not checked
+        # This only validates the types of each param if present, and doesn't check that
+        # all required parameters are set.  This functionality has been moved to the
+        # get_backend_section method
         check_params = cls.backend_section_params()
         for section in config_sections:
             if Task.get_backend(section) in backend_sections:
                 for param in check_params:
-                    if param not in config[section].keys():
-                        if not check_params[param]['optional']:
-                            raise RuntimeError("Missing section param:", section, param)
-                    else:
+                    if param in config[section].keys():
                         ptype = type(config[section][param])
                         ptype_ok = check_params[param]["type"]
                         if ptype != ptype_ok:
                             msg = "Wrong type for section param: %s %s %s should be %s" % \
                                   (section, param, ptype, ptype_ok)
                             raise RuntimeError(msg)
+
+    def get_backend_section(
+        self,
+        base_backend_section: str,
+        *parameters: str
+    ) -> Dict[str, Any]:
+        """
+        A smart config object that supports subscripting
+
+        Config options are set through an INI file with several sections, such as
+        `[gitlab]`, called base backend sections, as well as sections like
+        `[gitlab:issue]` or `[gitlab:ieee]`, called parameterized backend sections.
+
+        Backend configuration can be accessed by passing a base backend section, as well
+        as a list of parameters.  For example, you can pass `"gitlab", []`,
+        `"gitlab", ["issue"]`, or `"gitlab", ["issue", "ieee"]`".  The resulting
+        configuration will be the base backend section (`[gitlab]`) composed with
+        each of parameterized sections passed.  For example, passing `"gitlab", ["issue",
+        "ieee"]`, would yield the `[gitlab]` section + the `[gitlab:issue]` + the
+        `[gitlab:ieee]` seciton.
+
+        If either the base backend section or any of the parameterized backend sections
+        aren't found, they will be assumed to be empty.
+
+        For compatibility reasons, parameterized backend sections can include multiple
+        parameters.  That is, the underlying INI file can have a section
+        `[gitlab:issue:ieee]`.  If this section is present, it will be applied after the
+        base backend section and all of the parameterized backend sections with only one
+        parameter, and only when the passed parameters are EXACTLY `"gitlab", ["issue",
+        "ieee"] in that order.
+
+        While calling this method with multiple parameters is encouraged, having
+        parameterized backend sections with 2+ parameters in the underlying config is
+        discouraged.
+
+        Note that config options that are NOT backends can still be accessed through this
+        method, and will be treated as un-parameterized base backend sections (because
+        that's what they are)
+
+        This functionality can also be accessed by subscripting a :class:`Config` object.
+        For more information, see :func:`__get_item__`
+        """
+        base_section: Dict[str, Any] = self.conf.get(base_backend_section, dict())
+
+        # Start the output with just the base backend section
+        output = {key: value for key, value in base_section.items()}  # Shallow copy
+
+        # Compose all of the parameterized backend sections
+        for param in parameters:
+            output.update(
+                self.conf.get(f'{base_backend_section}:{param}', dict())
+            )
+
+        # Compose the multi-parametered backend section (for backwards compatibility)
+        if len(parameters) > 1:
+            output.update(
+                self.conf.get(':'.join([base_backend_section] + list(parameters)), dict())
+            )
+
+        # Check that all necessary parameters are present
+        if base_backend_section in self.get_backend_sections():
+            # If this is a config section for a backend, check for missing parameters
+            missing_parameters = [
+                param_name
+                for param_name, param_props
+                in self.backend_section_params().items()
+                if not param_props['optional'] and param_name not in output
+            ]
+        else:
+            # Otherwise, this is a general config section, so skip the check
+            missing_parameters = []
+        if len(missing_parameters):
+            # If any parameters were missing, raise a detailed error
+            missing_parameters_str = ', '.join(missing_parameters)
+            if len(parameters):
+                backend_string = ':'.join([base_backend_section] + list(parameters))
+                parameterized_backend_sections = ', '.join(f'[{base_backend_section}:{parameter}]' for parameter in parameters)
+                raise RuntimeError(
+                    f'The backend section {backend_string} is used, but neither the base '
+                    f'section ([{base_backend_section}]), nor any of the parameterized backend '
+                    f'sections ({parameterized_backend_sections}), nor the full backend '
+                    f'string section ([{backend_string}]) have the required parameter(s): '
+                    f'{missing_parameters_str}.'
+                )
+            else:
+                raise RuntimeError(
+                    f'The backend section {base_backend_section} is used, but '
+                    f'required parameter(s) are missing: {missing_parameters_str}.'
+                )
+
+        return output
+
+    def __getitem__(self, backend_string: str) -> Dict[str, Any]:
+        """
+        Access the backend sections using backend strings
+
+        Another way of accessing :func:`get_backend_section`
+
+        A backend string is a string such as `"gitlab:issue:ieee"` that can be used to
+        access a backend section.  The string is a series of substrings joined by colons
+        (`:`).  The first substring should be the base backend section, and all following
+        substrings should be parameters.
+
+        The passed string must not be empty
+        """
+        assert len(backend_string) > 0, "__get_item__ called on a Config object with a zero-length string"
+
+        args = backend_string.split(':')
+        return self.get_backend_section(*args)
+
+    T = TypeVar('T')
+
+    def get(self, backend_string: str, default: T = None) -> Union[Dict[str, Any], T]:
+        """
+        Wraps :func:`__getitem__` to allow specifying a default value
+
+        The default value is returned any time the output would otherwise be an empty
+        dict, for example if neither the base backend section nor any of the parameters are
+        present in the config.
+        """
+        out = self[backend_string]
+        if len(out) == 0:
+            return default
+        else:
+            return out
+
+    def __contains__(self, backend_string: str) -> bool:
+        """
+        Check if any component of the provided backend string is configured
+
+        This returns `True` if
+         - The base backend section is present in the underlying config
+         - Any of the parameterized versions of the base backend section are present
+         - The full multi-parameterized backend section is present
+
+        Read :func:`get_backend_section` for more details about what this means
+        """
+        split = backend_string.split(':')
+        return split[0] in self.conf\
+            or any(f'{split[0]}:{param}' in self.conf for param in split[1:])\
+            or backend_string in self.conf
 
     def __add_types(self, raw_conf):
         """ Convert to int, boolean, list, None types config items """
