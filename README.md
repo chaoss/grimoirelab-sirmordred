@@ -141,13 +141,16 @@ company, sub-projects within a large project such as Linux and Eclipse, or the o
 2. Second level: data sources and metadata
 3. Third level: data source URLs
 
-There are some filters, labels, and a special section:
+There are some filters, labels, and a special section and authentication:
 * Filter `--filter-no-collection=true`: This filter is used to show old enriched data within the dashboards from
 repositories that don't exist anymore in upstream.
 * Filter `--filter-raw` and the section `unknown`: The data sources will only collected at the section `unknown`
 but this allow to add the same source in different sections to enrich using the filter `--filter-raw`.
 * Label ` --labels=[example]`: The data source will have the label of `example` which can be used to create visualisations for specific sets of data
 * Section `unknown`: If the data source is only under this section it will be enriched as project `main`.
+* Authentication `user:password/api-token` with **Git private repositories**:
+  *  `https://username:password@github.com/chaoss/grimoirelab.git`
+
 ```
 {
     "Chaoss": {
