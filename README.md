@@ -148,8 +148,7 @@ repositories that don't exist anymore in upstream.
 but this allow to add the same source in different sections to enrich using the filter `--filter-raw`.
 * Label ` --labels=[example]`: The data source will have the label of `example` which can be used to create visualisations for specific sets of data
 * Section `unknown`: If the data source is only under this section it will be enriched as project `main`.
-* Authentication `user:password/api-token` with **Git private repositories**:
-  *  `https://username:password@github.com/chaoss/grimoirelab.git`
+* Authentication against **Git private repositories**: To access to a private repository will be necessary to set the `username` and `password/api-token`.
 
 ```
 {
@@ -159,7 +158,8 @@ but this allow to add the same source in different sections to enrich using the 
         ]
         "git": [
             "https:/github.com/chaoss/grimoirelab-perceval",
-            "https:/github.com/chaoss/grimoirelab-sirmordred"
+            "https:/github.com/chaoss/grimoirelab-sirmordred",
+            "https://username:password@github.com/chaoss/grimoirelab.git"
         ],
         "github": [
             "https:/github.com/chaoss/grimoirelab-perceval --filter-no-collection=true",
@@ -194,6 +194,7 @@ repo is listed in the `unknown` section. However only the project `GrimoireLab` 
 raw index but it will enriched in the enriched index.
 * In the section `GrimoireLab` the metadata will showed in the enriched index as extra fields.
 * In the section `unknown` the data source `confluence` will be enriched as the project `main`.
+* The Git repository `grimoirelab` will authenticate with `username:password`.
 
 ## Supported data sources [&uarr;](#contents)
 
