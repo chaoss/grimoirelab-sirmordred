@@ -243,16 +243,21 @@ class TaskEnrich(Task):
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
         uuids_refresh = api.search_last_modified_unique_identities(self.db, after)
         ids_refresh = api.search_last_modified_identities(self.db, after)
-
+        author_fields = ["author_uuid"]
+        try:
+            meta_fields = enrich_backend.meta_fields
+            author_fields += meta_fields
+        except AttributeError:
+            pass
         if uuids_refresh:
             logger.debug("Refreshing identity uuids for %s", self.backend_section)
-            eitems = refresh_identities(enrich_backend, author_field="author_uuid", author_values=uuids_refresh)
+            eitems = refresh_identities(enrich_backend, author_fields=author_fields, author_values=uuids_refresh)
             enrich_backend.elastic.bulk_upload(eitems, field_id)
         else:
             logger.debug("No uuids to be refreshed found")
         if ids_refresh:
             logger.debug("Refreshing identity ids for %s", self.backend_section)
-            eitems = refresh_identities(enrich_backend, author_field="author_id", author_values=ids_refresh)
+            eitems = refresh_identities(enrich_backend, author_fields=author_fields, author_values=ids_refresh)
             enrich_backend.elastic.bulk_upload(eitems, field_id)
         else:
             logger.debug("No ids to be refreshed found")
