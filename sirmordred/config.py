@@ -104,6 +104,12 @@ class Config():
                     "type": int,
                     "description": "Short delay between tasks (collect, enrich ...)"
                 },
+                "update_hour": {
+                    "optional": True,
+                    "default": None,
+                    "type": int,
+                    "description": "Start the next execution (collect, enrich ...)"
+                },
                 "update": {
                     "optional": False,
                     "default": False,
