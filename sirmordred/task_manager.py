@@ -27,6 +27,8 @@ import threading
 import sys
 import time
 
+from datetime import datetime, timedelta
+
 logger = logging.getLogger(__name__)
 
 
@@ -101,8 +103,24 @@ class TasksManager(threading.Thread):
                     raise
                 logger.debug('[%s] Tasks finished: %s', self.backend_section, task)
 
-            if self.timer > 0 and self.config.get_conf()['general']['update']:
-                logger.info("[%s] sleeping for %s seconds ", self.backend_section, self.timer)
-                time.sleep(self.timer)
+            timer = self.__get_timer(self.backend_section)
+            if timer > 0 and self.config.get_conf()['general']['update']:
+                logger.info("[%s] sleeping for %s seconds ", self.backend_section, timer)
+                time.sleep(timer)
 
         logger.debug('[%s] Task is exiting', self.backend_section)
+
+    def __get_timer(self, backend):
+        if backend == "Global tasks":
+            return self.timer
+
+        update_hour = self.config.get_conf()['general'].get('update_hour', None)
+        timer = self.timer
+        if update_hour:
+            now = datetime.now()
+            next_date = now
+            if now.hour >= update_hour:
+                next_date = now + timedelta(days=1)
+            update_hour_date = datetime(next_date.year, next_date.month, next_date.day, update_hour)
+            timer = (update_hour_date - now).total_seconds()
+        return timer
