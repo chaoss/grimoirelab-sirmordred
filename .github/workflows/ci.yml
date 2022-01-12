@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
-        elasticsearch-version: [6.1.0]
+        elasticsearch-version: [6.8.6]
     
     steps:
     - name: Checkout
