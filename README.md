@@ -15,13 +15,11 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
 
 ## Setup.cfg [&uarr;](#contents)
 
-The setup file holds the configuration to arrange all process underlying GrimoireLab. It is composed of sections which allow to define the general settings such as which phases
-to activate (e.g., collection, enrichment) and where to store the logs, as well as the location and credentials for SortingHat and the ElasticSearch instances where the raw and enriched data
-is stored. Furthermore, it also includes backend sections to set up the parameters used by Perceval to access the software development tools (e.g., GitHub tokens, gerrit username) and fetch their data.
+The setup file holds the configuration to arrange all processes underlying GrimoireLab. It is composed of sections that allow defining the general settings such as which phases to activate (e.g., collection, enrichment) and where to store the logs, as well as the location and credentials for SortingHat and the ElasticSearch instances where the raw and enriched data is stored. Furthermore, it also includes backend sections to set up the parameters used by Perceval to access the software development tools (e.g., GitHub tokens, Gerrit username) and fetch their data.
 
 Dashboards can be automatically uploaded via the `setup.cfg` if the phase `panels` is enabled. The `Data Status` and `Overview` dashboards will contain
 widgets that summarize the information of the data sources declared in the `setup.cfg`. Note that the widgets are not updated when adding
-new data sources, thus you need to manually delete the dashboards `Data Status` and `Overview`, and restart mordred again (making sure that the option `panels` is enabled).
+new data sources, thus you need to manually delete the dashboards `Data Status` and `Overview` (under **Stack Management > Saved Objects** in Kibiter), and restart mordred again (making sure that the option `panels` is enabled).
 
 ### [es_collection]
 
@@ -130,10 +128,10 @@ A template of a study section is shown above. A complete list of studies paramet
 
 ## Projects.json [&uarr;](#contents)
 
-The projects.json aims at describing the repositories grouped by project that will be shown on the dashboards.
+The projects.json aims at describing the repositories grouped by a project that will be shown on the dashboards.
 
 The project file enables the users to list the instances of the software development tools to analyse, such
-as local and remote Git repositories, the URLs of GitHub and GitLab issue trackers and the name of Slack channels.
+as local and remote Git repositories, the URLs of GitHub and GitLab issue trackers, and the name of Slack channels.
 Furthermore, it also allows the users to organize these instances into nested groups, which structure is reflected in
 the visualization artifacts (i.e., documents and dashboards). Groups can be useful to represent projects within a single
 company, sub-projects within a large project such as Linux and Eclipse, or the organizations within a collaborative project.
@@ -386,7 +384,7 @@ enriched_index = dockerhub_enriched
 no-archive = true (suggested)
 ```
 #### dockerdeps [&uarr;](#supported-data-sources-)
-Dependencies extracted from Docker files. Requires https://github.com/crossminer/crossJadolint
+Dependencies extracted from Dockerfiles. Requires https://github.com/crossminer/crossJadolint
 - projects.json
 ```
 {
@@ -407,7 +405,7 @@ exec-path = <jadolint-local-path>/jadolint.jar
 in-paths = [Dockerfile, Dockerfile-full, Dockerfile-secured, Dockerfile-factory, Dockerfile-installed]
 ```
 #### dockersmells [&uarr;](#supported-data-sources-)
-Smells extracted from Docker files. Requires https://github.com/crossminer/crossJadolint
+Smells extracted from Dockerfiles. Requires https://github.com/crossminer/crossJadolint
 - projects.json
 ```
 {
@@ -621,7 +619,7 @@ json_url = https://gist.githubusercontent.com/zhquan/bb48654bed8a835ab2ba9a14923
 [enrich_demography:github]
 ```
 ##### repo
-The number of forks, starts, and subscribers in the repository.
+The number of forks, stars, and subscribers in the repository.
 
 - projects.json
 ```
@@ -853,6 +851,9 @@ data_source = gitlab-merges
 ```
 #### gitter [&uarr;](#supported-data-sources-)
 Messages from gitter rooms
+
+You have to join the rooms you want to mine.
+
 - projects.json
 ```
 {
@@ -1431,7 +1432,7 @@ studies = [enrich_demography:weblate] (optional)
 
 ## Micro Mordred [&uarr;](#contents)
 
-Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows to run single Mordred tasks (e.g., raw collection, enrichment) per execution.
+Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows running single Mordred tasks (e.g., raw collection, enrichment) per execution.
 
 Micro Mordred is located in the [/utils](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/utils/micro.py) folder of this same repository. It can be executed via command line, its parameters are summarized below:
 ```
