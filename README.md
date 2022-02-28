@@ -106,7 +106,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
 The template of a backend section is shown above.
 Further information about Perceval backends parameters are available at:
 
-* Params details: http://perceval.readthedocs.io/en/latest/perceval.backends.core.html
+* Params details: https://perceval.readthedocs.io/en/latest/perceval/perceval-backends.html
 * Examples: https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
 
 Note that some backend sections allow to specify specific enrichment options, which are listed below.
