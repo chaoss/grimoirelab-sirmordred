@@ -40,6 +40,17 @@ COLOR_LOG_FORMAT_SUFFIX = "\033[1m %(log_color)s "
 LOG_COLORS = {'DEBUG': 'white', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'red,bg_white'}
 
 
+def main():
+    args = get_params()
+    config_logging(args.debug, args.logs_dir)
+    micro_mordred(args.cfg_path, args.backend_sections,
+                  args.repos_to_check, args.raw,
+                  args.identities_load,
+                  args.identities_merge,
+                  args.enrich,
+                  args.panels)
+
+
 def micro_mordred(cfg_path, backend_sections, repos_to_check, raw, identities_load, identities_merge, enrich, panels):
     """Execute the Mordred tasks using the configuration file (`cfg_path`).
 
@@ -238,11 +249,4 @@ def get_params():
 
 
 if __name__ == '__main__':
-    args = get_params()
-    config_logging(args.debug, args.logs_dir)
-    micro_mordred(args.cfg_path, args.backend_sections,
-                  args.repos_to_check, args.raw,
-                  args.identities_load,
-                  args.identities_merge,
-                  args.enrich,
-                  args.panels)
+    main()

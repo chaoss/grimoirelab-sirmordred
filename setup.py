@@ -58,7 +58,9 @@ setup(name="sirmordred",
       ],
       keywords="development repositories analytics git github bugzilla jira jenkins",
       packages=[
-          'sirmordred'
+          'sirmordred',
+          'sirmordred.bin',
+          'sirmordred.utils',
       ],
       install_requires=[
           'grimoire-elk>=0.32',
@@ -70,10 +72,12 @@ setup(name="sirmordred",
           'file-read-backwards==2.0.0',
           'colorlog==4.1.0'
       ],
-      scripts=[
-          'bin/sirmordred',
-          'utils/healthcheck.py',
-          'utils/micro.py',
-          'utils/panels_config.py'
-      ],
+      entry_points={
+          'console_scripts': [
+              'sirmordred=sirmordred.bin.sirmordred:main',
+              'healthcheck.py=sirmordred.utils.healthcheck:main',
+              'micro.py=sirmordred.utils.micro:main',
+              'panels_config.py=sirmordred.utils.panels_config:main',
+          ]
+      },
       zip_safe=False)
