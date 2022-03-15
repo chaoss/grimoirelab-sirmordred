@@ -1,0 +1,67 @@
+[tool.poetry]
+name = "sirmordred"
+version = "0.2.43"
+description = "Drive GrimoireLab tools to produce a dashboard"
+authors = [
+    "GrimoireLab Developers"
+]
+license = "GPL-3.0+"
+
+readme = "README.md"
+
+homepage = "https://chaoss.github.io/grimoirelab/"
+repository = "https://github.com/chaoss/grimoirelab-sirmordred"
+
+keywords = [
+    "development",
+    "grimoirelab"
+]
+
+packages = [
+    { include = "sirmordred" },
+    { include = "tests", format = "sdist" },
+]
+
+classifiers = [
+   "Development Status :: 4 - Beta",
+   "Intended Audience :: Developers",
+   "Intended Audience :: Science/Research",
+   "Topic :: Software Development",
+   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+   "Programming Language :: Python :: 3"
+]
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/chaoss/grimoirelab-sirmordred/issues"
+
+[tool.poetry.scripts]
+'sirmordred' = 'sirmordred.bin.sirmordred:main'
+'healthcheck.py' = 'sirmordred.utils.healthcheck:main'
+'micro.py' = 'sirmordred.utils.micro:main'
+'panels_config.py' = 'sirmordred.utils.panels_config:main'
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+colorlog = "4.1.0"
+elasticsearch = "6.3.1"
+elasticsearch-dsl = "6.3.1"
+file-read-backwards = "2.0.0"
+grimoirelab-toolkit = {git = "https://github.com/chaoss/grimoirelab-toolkit"}
+sortinghat = {git = "https://github.com/chaoss/grimoirelab-sortinghat"}
+kidash = {git = "https://github.com/chaoss/grimoirelab-kidash"}
+grimoireelk = {git = "https://github.com/chaoss/grimoirelab-elk"}
+perceval = {git = "https://github.com/chaoss/grimoirelab-perceval"}
+perceval-puppet = {git = "https://github.com/chaoss/grimoirelab-perceval-puppet"}
+perceval-opnfv = {git = "https://github.com/chaoss/grimoirelab-perceval-opnfv"}
+perceval-mozilla = {git = "https://github.com/chaoss/grimoirelab-perceval-mozilla"}
+perceval-finos = {git = "https://github.com/Bitergia/grimoirelab-perceval-finos"}
+perceval-weblate = {git = "https://github.com/chaoss/grimoirelab-perceval-weblate"}
+grimoirelab-panels = {git = "https://github.com/chaoss/grimoirelab-sigils"}
+
+[tool.poetry.dev-dependencies]
+httpretty = "^1.1.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

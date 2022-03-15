@@ -20,17 +20,12 @@
 #     Luis Cañas-Díaz <lcanas@bitergia.com>
 
 
-import sys
 import unittest
 
 from datetime import datetime
 from unittest.mock import patch, mock_open
 
-# Hack to make sure that tests import the right packages
-# due to setuptools behaviour
-sys.path.insert(0, '..')
-
-from utils.healthcheck import match_error_string, read_cache_file
+from sirmordred.utils.healthcheck import match_error_string, read_cache_file
 
 
 class TestHealthCheck(unittest.TestCase):

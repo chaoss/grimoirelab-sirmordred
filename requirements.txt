@@ -2,15 +2,15 @@ colorlog==4.1.0
 elasticsearch==6.3.1
 elasticsearch-dsl==6.3.1
 file-read-backwards==2.0.0
--e git+https://github.com/chaoss/grimoirelab-toolkit/#egg=grimoirelab-toolkit
--e git+https://github.com/chaoss/grimoirelab-sortinghat/#egg=grimoirelab-sortinghat
--e git+https://github.com/chaoss/grimoirelab-kidash/#egg=grimoirelab-kidash
--e git+https://github.com/chaoss/grimoirelab-elk/#egg=grimoirelab-elk
--e git+https://github.com/chaoss/grimoirelab-graal/#egg=grimoirelab-graal
--e git+https://github.com/chaoss/grimoirelab-perceval/#egg=grimoirelab-perceval
--e git+https://github.com/chaoss/grimoirelab-perceval-puppet/#egg=grimoirelab-perceval-puppet
--e git+https://github.com/chaoss/grimoirelab-perceval-opnfv/#egg=grimoirelab-perceval-opnfv
--e git+https://github.com/chaoss/grimoirelab-perceval-mozilla/#egg=grimoirelab-perceval-mozilla
--e git+https://github.com/Bitergia/grimoirelab-perceval-finos/#egg=grimoirelab-perceval-finos
--e git+https://github.com/chaoss/grimoirelab-perceval-weblate/#egg=grimoirelab-perceval-weblate
--e git+https://github.com/chaoss/grimoirelab-sigils/#egg=grimoirelab-sigils
+grimoirelab-toolkit @ git+https://github.com/chaoss/grimoirelab-toolkit@master
+sortinghat @ git+https://github.com/chaoss/grimoirelab-sortinghat@master
+kidash @ git+https://github.com/chaoss/grimoirelab-kidash@master
+grimoireelk @ git+https://github.com/chaoss/grimoirelab-elk@master
+graal @ git+https://github.com/chaoss/grimoirelab-graal@master
+perceval @ git+https://github.com/chaoss/grimoirelab-perceval@master
+perceval-puppet @ git+https://github.com/chaoss/grimoirelab-perceval-puppet@master
+perceval-opnfv @ git+https://github.com/chaoss/grimoirelab-perceval-opnfv@master
+perceval-mozilla @ git+https://github.com/chaoss/grimoirelab-perceval-mozilla@master
+perceval-finos @ git+https://github.com/Bitergia/grimoirelab-perceval-finos@master
+perceval-weblate @ git+https://github.com/chaoss/grimoirelab-perceval-weblate@master
+grimoirelab-panels @ git+https://github.com/chaoss/grimoirelab-sigils@master

@@ -182,7 +182,7 @@ The final results should be something similar to the image below.
 
 Now that you have the ElasticSearch, Kibiter and MariaDB running on your system and the project configured in the PyCharm, we can execute micro-mordred/sirmordred. 
 
-To execute micro-mordred, define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/projects.json), and
+To execute micro-mordred, define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/sirmordred/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/sirmordred/utils/projects.json), and
 run the following commands, which will collect and enrich the data coming from the git sections and upload the corresponding panels to Kibiter:
 ```
 micro.py --raw --enrich --cfg ./setup.cfg --backends git cocom
@@ -286,7 +286,7 @@ Following is a list of common problems encountered while setting up GrimoireLab
 #### Empty Index [&uarr;](#troubleshooting-)
 
 * Indications and Diagnosis:
-  Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/utils/micro.py)
+  Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/sirmordred/utils/micro.py)
   using ```micro.py --raw --enrich --panels --cfg ./setup.cfg --backends git```(Here, using git as backend)
   ```
   [git] Problem executing study enrich_areas_of_code:git, RequestError(400, 'search_phase_execution_exception', 'No mapping 
@@ -299,7 +299,7 @@ Following is a list of common problems encountered while setting up GrimoireLab
   
   There are 2 methods to solve this problem:
  
-  Method 1: Disable the param [latest-items](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/utils/setup.cfg#L78) by setting it to false.
+  Method 1: Disable the param [latest-items](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/sirmordred/utils/setup.cfg#L78) by setting it to false.
   
   Method 2: Delete the local clone of the repo (which is stored in ```~/.perceval/repositories```).
  

@@ -43,7 +43,39 @@ from sirmordred.sirmordred import SirMordred
 SLEEPFOR_ERROR = """Error: You may be Arthur, King of the Britons. But you still """ + \
                  """need the 'sleep_for' variable in sortinghat section\n - Sir Mordred said."""
 
-logger = logging.getLogger(__name__)
+Logger = logging.getLogger(__name__)
+
+
+def main():
+    args = parse_args()
+
+    if args.config_template_file is not None:
+        Config.create_config_file(args.config_template_file)
+        Logger.info("Sample config file created in {}".format(args.config_template_file))
+        return 0
+    elif args.config_files is None:
+        Logger.error("Option -t or -c is required")
+        return 1
+
+    try:
+        config = Config(args.config_files[0], args.config_files[1:])
+        config_dict = config.get_conf()
+        logs_dir = config_dict['general']['logs_dir']
+        debug_mode = config_dict['general']['debug']
+        logger = setup_logs(logs_dir, debug_mode)
+    except RuntimeError as error:
+        print("Error while consuming configuration: {}".format(error))
+        return 1
+
+    if args.phases:
+        logger.info("Executing sirmordred for phases: {}".format(args.phases))
+        # HACK: the internal dict of Config is modified directly
+        # In manual phases execute sirmordred as an script
+        config_dict['general']['update'] = False
+        for phase in config_dict['phases']:
+            config_dict['phases'][phase] = True if phase in args.phases else False
+
+    SirMordred(config).start()
 
 
 def setup_logs(logs_dir, debug_mode):
@@ -101,31 +133,14 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    args = parse_args()
-    if args.config_template_file is not None:
-        Config.create_config_file(args.config_template_file)
-        logger.info("Sample config file created in {}".format(args.config_template_file))
-        sys.exit(0)
-    elif args.config_files is None:
-        logger.error("Option -t or -c is required")
-        sys.exit(1)
-
     try:
-        config = Config(args.config_files[0], args.config_files[1:])
-        config_dict = config.get_conf()
-        logs_dir = config_dict['general']['logs_dir']
-        debug_mode = config_dict['general']['debug']
-        logger = setup_logs(logs_dir, debug_mode)
-    except RuntimeError as error:
-        print("Error while consuming configuration: {}".format(error))
+        code = main()
+        sys.exit(code)
+    except KeyboardInterrupt:
+        s = "\n\nReceived Ctrl-C or other break signal. Exiting.\n"
+        sys.stderr.write(s)
+        sys.exit(0)
+    except RuntimeError as e:
+        s = "Error: %s\n" % str(e)
+        sys.stderr.write(s)
         sys.exit(1)
-
-    if args.phases:
-        logger.info("Executing sirmordred for phases: {}".format(args.phases))
-        # HACK: the internal dict of Config is modified directly
-        # In manual phases execute sirmordred as an script
-        config_dict['general']['update'] = False
-        for phase in config_dict['phases']:
-            config_dict['phases'][phase] = True if phase in args.phases else False
-
-    SirMordred(config).start()
