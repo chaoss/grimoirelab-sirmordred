@@ -61,6 +61,8 @@ grimoirelab-panels = {git = "https://github.com/chaoss/grimoirelab-sigils"}
 
 [tool.poetry.dev-dependencies]
 httpretty = "^1.1.4"
+flake8 = "^4.0.1"
+coverage = "^6.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
