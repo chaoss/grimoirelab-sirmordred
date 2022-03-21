@@ -542,14 +542,15 @@ class Config():
     def get_study_sections(cls):
         # a study name could include and extra ":<param>"
         # to have several backend entries with different configs
-        studies = ("enrich_demography", "enrich_areas_of_code", "enrich_onion", "kafka_kip",
-                   "enrich_pull_requests", "enrich_git_branches", "enrich_cocom_analysis",
-                   "enrich_colic_analysis", "enrich_geolocation", "enrich_forecast_activity",
-                   "enrich_extra_data", "enrich_feelings", "enrich_backlog_analysis",
-                   "enrich_duration_analysis", "enrich_demography_contribution",
-                   "enrich_reference_analysis")
+        studies = []
 
-        return studies
+        connectors = get_connectors()
+        for _, backends in connectors.items():
+            enrich_backend = backends[2]()
+            for study in enrich_backend.studies:
+                studies.append(study.__name__)
+
+        return tuple(set(studies))
 
     def get_active_data_sources(self):
         data_sources = []
