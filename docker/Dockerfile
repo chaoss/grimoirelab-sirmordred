@@ -1,8 +1,8 @@
-# Copyright (C) 2016-2017 Bitergia
+# Copyright (C) 2016-2022 Bitergia
 # GPLv3 License
 
-FROM debian:buster-slim
-MAINTAINER Jesus M. Gonzalez-Barahona <jgb@bitergia.com>, Alvaro del Castillo <acs@bitergia.com>
+FROM debian:bullseye-slim
+LABEL maintainer="Santiago Dueñas <sduenas@bitergia.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV DEPLOY_USER bitergia
