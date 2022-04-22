@@ -216,6 +216,7 @@ Following is a list of common problems encountered while setting up GrimoireLab
 * [SSL error](#ssl-error-)
 * [Cloc installation](#cloc-installation-)
 * [Not getting a full data set](#incomplete-data)
+* [Directory Not Found](#directory-not-found-)
 
 > **NOTE**: In order to see the logs, run ```docker-compose up``` without the ```-d``` or ```--detach``` option while starting/(re)creating/building/attaching containers for a service.
 
@@ -427,6 +428,19 @@ Retrying (Retry(total=10,connected=21,read=0,redirect=5,status=None)) after conn
 
 * Solution: The `setup.cfg`  file has an option under the Git configuration section: `latest-items = true` - set this to `latest-items = false` to pull in all data from the beginnning. Once this has been processed, remember to set it back to `latest-items = true`!
 
+#### Directory Not Found [&uarr;](#directory-not-found-)
+
+* Indication: while following the tutorial of [Source code and docker](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/Getting-Started.md#source-code-and-docker-), you might receive an error log of `[Errno 2] No such file or directory: '/tmp/worktrees/grimoirelab-toolkit-git'`. This will be reported by `cocom` backend. 
+* Diagnosis: the `cocom` backend would require worktrees. The micro-project by default will attend to reach a location at `<worktrees-path>/grimoirelab-toolkit-git`. 
+* Solution:
+  * if you don't need `cocom` support, you can exclude it in your command, i.e. `python --raw --enrich --cfg ./setup.cfg --backends git`.
+  * or you can create the directory manually:
+    * make sure you installed `cloc` (see [this](https://github.com/chaoss/grimoirelab-graal#how-to-installcreate-the-executables))
+    * create two directory `mkdir /somepath` and `mkdir /somepath/grimoirelab-toolkit-git`
+    * use `/somepath/` as the `worktree-path` in `setup.cfg`'s `[cocom]` section. (see how to configure `cocom` in [this](https://github.com/chaoss/grimoirelab-sirmordred#cocom-))
+    * rerun the command `python --raw --enrich --cfg ./setup.cfg --backends git cocom`
+* Reference:
+  * [Issue #539 · chaoss/grimoirelab-sirmordred (github.com)](https://github.com/chaoss/grimoirelab-sirmordred/issues/539)
 
 ---
 
