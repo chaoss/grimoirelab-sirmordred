@@ -391,6 +391,12 @@ class Config():
                     "type": str,
                     "description": "Host with the Sortinghat database"
                 },
+                "port": {
+                     "optional": True,
+                     "default": 3306,
+                     "type": int,
+                     "description": "Port with the Sortinghat database"
+                },
                 "user": {
                     "optional": False,
                     "default": "root",

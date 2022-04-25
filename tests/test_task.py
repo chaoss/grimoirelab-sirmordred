@@ -59,6 +59,7 @@ class TestTask(unittest.TestCase):
         self.assertEqual(task.db_user, task.conf['sortinghat']['user'])
         self.assertEqual(task.db_password, task.conf['sortinghat']['password'])
         self.assertEqual(task.db_host, task.conf['sortinghat']['host'])
+        self.assertEqual(task.db_port, task.conf['sortinghat']['port'])
 
     def test_run(self):
         """Test whether the Task could be run"""

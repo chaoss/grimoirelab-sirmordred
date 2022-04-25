@@ -50,11 +50,12 @@ class Task():
         self.db_user = sortinghat['user'] if sortinghat else None
         self.db_password = sortinghat['password'] if sortinghat else None
         self.db_host = sortinghat['host'] if sortinghat else None
+        self.db_port = sortinghat['port'] if sortinghat else None
         self.db_unaffiliate_group = sortinghat['unaffiliated_group'] if sortinghat else None
 
         self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
                           'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
+                          'port': self.db_port}
 
         self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
 
