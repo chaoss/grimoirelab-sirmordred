@@ -70,7 +70,7 @@ RUN mkdir -p ${CONF_DIR} && \
     echo ${GRIMOIRELAB_RELEASE} > ${DEPLOY_USER_DIR}/release && \
     git clone https://github.com/grimoirelab/grimoirelab.git --depth 1 && \
     echo "Installing and checking GrimoireLab Release"
-RUN  sudo grimoirelab/utils/build_grimoirelab --build --install --check --install_system --relfile ${CONF_DIR}/requirements.cfg -l debug
+RUN sudo grimoirelab/utils/build_grimoirelab --build --install --check --install_system --relfile ${CONF_DIR}/requirements.cfg -l debug
 
 HEALTHCHECK --interval=60s --timeout=6s --retries=1 CMD healthcheck.py -c ${CONF_DIR}/setup.cfg -s 'Exception in Task Manager' || exit 1
 

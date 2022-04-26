@@ -57,7 +57,7 @@ class TestTaskEnrich(unittest.TestCase):
 
         self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
                           'database': sh['database'], 'host': sh['host'],
-                          'port': None}
+                          'port': sh['port']}
 
         # Clean the database to start an empty state
         Database.drop(**self.sh_kwargs)
