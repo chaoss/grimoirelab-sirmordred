@@ -182,6 +182,8 @@ class Task():
                                      self.conf[self.backend_section]['enriched_index'],
                                      clean, enrich_backend)
         enrich_backend.set_elastic(elastic_enrich)
+        if 'pair-programming' in self.conf[self.backend_section]:
+            enrich_backend.pair_programming = self.conf[self.backend_section]['pair-programming']
 
         if self.db_unaffiliate_group:
             enrich_backend.unaffiliated_group = self.db_unaffiliate_group
