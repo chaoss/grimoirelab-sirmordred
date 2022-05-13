@@ -89,6 +89,25 @@ class TestTask(unittest.TestCase):
                                              "https://wiki-archive.opendaylight.org/view",
                                       "filter-no-collection": "true"})
 
+    def test_extract_repo_tags(self):
+        """Test the extraction of tags in repositories"""
+
+        config = Config(CONF_FILE)
+        task = Task(config)
+        url, tags = task._extract_repo_tags("git", "https://github.com/zhquan_example/repo --labels=[ENG, SUPP]")
+        self.assertEqual(url, "https://github.com/zhquan_example/repo")
+        self.assertListEqual(tags, ["ENG", "SUPP"])
+
+        # By default it extracts '--labels'
+        url, tags = task._extract_repo_tags("confluence", "https://example.com --spaces=[HOME]")
+        self.assertEqual(url, "https://example.com --spaces=[HOME]")
+        self.assertListEqual(tags, [])
+
+        # To extracts '--spaces' add tag_type='spaces'
+        url, tags = task._extract_repo_tags("confluence", "https://example.com --spaces=[HOME]", tag_type="spaces")
+        self.assertEqual(url, "https://example.com")
+        self.assertListEqual(tags, ["HOME"])
+
     def test_compose_perceval_params(self):
         """Test whether perceval params are built correctly for a backend and a repository"""
 

@@ -97,8 +97,8 @@ class Task():
     def set_backend_section(self, backend_section):
         self.backend_section = backend_section
 
-    def _extract_repo_labels(self, backend_section, repo):
-        """Extract the labels declared in the repositories within the projects.json, and remove them to
+    def _extract_repo_tags(self, backend_section, repo, tag_type="labels"):
+        """Extract the tags declared in the repositories within the projects.json, and remove them to
         avoid breaking already existing functionalities.
 
         :param backend_section: name of the backend section
@@ -108,8 +108,8 @@ class Task():
         connector = get_connector_from_name(backend)
         ocean = connector[1]
 
-        processed_repo, labels_lst = ocean.extract_repo_labels(repo)
-        return processed_repo, labels_lst
+        processed_repo, tags_lst = ocean.extract_repo_tags(repo, tag_type)
+        return processed_repo, tags_lst
 
     def _compose_p2o_params(self, backend_section, repo):
         # get p2o params included in the projects list
@@ -201,7 +201,7 @@ class Task():
         if len(repos) == 1:
             # Support for filter raw when we have one repo
             repo = repos[0]
-            repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
+            repo, repo_labels = self._extract_repo_tags(self.backend_section, repo)
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
 
