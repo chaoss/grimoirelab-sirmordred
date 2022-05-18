@@ -1,0 +1,8 @@
+---
+title: Add pair-programming in '_get_enrich_backend' method
+category: fixed
+author: Quan Zhou <quan@bitergia.com>
+issue: null
+notes: >
+    Add the `pair-programming` to the `_get_enrich_backend` method if it
+    exists in the setup.cfg file.
