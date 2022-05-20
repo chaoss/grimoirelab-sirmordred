@@ -1,0 +1,8 @@
+---
+title: Add extract spaces
+category: added
+author: Quan Zhou <quan@bitergia.com>
+issue: null
+notes: >
+    Extract spaces from the URL. By default it will extract labels
+    but adding `tag_type="spaces"` it will extract spaces.

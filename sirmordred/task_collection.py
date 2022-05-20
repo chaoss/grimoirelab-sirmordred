@@ -95,7 +95,7 @@ class TaskRawDataCollection(Task):
             repos = sorted(list(set(repos) & self.allowed_repos))
 
         for repo in repos:
-            repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
+            repo, repo_labels = self._extract_repo_tags(self.backend_section, repo)
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args.get('filter-raw', None)
             no_collection = p2o_args.get('filter-no-collection', None)

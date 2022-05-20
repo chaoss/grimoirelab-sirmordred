@@ -69,11 +69,11 @@ resolved_reference = "aab1883e5c95d1742e7fd361350e097a0dfe801b"
 
 [[package]]
 name = "certifi"
-version = "2021.10.8"
+version = "2022.5.18"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3.5"
 
 [[package]]
 name = "cffi"
@@ -179,7 +179,7 @@ graph = ["objgraph (>=1.7.2)"]
 
 [[package]]
 name = "dulwich"
-version = "0.20.38"
+version = "0.20.39"
 description = "Python Git Library"
 category = "main"
 optional = false
@@ -240,7 +240,7 @@ testing = ["pre-commit"]
 
 [[package]]
 name = "feedparser"
-version = "6.0.8"
+version = "6.0.9"
 description = "Universal feed parser, handles RSS 0.9x, RSS 1.0, RSS 2.0, CDF, Atom 0.3, and Atom 1.0 feeds"
 category = "main"
 optional = false
@@ -385,7 +385,7 @@ sortinghat = ["sortinghat @ git+https://github.com/chaoss/grimoirelab-sortinghat
 type = "git"
 url = "https://github.com/chaoss/grimoirelab-elk"
 reference = "master"
-resolved_reference = "908613c68f9f5ae218f975aaca2e18d7c669d102"
+resolved_reference = "e042338491b71a19a830b0a559316466b14b1270"
 
 [[package]]
 name = "grimoirelab-panels"
@@ -632,7 +632,7 @@ docs = ["furo (>=2021.8.31,<2022.0.0)", "myst-parser (>=0.15.2,<0.16.0)"]
 type = "git"
 url = "https://github.com/chaoss/grimoirelab-perceval"
 reference = "master"
-resolved_reference = "d4d86869ebe5a2bb9ba5fe3f150fdce7294d98e6"
+resolved_reference = "d77fa61fc590c471fd157c5a03deaf45dcb5db2f"
 
 [[package]]
 name = "perceval-finos"
@@ -1081,8 +1081,8 @@ beautifulsoup4 = [
 ]
 cereslib = []
 certifi = [
-    {file = "certifi-2021.10.8-py2.py3-none-any.whl", hash = "sha256:d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"},
-    {file = "certifi-2021.10.8.tar.gz", hash = "sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872"},
+    {file = "certifi-2022.5.18-py3-none-any.whl", hash = "sha256:8d15a5a7fde18536a249c49e07e8e462b8fc13de21b3c80e8a68315dfa227c99"},
+    {file = "certifi-2022.5.18.tar.gz", hash = "sha256:6ae10321df3e464305a46e997da41ea56c1d311fb9ff1dd4e04d6f14653ec63a"},
 ]
 cffi = [
     {file = "cffi-1.15.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:c2502a1a03b6312837279c8c1bd3ebedf6c12c4228ddbad40912d671ccc8a962"},
@@ -1221,7 +1221,7 @@ dill = [
     {file = "dill-0.3.4.zip", hash = "sha256:9f9734205146b2b353ab3fec9af0070237b6ddae78452af83d2fca84d739e675"},
 ]
 dulwich = [
-    {file = "dulwich-0.20.38.tar.gz", hash = "sha256:7346790d8735c86fbbc5b70b674f0ef94096c1e5099ba7273491628239817fc8"},
+    {file = "dulwich-0.20.39.tar.gz", hash = "sha256:54a3c51e04da17ef1b8698aaa56120f822f3e50965865e57dfa8939cffab2c1d"},
 ]
 elasticsearch = [
     {file = "elasticsearch-6.3.1-py2.py3-none-any.whl", hash = "sha256:7546cc08e3899716e12fe67d12d7cfe9a64647014d1134b014c3c392b63cad42"},
@@ -1236,8 +1236,8 @@ execnet = [
     {file = "execnet-1.9.0.tar.gz", hash = "sha256:8f694f3ba9cc92cab508b152dcfe322153975c29bda272e2fd7f3f00f36e47c5"},
 ]
 feedparser = [
-    {file = "feedparser-6.0.8-py3-none-any.whl", hash = "sha256:1b7f57841d9cf85074deb316ed2c795091a238adb79846bc46dccdaf80f9c59a"},
-    {file = "feedparser-6.0.8.tar.gz", hash = "sha256:5ce0410a05ab248c8c7cfca3a0ea2203968ee9ff4486067379af4827a59f9661"},
+    {file = "feedparser-6.0.9-py3-none-any.whl", hash = "sha256:a522b2b81f3914a74ae44161a341940f74811bd29be5b4c2a689e6e6be51cd39"},
+    {file = "feedparser-6.0.9.tar.gz", hash = "sha256:dad42e7beaec55f99c08b2b0cf7288bc7cfd24b6f72c8ef85478bcb55648cd42"},
 ]
 file-read-backwards = [
     {file = "file_read_backwards-2.0.0-py2.py3-none-any.whl", hash = "sha256:78684aafc0471e9e0f62a8662361bfaf70ade3d38333d7f166fd8024a028b1d1"},

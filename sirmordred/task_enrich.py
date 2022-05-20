@@ -155,7 +155,8 @@ class TaskEnrich(Task):
             last_enrich_date = last_enrich_date.replace(tzinfo=None)
 
         for repo in repos:
-            repo, repo_labels = self._extract_repo_labels(self.backend_section, repo)
+            repo, repo_labels = self._extract_repo_tags(self.backend_section, repo)
+            _, repo_spaces = self._extract_repo_tags(self.backend_section, repo, "spaces")
             p2o_args = self._compose_p2o_params(self.backend_section, repo)
             filter_raw = p2o_args['filter-raw'] if 'filter-raw' in p2o_args else None
             jenkins_rename_file = p2o_args['jenkins-rename-file'] if 'jenkins-rename-file' in p2o_args else None
@@ -203,7 +204,8 @@ class TaskEnrich(Task):
                                es_enrich_aliases=es_enrich_aliases,
                                last_enrich_date=last_enrich_date,
                                projects_json_repo=repo,
-                               repo_labels=repo_labels)
+                               repo_labels=repo_labels,
+                               repo_spaces=repo_spaces)
             except Exception as ex:
                 logger.error("Something went wrong producing enriched data for %s . "
                              "Using the backend_args: %s ", self.backend_section, str(backend_args))
