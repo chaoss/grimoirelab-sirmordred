@@ -11,6 +11,5 @@ perceval @ git+https://github.com/chaoss/grimoirelab-perceval@master
 perceval-puppet @ git+https://github.com/chaoss/grimoirelab-perceval-puppet@master
 perceval-opnfv @ git+https://github.com/chaoss/grimoirelab-perceval-opnfv@master
 perceval-mozilla @ git+https://github.com/chaoss/grimoirelab-perceval-mozilla@master
-perceval-finos @ git+https://github.com/Bitergia/grimoirelab-perceval-finos@master
 perceval-weblate @ git+https://github.com/chaoss/grimoirelab-perceval-weblate@master
 grimoirelab-panels @ git+https://github.com/chaoss/grimoirelab-sigils@master

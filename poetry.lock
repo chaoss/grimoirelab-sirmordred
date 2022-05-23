@@ -367,25 +367,21 @@ graal = {git = "https://github.com/chaoss/grimoirelab-graal", branch = "master"}
 grimoirelab-toolkit = {git = "https://github.com/chaoss/grimoirelab-toolkit", branch = "master"}
 pandas = ">=0.22.0,<=0.25.3"
 perceval = {git = "https://github.com/chaoss/grimoirelab-perceval", branch = "master"}
-perceval-finos = {git = "https://github.com/Bitergia/grimoirelab-perceval-finos", branch = "master"}
 perceval-mozilla = {git = "https://github.com/chaoss/grimoirelab-perceval-mozilla", branch = "master"}
 perceval-opnfv = {git = "https://github.com/chaoss/grimoirelab-perceval-opnfv", branch = "master"}
 perceval-puppet = {git = "https://github.com/chaoss/grimoirelab-perceval-puppet", branch = "master"}
 perceval-weblate = {git = "https://github.com/chaoss/grimoirelab-perceval-weblate", branch = "master"}
+PyMySQL = "0.9.3"
 requests = "2.26.0"
-sortinghat = {git = "https://github.com/chaoss/grimoirelab-sortinghat", branch = "master", optional = true}
+sortinghat = {git = "https://github.com/chaoss/grimoirelab-sortinghat", branch = "master"}
 statsmodels = ">=0.9.0"
 urllib3 = "1.26.5"
-
-[package.extras]
-mysql = ["PyMySQL (==0.9.3)"]
-sortinghat = ["sortinghat @ git+https://github.com/chaoss/grimoirelab-sortinghat@master"]
 
 [package.source]
 type = "git"
 url = "https://github.com/chaoss/grimoirelab-elk"
 reference = "master"
-resolved_reference = "e042338491b71a19a830b0a559316466b14b1270"
+resolved_reference = "9f2737c9ff58b15f1259349aa54972af515760b7"
 
 [[package]]
 name = "grimoirelab-panels"
@@ -635,26 +631,6 @@ reference = "master"
 resolved_reference = "d77fa61fc590c471fd157c5a03deaf45dcb5db2f"
 
 [[package]]
-name = "perceval-finos"
-version = "0.1.10"
-description = "Bundle of Perceval backends for FINOS ecosystem."
-category = "main"
-optional = false
-python-versions = "^3.6.1"
-develop = false
-
-[package.dependencies]
-grimoirelab-toolkit = "^0.2"
-perceval = "^0.17.4"
-requests = "^2.7.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/Bitergia/grimoirelab-perceval-finos"
-reference = "master"
-resolved_reference = "3199e698aedf68b8c8bdb3825a86e1b559256013"
-
-[[package]]
 name = "perceval-mozilla"
 version = "0.2.13"
 description = "Bundle of Perceval backends for Mozilla ecosystem."
@@ -817,14 +793,13 @@ testutil = ["gitpython (>3)"]
 
 [[package]]
 name = "pymysql"
-version = "1.0.2"
+version = "0.9.3"
 description = "Pure Python MySQL Driver"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = "*"
 
 [package.extras]
-ed25519 = ["PyNaCl (>=1.4.0)"]
 rsa = ["cryptography"]
 
 [[package]]
@@ -1064,7 +1039,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "7b7d4491f005fa093507a4b097164373182cf28c8cb7bd6a73929a9c96a72ed1"
+content-hash = "4f6bbb713dff2ea29726cf3cbb93704705a5f56909c6507633a9f6400905103b"
 
 [metadata.files]
 astroid = [
@@ -1204,6 +1179,8 @@ cryptography = [
     {file = "cryptography-3.4.8-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:34dae04a0dce5730d8eb7894eab617d8a70d0c97da76b905de9efb7128ad7085"},
     {file = "cryptography-3.4.8-cp36-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1eb7bb0df6f6f583dd8e054689def236255161ebbcf62b226454ab9ec663746b"},
     {file = "cryptography-3.4.8-cp36-abi3-manylinux_2_24_x86_64.whl", hash = "sha256:9965c46c674ba8cc572bc09a03f4c649292ee73e1b683adb1ce81e82e9a6a0fb"},
+    {file = "cryptography-3.4.8-cp36-abi3-musllinux_1_1_aarch64.whl", hash = "sha256:3c4129fc3fdc0fa8e40861b5ac0c673315b3c902bbdc05fc176764815b43dd1d"},
+    {file = "cryptography-3.4.8-cp36-abi3-musllinux_1_1_x86_64.whl", hash = "sha256:695104a9223a7239d155d7627ad912953b540929ef97ae0c34c7b8bf30857e89"},
     {file = "cryptography-3.4.8-cp36-abi3-win32.whl", hash = "sha256:21ca464b3a4b8d8e86ba0ee5045e103a1fcfac3b39319727bc0fc58c09c6aff7"},
     {file = "cryptography-3.4.8-cp36-abi3-win_amd64.whl", hash = "sha256:3520667fda779eb788ea00080124875be18f2d8f0848ec00733c0ec3bb8219fc"},
     {file = "cryptography-3.4.8-pp36-pypy36_pp73-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:d2a6e5ef66503da51d2110edf6c403dc6b494cc0082f85db12f54e9c5d4c3ec5"},
@@ -1437,7 +1414,6 @@ pbr = [
     {file = "pbr-5.9.0.tar.gz", hash = "sha256:e8dca2f4b43560edef58813969f52a56cef023146cbb8931626db80e6c1c4308"},
 ]
 perceval = []
-perceval-finos = []
 perceval-mozilla = []
 perceval-opnfv = []
 perceval-puppet = []
@@ -1471,8 +1447,8 @@ pylint = [
     {file = "pylint-2.13.9.tar.gz", hash = "sha256:095567c96e19e6f57b5b907e67d265ff535e588fe26b12b5ebe1fc5645b2c731"},
 ]
 pymysql = [
-    {file = "PyMySQL-1.0.2-py3-none-any.whl", hash = "sha256:41fc3a0c5013d5f039639442321185532e3e2c8924687abe6537de157d403641"},
-    {file = "PyMySQL-1.0.2.tar.gz", hash = "sha256:816927a350f38d56072aeca5dfb10221fe1dc653745853d30a216637f5d7ad36"},
+    {file = "PyMySQL-0.9.3-py2.py3-none-any.whl", hash = "sha256:3943fbbbc1e902f41daf7f9165519f140c4451c179380677e6a848587042561a"},
+    {file = "PyMySQL-0.9.3.tar.gz", hash = "sha256:d8c059dcd81dedb85a9f034d5e22dcb4442c0b201908bede99e306d65ea7c8e7"},
 ]
 pyparsing = [
     {file = "pyparsing-3.0.9-py3-none-any.whl", hash = "sha256:5026bae9a10eeaefb61dab2f09052b9f4307d44aee4eda64b309723d8d206bbc"},

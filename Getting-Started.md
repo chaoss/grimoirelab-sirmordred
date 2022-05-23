@@ -126,7 +126,6 @@ In the next step, you will need to fork all the GitHub repos below and clone the
 - [Perceval for Mozilla](https://github.com/chaoss/grimoirelab-perceval-mozilla)
 - [Perceval for OPNFV](https://github.com/chaoss/grimoirelab-perceval-opnfv)
 - [Perceval for Puppet](https://github.com/chaoss/grimoirelab-perceval-puppet)
-- [Perceval for FINOS](https://github.com/Bitergia/grimoirelab-perceval-finos)
 - [SortingHat](https://github.com/chaoss/grimoirelab-sortinghat)
 - [Sigils](https://github.com/chaoss/grimoirelab-sigils)
 - [Kidash](https://github.com/chaoss/grimoirelab-kidash)
