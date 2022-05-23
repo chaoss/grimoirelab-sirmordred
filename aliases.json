@@ -132,24 +132,6 @@
       }
     ]
   },
-  "finosmeetings": {
-    "raw": [
-      {
-        "alias": "finosmeetings-raw"
-      }
-    ],
-    "enrich": [
-      {
-        "alias": "finosmeetings"
-      },
-      {
-        "alias": "affiliations"
-      },
-      {
-        "alias": "all_enriched"
-      }
-    ]
-  },
   "functest": {
     "raw": [
       {

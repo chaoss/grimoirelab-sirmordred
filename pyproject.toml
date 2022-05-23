@@ -55,7 +55,6 @@ perceval = {git = "https://github.com/chaoss/grimoirelab-perceval"}
 perceval-puppet = {git = "https://github.com/chaoss/grimoirelab-perceval-puppet"}
 perceval-opnfv = {git = "https://github.com/chaoss/grimoirelab-perceval-opnfv"}
 perceval-mozilla = {git = "https://github.com/chaoss/grimoirelab-perceval-mozilla"}
-perceval-finos = {git = "https://github.com/Bitergia/grimoirelab-perceval-finos"}
 perceval-weblate = {git = "https://github.com/chaoss/grimoirelab-perceval-weblate"}
 grimoirelab-panels = {git = "https://github.com/chaoss/grimoirelab-sigils"}
 
