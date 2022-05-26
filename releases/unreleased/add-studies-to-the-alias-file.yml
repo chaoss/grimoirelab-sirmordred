@@ -1,0 +1,14 @@
+---
+title: Add studies to the alias file
+category: other
+author: Quan Zhou <quan@bitergia.com>
+issue: null
+notes: >
+    Add onion, areas of code, and demographics studies to the file aliases.json.
+    This is needed to keep this file updated with the aliases we use in the
+    dashboards by adding them to the appropiate data sources.
+
+    The included aliases:
+    - all_onion
+    - git_areas_of_code
+    - demographics
