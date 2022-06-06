@@ -59,6 +59,7 @@ jobs:
       run: |
         poetry install -vvv
         poetry add -D coveralls
+        poetry run pip install -r requirements_dev.txt
 
     - name: Verify MySQL connection
       run: |
