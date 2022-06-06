@@ -159,12 +159,6 @@
       },
       {
         "alias": "all_enriched"
-      },
-      {
-        "alias": "all_onion"
-      },
-      {
-        "alias": "demographics"
       }
     ]
   },
@@ -189,15 +183,6 @@
       },
       {
         "alias": "all_enriched"
-      },
-      {
-        "alias": "all_onion"
-      },
-      {
-        "alias": "demographics"
-      },
-      {
-        "alias": "git_areas_of_code"
       }
     ]
   },
@@ -314,12 +299,6 @@
             ]
           }
         }
-      },
-      {
-        "alias": "all_onion"
-      },
-      {
-        "alias": "demographics"
       }
     ]
   },
@@ -341,12 +320,6 @@
       },
       {
         "alias": "all_enriched_tickets"
-      },
-      {
-        "alias": "all_onion"
-      },
-      {
-        "alias": "demographics"
       }
     ]
   },
@@ -365,12 +338,6 @@
       },
       {
         "alias": "all_enriched"
-      },
-      {
-        "alias": "all_onion"
-      },
-      {
-        "alias": "demographics"
       }
     ]
   },
@@ -515,9 +482,6 @@
       },
       {
         "alias": "all_enriched"
-      },
-      {
-        "alias": "demographics"
       }
     ]
   },
@@ -884,9 +848,19 @@
       },
       {
         "alias": "all_enriched"
+      }
+    ]
+  },
+  "studies_aliases": {
+    "enrich": [
+      {
+        "alias": "all_onion"
       },
       {
         "alias": "demographics"
+      },
+      {
+        "alias": "git_areas_of_code"
       }
     ]
   }

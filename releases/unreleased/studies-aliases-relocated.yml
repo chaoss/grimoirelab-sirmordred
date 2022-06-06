@@ -1,0 +1,7 @@
+---
+title: Studies aliases relocated
+category: fixed
+author: Angel Jara <ajara@bitergia.com>
+issue: null
+notes: >
+    Relocate studies aliases so they are not created automatically by Mordred.
