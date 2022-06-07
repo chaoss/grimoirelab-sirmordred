@@ -1,7 +1,7 @@
 # Copyright (C) 2016-2022 Bitergia
 # GPLv3 License
 
-FROM debian:bullseye-slim
+FROM python:3.8-slim-bullseye
 LABEL maintainer="Santiago Dueñas <sduenas@bitergia.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -9,7 +9,7 @@ ENV DEPLOY_USER bitergia
 ENV DEPLOY_USER_DIR /home/${DEPLOY_USER}
 ENV CONF_DIR ${DEPLOY_USER_DIR}/conf
 ENV SCRIPTS_DIR ${DEPLOY_USER_DIR}/scripts
-ENV GRIMOIRELAB_RELEASE "0.2.69"
+ENV GRIMOIRELAB_RELEASE "0.3.0"
 
 # Initial user
 RUN useradd ${DEPLOY_USER} --create-home --shell /bin/bash
