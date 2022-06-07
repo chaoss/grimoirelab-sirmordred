@@ -164,6 +164,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
                 self.assertIn('backend', err)
                 self.assertIn('repo', err)
                 self.assertIn('error', err)
+                self.assertIsNone(err['error'])
 
 
 if __name__ == "__main__":
