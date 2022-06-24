@@ -129,8 +129,9 @@ class TaskEnrich(Task):
         github_token = None
         pair_programming = False
         node_regex = None
-        if 'git' in cfg and 'pair-programming' in cfg['git']:
-            pair_programming = cfg['git']['pair-programming']
+
+        if self.backend_section in cfg and 'pair-programming' in cfg[self.backend_section]:
+            pair_programming = cfg[self.backend_section]['pair-programming']
         if 'jenkins' in cfg and 'node_regex' in cfg['jenkins']:
             node_regex = cfg['jenkins']['node_regex']
         only_studies = False
