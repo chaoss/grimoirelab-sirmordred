@@ -1,6 +1,6 @@
 [[package]]
 name = "astroid"
-version = "2.11.5"
+version = "2.11.6"
 description = "An abstract syntax tree for Python with inference support."
 category = "main"
 optional = false
@@ -48,14 +48,14 @@ lxml = ["lxml"]
 
 [[package]]
 name = "cereslib"
-version = "0.3.0"
+version = "0.3.1"
 description = "GrimoireLab: Unify, eventize and enrich information from Perceval"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 
 [package.dependencies]
-grimoirelab-toolkit = ">=0.3.0,<0.4.0"
+grimoirelab-toolkit = ">=0.3"
 numpy = "<=1.18.3"
 pandas = ">=0.22.0,<=0.25.3"
 scipy = ">=1.5,<2.0"
@@ -63,7 +63,7 @@ six = ">=1.16.0,<2.0.0"
 
 [[package]]
 name = "certifi"
-version = "2022.5.18.1"
+version = "2022.6.15"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -105,7 +105,7 @@ requests = "*"
 
 [[package]]
 name = "colorama"
-version = "0.4.4"
+version = "0.4.5"
 description = "Cross-platform colored terminal text."
 category = "main"
 optional = false
@@ -173,7 +173,7 @@ graph = ["objgraph (>=1.7.2)"]
 
 [[package]]
 name = "dulwich"
-version = "0.20.42"
+version = "0.20.43"
 description = "Python Git Library"
 category = "main"
 optional = false
@@ -561,7 +561,7 @@ python-versions = ">=2.6"
 
 [[package]]
 name = "perceval"
-version = "0.19.0"
+version = "0.19.1"
 description = "Send Sir Perceval on a quest to fetch and gather data from software repositories."
 category = "main"
 optional = false
@@ -956,12 +956,12 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "0f8e8466f19cd934b43504fc65afa569329c8706fed733d921e2b0f38fa687ba"
+content-hash = "fc1056962131d97d08de6ed570844663ca653b41c69c53ef6a5b2f315583ab99"
 
 [metadata.files]
 astroid = [
-    {file = "astroid-2.11.5-py3-none-any.whl", hash = "sha256:14ffbb4f6aa2cf474a0834014005487f7ecd8924996083ab411e7fa0b508ce0b"},
-    {file = "astroid-2.11.5.tar.gz", hash = "sha256:f4e4ec5294c4b07ac38bab9ca5ddd3914d4bf46f9006eb5c0ae755755061044e"},
+    {file = "astroid-2.11.6-py3-none-any.whl", hash = "sha256:ba33a82a9a9c06a5ceed98180c5aab16e29c285b828d94696bf32d6015ea82a9"},
+    {file = "astroid-2.11.6.tar.gz", hash = "sha256:4f933d0bf5e408b03a6feb5d23793740c27e07340605f236496cd6ce552043d6"},
 ]
 bandit = [
     {file = "bandit-1.7.4-py3-none-any.whl", hash = "sha256:412d3f259dab4077d0e7f0c11f50f650cc7d10db905d98f6520a95a18049658a"},
@@ -972,12 +972,12 @@ beautifulsoup4 = [
     {file = "beautifulsoup4-4.11.1.tar.gz", hash = "sha256:ad9aa55b65ef2808eb405f46cf74df7fcb7044d5cbc26487f96eb2ef2e436693"},
 ]
 cereslib = [
-    {file = "cereslib-0.3.0-py3-none-any.whl", hash = "sha256:97ebe44fd6c058015f724294d22624bb44b87d978e88718c9e8d96114a4261d3"},
-    {file = "cereslib-0.3.0.tar.gz", hash = "sha256:394634ea09ef38ad9840db84425cb0adff37233e69d801db821bc3111c884579"},
+    {file = "cereslib-0.3.1-py3-none-any.whl", hash = "sha256:f40c7a1cf4aab9a094d067718e47816c291810f25eb8c4a06c6564785d9b1929"},
+    {file = "cereslib-0.3.1.tar.gz", hash = "sha256:a9fb1ce2146ecbbc240217eba015f26604de41f5e175077c5919b0eb5a66c23f"},
 ]
 certifi = [
-    {file = "certifi-2022.5.18.1-py3-none-any.whl", hash = "sha256:f1d53542ee8cbedbe2118b5686372fb33c297fcd6379b050cca0ef13a597382a"},
-    {file = "certifi-2022.5.18.1.tar.gz", hash = "sha256:9c5705e395cd70084351dd8ad5c41e65655e08ce46f2ec9cf6c2c08390f71eb7"},
+    {file = "certifi-2022.6.15-py3-none-any.whl", hash = "sha256:fe86415d55e84719d75f8b69414f6438ac3547d2078ab91b67e779ef69378412"},
+    {file = "certifi-2022.6.15.tar.gz", hash = "sha256:84c85a9078b11105f04f3036a9482ae10e4621616db313fe045dd24743a0820d"},
 ]
 cffi = [
     {file = "cffi-1.15.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:c2502a1a03b6312837279c8c1bd3ebedf6c12c4228ddbad40912d671ccc8a962"},
@@ -1039,8 +1039,8 @@ cloc = [
     {file = "cloc-0.2.5.tar.gz", hash = "sha256:469164d445169ef3635c5cbae21db2e6126ebc2d71f7151f482674414c0c3363"},
 ]
 colorama = [
-    {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
-    {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+    {file = "colorama-0.4.5-py2.py3-none-any.whl", hash = "sha256:854bf444933e37f5824ae7bfc1e98d5bce2ebe4160d46b5edf346a89358e99da"},
+    {file = "colorama-0.4.5.tar.gz", hash = "sha256:e6c6b4334fc50988a639d9b98aa429a0b57da6e17b9a44f0451f930b6967b7a4"},
 ]
 colored = [
     {file = "colored-1.4.3.tar.gz", hash = "sha256:b7b48b9f40e8a65bbb54813d5d79dd008dc8b8c5638d5bbfd30fc5a82e6def7a"},
@@ -1118,27 +1118,27 @@ dill = [
     {file = "dill-0.3.5.1.tar.gz", hash = "sha256:d75e41f3eff1eee599d738e76ba8f4ad98ea229db8b085318aa2b3333a208c86"},
 ]
 dulwich = [
-    {file = "dulwich-0.20.42-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:1e47b2f84d280b9bc0060a19b767402a43efb3a37774d6f613a23e1c1d813e43"},
-    {file = "dulwich-0.20.42-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a3f67e145762fce0f48703f9e4ce20577e52585a9efe9282a74ed2b5e9059a0f"},
-    {file = "dulwich-0.20.42-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:f4a92eb77377886fdf5c7043842d83372c37175e0af3fcfbb226414ce30a1f88"},
-    {file = "dulwich-0.20.42-cp310-cp310-win_amd64.whl", hash = "sha256:546c3cfd8df20cd145cb8751e3abd52d84911422014a93b95bb324274f5b0756"},
-    {file = "dulwich-0.20.42-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:bf9944b8af7d8655056af6abafa72f09796aadef40b56db395beeaac93d82e6c"},
-    {file = "dulwich-0.20.42-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d6adb07cb06922b4814ee1080f39e36eb15e08fff5ed51b0f78f162142b2b2e4"},
-    {file = "dulwich-0.20.42-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:ae8a475c0a7d981255695e9f5a15c7de5f45a2cad56633171cc771820850a6b2"},
-    {file = "dulwich-0.20.42-cp36-cp36m-win_amd64.whl", hash = "sha256:e56e3eeb091f9ed9a7156c0bccc3dcf13d44aada86303232f68ea17ecd6aa391"},
-    {file = "dulwich-0.20.42-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:5ce7a97ea2c25a71c18749de449f81a9728e77e33a6f23d891785c00d05bca2e"},
-    {file = "dulwich-0.20.42-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6c488427dcbc0861f5bf16829298f061332667af6efd65fab5d8f22ab896e71d"},
-    {file = "dulwich-0.20.42-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:9f8c224dece64f9750bedfdeaf89ed94d9ae2f38f9600812615bd5dc4ea84f53"},
-    {file = "dulwich-0.20.42-cp37-cp37m-win_amd64.whl", hash = "sha256:6df2d3fa24c69cd2c6daa2ba05c559e3876819d5b1abfc84b849f34686a56fd9"},
-    {file = "dulwich-0.20.42-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:2145f1299b221d60379517983f430d68f43243df1bde86b2c793ac752833bf3c"},
-    {file = "dulwich-0.20.42-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:91299d239afce5246eba38fe0667d7b9dae0d058360fbe253c6f388650dc8b01"},
-    {file = "dulwich-0.20.42-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:1cdd1ad1bd067b1bbb726c5d0865f5db2cf2824b9c77737e028cd157ceec1efb"},
-    {file = "dulwich-0.20.42-cp38-cp38-win_amd64.whl", hash = "sha256:76e2da298a7bfd59a522750903656c7a2202a47a107ae711e0741b08729c51ee"},
-    {file = "dulwich-0.20.42-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:67a626230665bc95f0aa955530fac7b8802c62d7a254acabc2764ac1985afcba"},
-    {file = "dulwich-0.20.42-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2f69595e14061752cff04ac0cbada210d550645e189071bc3e24c9b1043d3064"},
-    {file = "dulwich-0.20.42-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:3ac93b9df220ee5f99c86538d46c337d82d35caa72d013b95084ca06325e90c9"},
-    {file = "dulwich-0.20.42-cp39-cp39-win_amd64.whl", hash = "sha256:23922557bc487597ff1a0efc56e4436e275a82837b55e5f733e3e05c873e92b1"},
-    {file = "dulwich-0.20.42.tar.gz", hash = "sha256:72ba3b60ae6a554d1332b3b40a345febe16ec469cf6014bb443b719902e33ef0"},
+    {file = "dulwich-0.20.43-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:5a2479e97575c0d2e30b3c7ea31042125b9e13f6466cdd10e56dbfa0a22e415b"},
+    {file = "dulwich-0.20.43-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1bcd78cef7a9239e292ae494ff0a9daf8cc29228fb680cc11c9d8d360f23ad15"},
+    {file = "dulwich-0.20.43-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:80d17f29f5b2f459e968c7e16669f56682627e1eeef21f7470c42406462dcd97"},
+    {file = "dulwich-0.20.43-cp310-cp310-win_amd64.whl", hash = "sha256:bee585adc6636cc72e668e2b7882e2df56475bece3a59f5830e164b94cc336d1"},
+    {file = "dulwich-0.20.43-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:4220a2ed94973c20105ac30627c113a9383fa2ab6574bff9e8de5945a4f3da49"},
+    {file = "dulwich-0.20.43-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3d1573d9e132a2d4e4ec41246a34493d817847d1dd1d0c6d92847e957e924c46"},
+    {file = "dulwich-0.20.43-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:8d8105c65ebe2b8adcbf4e27e972207a641324d8968793cc65601d10b0a7f25f"},
+    {file = "dulwich-0.20.43-cp36-cp36m-win_amd64.whl", hash = "sha256:2cb39d7ceed5e63e8e522f8ccf7b0dc837a1d2988611f43701a694a64a64726c"},
+    {file = "dulwich-0.20.43-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:2d6d907b530c968788ea885707c998b55a925234307d7e920a73a0e6c48a3cfa"},
+    {file = "dulwich-0.20.43-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f458f59fad5ee1b5600b7108f9a4aa5777eaac99e17bf93e72fa658d58ef65ec"},
+    {file = "dulwich-0.20.43-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:6b9dc43e5b32aa96cf54629686a4eca0a07da06bc8f013f2fb4fc3db0ba7b31f"},
+    {file = "dulwich-0.20.43-cp37-cp37m-win_amd64.whl", hash = "sha256:d122ca90a490b211eb552a0c693704405f602d5a9731c0ce389829ff46848c29"},
+    {file = "dulwich-0.20.43-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:58f02f3e73d89fe1f9af653a743e12c1087a652fe9e37d7fcb5a98850481d3d0"},
+    {file = "dulwich-0.20.43-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:94d6755525f097258481d8f8f1c2d5d5260e4a1da07b362d0660c8a8c147c598"},
+    {file = "dulwich-0.20.43-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:ea4f0fd8c752ce452a1650fe5462951200e196238c990c81311a13c44e98ed13"},
+    {file = "dulwich-0.20.43-cp38-cp38-win_amd64.whl", hash = "sha256:015c974e59539abe2a48942e828eea82fbfcdedbaa98650c74e5af675d2eab32"},
+    {file = "dulwich-0.20.43-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:14567de0f7917640890a187c4d60d3423c2a1354f401e5a6963ae583f9180d02"},
+    {file = "dulwich-0.20.43-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:bb48de2ae7f45066963bba07b4a7cb6270dbe91303211182233ee5ecf28d7213"},
+    {file = "dulwich-0.20.43-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:5c6dd0f0244c04612d8b161b482a73937a3a12d1559919782fff5f03ece85c11"},
+    {file = "dulwich-0.20.43-cp39-cp39-win_amd64.whl", hash = "sha256:6a6ab2b8f9d3c0504de5485b1cb2c48a7f9cbc079e24fbb2bdf4533c39dbaa80"},
+    {file = "dulwich-0.20.43.tar.gz", hash = "sha256:fcc2164e013b390a9ee3a109d7ef7b95d8de283b2e789bb07e94aa3115e329ea"},
 ]
 elasticsearch = [
     {file = "elasticsearch-6.3.1-py2.py3-none-any.whl", hash = "sha256:7546cc08e3899716e12fe67d12d7cfe9a64647014d1134b014c3c392b63cad42"},
@@ -1369,8 +1369,8 @@ pbr = [
     {file = "pbr-5.9.0.tar.gz", hash = "sha256:e8dca2f4b43560edef58813969f52a56cef023146cbb8931626db80e6c1c4308"},
 ]
 perceval = [
-    {file = "perceval-0.19.0-py3-none-any.whl", hash = "sha256:7bd8af18e7a7bd61fdf73d3f676defb2eaef7d9ee3c0bd8e47a3d68f70bb86b5"},
-    {file = "perceval-0.19.0.tar.gz", hash = "sha256:834a9b4aa2ff585b3a7f7485b4f3600f979b632714c6ac39e8ecd4824dca6c33"},
+    {file = "perceval-0.19.1-py3-none-any.whl", hash = "sha256:d8b5222b8eaeb81c3fb64ddb8805b563061b21b62ae3fe4501d5d9e38fed5da3"},
+    {file = "perceval-0.19.1.tar.gz", hash = "sha256:9964a5dc78718d3c45dc05e63ec895667c71418d272fbfde3a6958cf99db73fc"},
 ]
 perceval-mozilla = [
     {file = "perceval-mozilla-0.3.1.tar.gz", hash = "sha256:45603b6c89a08fbb805c89ee5f0ac617573f25d912967526ea2e90a98f1cc840"},

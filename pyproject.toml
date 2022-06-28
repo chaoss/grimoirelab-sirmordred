@@ -49,9 +49,9 @@ elasticsearch-dsl = "6.3.1"
 file-read-backwards = "2.0.0"
 grimoirelab-toolkit = ">=0.3"
 sortinghat = ">=0.7.20"
-kidash = "^0.5.0"
+kidash = ">=0.5"
 grimoire-elk = ">=0.102"
-grimoirelab-panels = "^0.1.0"
+grimoirelab-panels = ">=0.1"
 
 [tool.poetry.dev-dependencies]
 httpretty = "^1.1.4"
