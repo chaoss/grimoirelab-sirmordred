@@ -854,13 +854,20 @@
   "studies_aliases": {
     "enrich": [
       {
-        "alias": "all_onion"
+        "alias": "all_onion",
+        "name": "enrich_onion"
       },
       {
-        "alias": "demographics"
+        "alias": "demographics",
+        "name": "enrich_demography"
       },
       {
-        "alias": "git_areas_of_code"
+        "alias": "demographics_contribution",
+        "name": "enrich_demography_contribution"
+      },
+      {
+        "alias": "git_areas_of_code",
+        "name": "enrich_areas_of_code"
       }
     ]
   }

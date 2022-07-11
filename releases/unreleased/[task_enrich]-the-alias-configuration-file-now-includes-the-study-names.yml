@@ -1,0 +1,23 @@
+---
+title: 'Configurable study names and aliases'
+category: added
+author: Quan Zhou <quan@bitergia.com>
+issue: null
+notes: >
+    Study aliases and names can be set in the configuration file using the
+    keyword `studies_aliases`. The following snippet shows an example of
+    configuration.
+
+    i.e. In this `aliases.json` file the name of the study is
+    `enrich_onion` and the name of the alias is `all_onion`
+    ```
+    "studies_aliases": {
+        "enrich": [
+          {
+            "alias": "all_onion",
+            "name": "enrich_onion"
+          },
+          ...
+        ]
+    }
+    ```
