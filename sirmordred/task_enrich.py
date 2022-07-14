@@ -347,6 +347,10 @@ class TaskEnrich(Task):
         logger.info("%s Executing studies %s" % (log_prefix, [study for study in studies]))
 
         studies_args = self.__load_studies()
+        study_aliases = self.select_aliases(cfg, "studies_aliases")
+        for study_arg in studies_args:
+            alias = [study_alias['alias'] for study_alias in study_aliases if study_arg['type'] == study_alias['name']]
+            study_arg['params']['alias'] = alias[0]
 
         do_studies(ocean_backend, enrich_backend, studies_args, retention_time=retention_time)
         # Return studies to its original value

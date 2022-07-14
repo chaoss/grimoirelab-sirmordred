@@ -154,5 +154,25 @@
   "twitter": {
       "raw": ["twitter-raw"],
       "enrich": ["twitter", "affiliations"]
+  },
+  "studies_aliases": {
+    "enrich": [
+      {
+        "alias": "all_onion",
+        "name": "enrich_onion"
+      },
+      {
+        "alias": "demographics",
+        "name": "enrich_demography"
+      },
+      {
+        "alias": "demographics_contribution",
+        "name": "enrich_demography_contribution"
+      },
+      {
+        "alias": "git_areas_of_code",
+        "name": "enrich_areas_of_code"
+      }
+    ]
   }
 }
