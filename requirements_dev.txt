@@ -8,3 +8,4 @@
 -e git+https://github.com/chaoss/grimoirelab-perceval-weblate/#egg=perceval-weblate
 -e git+https://github.com/chaoss/grimoirelab-kidash/#egg=kidash
 -e git+https://github.com/chaoss/grimoirelab-sigils/#egg=grimoirelab-panels
+-e git+https://github.com/chaoss/grimoirelab-elk/#egg=grimoire-elk
