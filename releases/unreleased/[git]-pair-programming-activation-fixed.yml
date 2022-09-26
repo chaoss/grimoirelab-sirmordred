@@ -1,8 +1,0 @@
----
-title: '[git] pair-programming activation fixed'
-category: fixed
-author: Quan Zhou <quan@bitergia.com>
-issue: null
-notes: >
-    Git pair-programming can be activated if the data source
-    contains a tag like `[git:pair]`

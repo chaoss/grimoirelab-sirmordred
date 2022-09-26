@@ -1,8 +1,0 @@
----
-title: Study selection fixed
-category: fixed
-author: Quan Zhou <quan@bitergia.com>
-issue: null
-notes: >
-    This fix solves the problem of executing the studies with
-    no associated aliases.
