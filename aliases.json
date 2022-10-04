@@ -198,6 +198,18 @@
       }
     ]
   },
+  "github:pull": {
+    "raw": [
+      {
+        "alias": "github_pull_requests-raw"
+      }
+    ],
+    "enrich": [
+      {
+        "alias": "github_pull_requests"
+      }
+    ]
+  },
   "github:repo": {
     "raw": [
       {
