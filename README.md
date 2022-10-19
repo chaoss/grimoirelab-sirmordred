@@ -1,4 +1,4 @@
-# SirMordred [![Build Status](https://github.com/chaoss/grimoirelab-sirmordred/workflows/tests/badge.svg)](https://github.com/chaoss/grimoirelab-sirmordred/actions?query=workflow:tests+branch:master+event:push) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master)
+# SirMordred [![Build Status](https://github.com/chaoss/grimoirelab-sirmordred/workflows/tests/badge.svg)](https://github.com/chaoss/grimoirelab-sirmordred/actions?query=workflow:tests+branch:master+event:push) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master) [![PyPI version](https://badge.fury.io/py/sirmordred.svg)](https://badge.fury.io/py/sirmordred)
 
 SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via two main configuration files, the `setup.cfg` and `projects.json`, which are summarized in their corresponding sections.
 
