@@ -8,6 +8,8 @@ SirModred relies on ElasticSearch, Kibiter and MySQL/MariaDB. The current versio
 There are mainly 2 options to get started with SirMordred:
 - [Source code and docker](#source-code-and-docker-):
 In this method, the applications (ElasticSearch, Kibiter and MariaDB) are installed using docker and the GrimoireLab Components are installed using the source code.
+- [SirMordred and docker](#sirmordred-and-docker-):
+In this method, the applications (ElasticSearch, Kibiter and MariaDB) are installed using docker and only SirMordred is installed including all the GrimoireLab Components.
 - [Only docker](#only-docker-):
 In this method, the applications (ElasticSearch, Kibiter and MariaDB) and the GrimoireLab Components are installed using docker.
 
@@ -196,9 +198,102 @@ The final results should be something similar to the image below.
 
 ![result](https://user-images.githubusercontent.com/25265451/84477839-ee90ad00-acad-11ea-932f-cc7ce81e05a7.png)
 
+## SirMordred and docker [&uarr;](#getting-started-)
+
+Follow the instructions in [Getting the containers](#getting-the-containers-) to install
+ElasticSearch (6.8.6), Kibiter (6.8.6) and a MySQL/MariaDB database (5.7.24/10.0).
+
+There are several ways to install SirMordred on your system: packages or source
+code using Poetry or pip.
+
+### PyPI
+
+SirMordred can be installed using pip, a tool for installing Python packages.
+To do it, run the next command:
+```
+$ pip install sirmordred
+```
+
+### Source code
+
+To install from the source code you will need to clone the repository first:
+```
+$ git clone https://github.com/chaoss/grimoirelab-sirmordred
+$ cd grimoirelab-sirmordred
+```
+Then use pip or Poetry to install the package along with its dependencies.
+
+- **Pip**
+
+  To install the package from local directory run the following command:
+  ```
+  $ pip install .
+  ```
+  In case you are a developer, you should install SirMordred in editable mode:
+  ```
+  $ pip install -e .
+  ```
+
+- **Poetry**
+
+  We use [poetry](https://python-poetry.org/) for dependency management and
+  packaging. You can install it following its [documentation](https://python-poetry.org/docs/#installation).
+  Once you have installed it, you can install SirMordred and the dependencies in
+  a project isolated environment using:
+  ```
+  $ poetry install
+  ```
+  To spaw a new shell within the virtual environment use:
+  ```
+  $ poetry shell
+  ```
+
+### Usage
+
+Now that you have the ElasticSearch, Kibiter and MariaDB running on your system and SirMordred installed, we can execute micro-mordred/sirmordred.
+
+- micro.py
+    ```
+    usage: micro.py [--raw] [--enrich] [--identities-load] [--identities-merge] [--panels]
+                    [--cfg CFG_PATH] [--backends [BACKEND_SECTIONS [BACKEND_SECTIONS ...]]]
+                    [--repos [REPOS_TO_CHECK [REPOS_TO_CHECK ...]]] [--logs-dir LOGS_DIR]
+
+    optional arguments:
+      --raw                 Activate raw task
+      --enrich              Activate enrich task
+      --identities-load     Activate load identities task
+      --identities-merge    Activate merge identities task
+      --panels              Activate panels task
+      --cfg CFG_PATH        Configuration file path
+      --backends [BACKEND_SECTIONS [BACKEND_SECTIONS ...]]
+                            Backend sections to execute
+      --repos [REPOS_TO_CHECK [REPOS_TO_CHECK ...]]
+                            Limit which repositories are processed (list of URLs)
+      --logs-dir LOGS_DIR   Logs Directory
+    ```
+
+- sirmordred
+    ```
+    usage: sirmordred [-h] [-c CONFIG_FILES [CONFIG_FILES ...]] [-t CONFIG_TEMPLATE_FILE]
+                      [-p [PHASES [PHASES ...]]]
+
+    SirMordred, the friendly friend of GrimoireELK
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -c CONFIG_FILES [CONFIG_FILES ...], --config CONFIG_FILES [CONFIG_FILES ...]
+                            Configuration files
+      -t CONFIG_TEMPLATE_FILE, --template CONFIG_TEMPLATE_FILE
+                            Create template configuration file
+      -p [PHASES [PHASES ...]], --phases [PHASES [PHASES ...]]
+                            List of phases to execute (update is set to false)
+
+    Software metrics for your peace of mind
+    ```
+
 ## Only docker [&uarr;](#getting-started-)
 
-Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/sirmordred/container.html)
+Follow the instruction in the GrimoireLab tutorial to have [SirMordred in a container](https://chaoss.github.io/grimoirelab-tutorial/docs/getting-started/setup/)
 
 ---
 
