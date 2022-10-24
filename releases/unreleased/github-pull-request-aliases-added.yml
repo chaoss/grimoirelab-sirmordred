@@ -1,0 +1,9 @@
+---
+title: New default GitHub pull requests alias names
+category: added
+author: Quan Zhou <quan@bitergia.com>
+issue: null
+notes: >
+    GitHub pull_request category (github:pull) has its own aliases now: `github_pull_requests`
+    and `github_pull_requests-raw`. This category used to share the default aliases for GitHub:
+    `github` and `github-raw`.
