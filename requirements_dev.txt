@@ -9,3 +9,4 @@
 -e git+https://github.com/chaoss/grimoirelab-kidash/#egg=kidash
 -e git+https://github.com/chaoss/grimoirelab-sigils/#egg=grimoirelab-panels
 -e git+https://github.com/chaoss/grimoirelab-elk/#egg=grimoire-elk
+-e git+https://github.com/chaoss/grimoirelab-cereslib/#egg=cereslib
