@@ -41,7 +41,7 @@ classifiers = [
 'panels_config.py' = 'sirmordred.utils.panels_config:main'
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7.1"
 
 colorlog = "4.1.0"
 elasticsearch = "6.3.1"
