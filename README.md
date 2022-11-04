@@ -1015,6 +1015,9 @@ Messages from Mattermost channels
 raw_index = mattermost_raw
 enriched_index = mattermost_enriched
 api-token = xxxx
+studies = [enrich_demography:mattermost] (optional)
+
+[enrich_demography:mattermost] (optional)
 ```
 #### mbox [&uarr;](#supported-data-sources-)
 Messages from MBox files
