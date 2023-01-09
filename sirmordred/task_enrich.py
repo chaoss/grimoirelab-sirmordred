@@ -99,7 +99,7 @@ class TaskEnrich(Task):
 
         for study in studies:
             if study not in self.conf:
-                msg = 'Missing config for study %s:' % study
+                msg = 'Missing config for study: %s' % study
                 logger.error(msg)
                 raise DataEnrichmentError(msg)
 

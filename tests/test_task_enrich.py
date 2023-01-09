@@ -198,7 +198,7 @@ class TestTaskEnrich(unittest.TestCase):
 
         # 1 year
         retention_time = 525600
-        cfg['general']['retention_time'] = retention_time
+        cfg.set_param('general', 'retention_time', retention_time)
         task.execute()
 
         r = requests.get(enrich_index + "/_search?size=0", verify=False)
