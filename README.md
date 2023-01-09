@@ -79,13 +79,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
  * **autoprofile** (list: ['customer', 'git', 'github']): Order in which to get the identities information for filling the profile (**Required**)
  * **database** (str: sortinghat_db): Name of the Sortinghat database (**Required**)
  * **host** (str: mariadb): Host with the Sortinghat database (**Required**)
- * **identities_api_token** (str: None): API token for remote operation with GitHub and Gitlab
- * **identities_export_url** (str: None): URL in which to export the identities in Sortinghat
- * **identities_file** (list: []): File path with the identities to be loaded in Sortinghat
- * **identities_format** (str: sortinghat): Format of the identities data to be loaded
- * **load_orgs** (bool: False):
  * **matching** (list: ['email']): Algorithm for matching identities in Sortinghat (**Required**)
- * **orgs_file** (str: None): File path with the organizations to be loaded in Sortinghat
  * **password** (str: ): Password to access the Sortinghat database (**Required**)
  * **reset_on_load** (bool: False): Unmerge and remove affiliations for all identities on load
  * **sleep_for** (int: 3600): Delay between task identities executions (**Required**)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2019 Bitergia
+# Copyright (C) 2015-2021 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 # Authors:
 #     Luis Cañas-Díaz <lcanas@bitergia.com>
 #     Alvaro del Castillo <acs@bitergia.com>
+#     Quan Zhou <quan@bitergia.com>
 #
 
 import json
@@ -28,6 +29,7 @@ import re
 from grimoire_elk.elk import get_ocean_backend
 from grimoire_elk.utils import get_connector_from_name, get_elastic
 from grimoire_elk.enriched.utils import grimoire_con
+from sortinghat.cli.client import SortingHatClient
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +51,15 @@ class Task():
         self.db_sh = sortinghat['database'] if sortinghat else None
         self.db_user = sortinghat['user'] if sortinghat else None
         self.db_password = sortinghat['password'] if sortinghat else None
-        self.db_host = sortinghat['host'] if sortinghat else None
+        self.db_host = sortinghat['host'] if sortinghat else '127.0.0.1'
+        self.db_path = sortinghat['path'] if sortinghat else 'api/'
+        self.db_port = sortinghat['port'] if sortinghat else '8000'
         self.db_unaffiliate_group = sortinghat['unaffiliated_group'] if sortinghat else None
+
+        self.client = SortingHatClient(host=self.db_host, port=self.db_port,
+                                       path=self.db_path, ssl=False,
+                                       user=self.db_user, password=self.db_password)
+        self.client.connect()
 
         self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
                           'database': self.db_sh, 'host': self.db_host,
@@ -168,7 +177,6 @@ class Task():
         return es_col_url
 
     def _get_enrich_backend(self):
-        db_projects_map = None
         json_projects_map = None
         clean = False
         connector = get_connector_from_name(self.get_backend(self.backend_section))
@@ -176,7 +184,7 @@ class Task():
         if 'projects_file' in self.conf['projects']:
             json_projects_map = self.conf['projects']['projects_file']
 
-        enrich_backend = connector[2](self.db_sh, db_projects_map, json_projects_map,
+        enrich_backend = connector[2](self.db_sh, json_projects_map,
                                       self.db_user, self.db_password, self.db_host)
         elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
                                      self.conf[self.backend_section]['enriched_index'],

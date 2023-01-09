@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2019 Bitergia
+# Copyright (C) 2015-2021 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,23 +18,26 @@
 #
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
+#     Quan Zhou <quan@bitergia.com>
+#
 
+
+import json
 import sys
 import unittest
-
-import httpretty
-
-from sortinghat import api
-from sortinghat.db.database import Database
 
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
 sys.path.insert(0, '..')
 
+from sgqlc.operation import Operation
+
+from grimoire_elk.enriched.sortinghat_gelk import SortingHat
+
 from sirmordred.config import Config
-from sirmordred.task_identities import (TaskIdentitiesLoad,
-                                        TaskIdentitiesMerge,
-                                        logger)
+from sirmordred.task_identities import TaskIdentitiesMerge
+
+from sortinghat.cli.client import SortingHatSchema
 
 
 CONF_FILE = 'test.cfg'
@@ -49,149 +52,141 @@ def read_file(filename, mode='r'):
     return content
 
 
-def setup_http_server():
-    remote_identities = read_file(REMOTE_IDENTITIES_FILE)
-
-    http_requests = []
-
-    def request_callback(method, uri, headers):
-        last_request = httpretty.last_request()
-
-        if uri.startswith(REMOTE_IDENTITIES_FILE_URL):
-            body = remote_identities
-        http_requests.append(last_request)
-
-        return 200, headers, body
-
-    httpretty.register_uri(httpretty.GET,
-                           REMOTE_IDENTITIES_FILE_URL,
-                           responses=[
-                               httpretty.Response(body=request_callback)
-                           ])
-
-    return http_requests
-
-
-class TestTaskIdentitiesLoad(unittest.TestCase):
+class TestTaskIdentitiesMerge(unittest.TestCase):
     """Task tests"""
+
+    @staticmethod
+    def get_organizations(task):
+        args = {
+            "page": 1,
+            "page_size": 10
+        }
+        op = Operation(SortingHatSchema.Query)
+        org = op.organizations(**args)
+        org.entities().name()
+        result = task.client.execute(op)
+        organizations = result['data']['organizations']['entities']
+
+        return organizations
+
+    @staticmethod
+    def delete_identity(task, args):
+        op = Operation(SortingHatSchema.SortingHatMutation)
+        identity = op.delete_identity(**args)
+        identity.uuid()
+        task.client.execute(op)
+
+    @staticmethod
+    def delete_organization(task, args):
+        op = Operation(SortingHatSchema.SortingHatMutation)
+        org = op.delete_organization(**args)
+        org.organization.name()
+        task.client.execute(op)
+
+    @staticmethod
+    def add_identity(task, args):
+        op = Operation(SortingHatSchema.SortingHatMutation)
+        identity = op.add_identity(**args)
+        identity.uuid()
+        task.client.execute(op)
+
+    @staticmethod
+    def add_organization(task, args):
+        op = Operation(SortingHatSchema.SortingHatMutation)
+        org = op.add_organization(**args)
+        org.organization.name()
+        task.client.execute(op)
+
+    @staticmethod
+    def add_domain(task, args):
+        op = Operation(SortingHatSchema.SortingHatMutation)
+        dom = op.add_domain(**args)
+        dom.domain.domain()
+        task.client.execute(op)
 
     def setUp(self):
         config = Config(CONF_FILE)
-        sh = config.get_conf()['sortinghat']
+        task = TaskIdentitiesMerge(config)
 
-        self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
-                          'database': sh['database'], 'host': sh['host'],
-                          'port': None}
+        # Clean database
+        # Remove identities
+        entities = SortingHat.unique_identities(task.client)
+        mks = [e['mk'] for e in entities]
+        for i in mks:
+            arg = {
+                'uuid': i
+            }
+            self.delete_identity(task, arg)
 
-        # Clean the database to start an empty state
-        Database.drop(**self.sh_kwargs)
+        # Remove organization
+        organizations = self.get_organizations(task)
+        for org in organizations:
+            self.delete_organization(task, org)
 
-        # Create command
-        Database.create(**self.sh_kwargs)
-        self.sh_db = Database(**self.sh_kwargs)
+        data = json.loads(read_file("data/task-identities-data.json"))
+
+        identities = data['identities']
+        for identity in identities:
+            self.add_identity(task, identity)
+
+        organizations = data['organizations']
+        for org in organizations:
+            self.add_organization(task, {"name": org['organization']})
+            self.add_domain(task, org)
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
 
         config = Config(CONF_FILE)
-        task = TaskIdentitiesLoad(config)
+        task = TaskIdentitiesMerge(config)
 
         self.assertEqual(task.config, config)
 
-    @httpretty.activate
-    # This test fails in Travis with Lost connection to MySQL server during query (err: 2013)
-    def off_test_load_orgs(self):
-        """ Test loading of orgs in SH """
-        setup_http_server()
-
+    def test_is_backend_task(self):
         config = Config(CONF_FILE)
-        task = TaskIdentitiesLoad(config)
-        task.execute()
-        # Check the number of orgs loaded
-        norgs = len(api.registry(self.sh_db))
-        self.assertEqual(norgs, 20)
+        task = TaskIdentitiesMerge(config)
 
-    # @httpretty.activate
-    # TODO: remote loading
-    def test_identities_load_file(self):
-        """ Check the local loading of identities files """
-        setup_http_server()
+        self.assertFalse(task.is_backend_task())
 
+    def test_execute(self):
         config = Config(CONF_FILE)
-        task = TaskIdentitiesLoad(config)
+        task = TaskIdentitiesMerge(config)
 
-        with self.assertLogs(logger, level='INFO') as cm:
-            task.execute()
-            self.assertEqual(cm.output[0],
-                             'INFO:sirmordred.task_identities:[sortinghat] '
-                             'Loading orgs from file data/orgs_sortinghat.json')
-            self.assertEqual(cm.output[1],
-                             'INFO:sirmordred.task_identities:[sortinghat] 20 organizations loaded')
-            self.assertEqual(cm.output[2],
-                             'INFO:sirmordred.task_identities:[sortinghat] '
-                             'Loading identities from file data/perceval_identities_sortinghat.json')
-        # Check the number of identities loaded from local and remote files
-        nuids = len(api.unique_identities(self.sh_db))
-        self.assertEqual(nuids, 4)
+        self.assertIsNone(task.execute())
+        args = {
+            'page': 1,
+            'page_size': 10
+        }
+        op = Operation(SortingHatSchema.Query)
+        op.individuals(**args)
+        individual = op.individuals().entities()
+        individual.profile().name()
+        individual.enrollments().group().name()
+        result = task.client.execute(op)
+        entities = result['data']['individuals']['entities']
 
-        with self.assertLogs(logger, level='INFO') as cm:
-            task.execute()
-            self.assertEqual(cm.output[0],
-                             'INFO:sirmordred.task_identities:[sortinghat] No changes in '
-                             'file data/orgs_sortinghat.json, organizations won\'t be loaded')
-            self.assertEqual(cm.output[1],
-                             'INFO:sirmordred.task_identities:[sortinghat] No changes in '
-                             'file data/perceval_identities_sortinghat.json, identities won\'t be loaded')
+        enrolls = {}
+        for e in entities:
+            name = e['profile']['name']
+            enroll = e['enrollments'][0]['group']['name']
+            if name in enrolls:
+                enrolls[name].append(enroll)
+            else:
+                enrolls[name] = [enroll]
 
-    class TestTaskIdentitiesMerge(unittest.TestCase):
-        """Task tests"""
+        expected_enrolls = {
+            "user2": ["org2"],
+            "user3": ["org1"],
+            "user4": ["org2", "org3"],
+            "user6": ["org6"],
+            "user7": ["org1"],
+            "user8": ["org8"],
+            "user9": ["org2"],
+            "user10": ["org3"]
+        }
 
-        def setUp(self):
-            config = Config(CONF_FILE)
-            sh = config.get_conf()['sortinghat']
-
-            self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
-                              'database': sh['database'], 'host': sh['host'],
-                              'port': None}
-
-            # Clean the database to start an empty state
-            Database.drop(**self.sh_kwargs)
-
-            # Create command
-            Database.create(**self.sh_kwargs)
-            self.sh_db = Database(**self.sh_kwargs)
-
-        def test_initialization(self):
-            """Test whether attributes are initializated"""
-
-            config = Config(CONF_FILE)
-            task = TaskIdentitiesMerge(config)
-
-            self.assertEqual(task.config, config)
-
-        def test_autogender(self):
-            """Test whether autogender SH command is executed"""
-
-            config = Config(CONF_FILE)
-            # Test default value
-            self.assertEqual(config.get_conf()['sortinghat']['gender'], False)
-            config.get_conf()['sortinghat']['gender'] = True
-
-            # Load some identities
-            task = TaskIdentitiesLoad(config)
-            task.execute()
-            # Check the number of identities loaded from local and remote files
-            uids = api.unique_identities(self.sh_db)
-
-            task = TaskIdentitiesMerge(config)
-            self.assertEqual(task.do_autogender(), None)
-
-            uids = api.unique_identities(self.sh_db)
-
-            found_genders = [uid.profile.gender for uid in uids]
-            expected_genders = ['male', 'female', 'male', 'male']
-
-            self.assertEqual(found_genders, expected_genders)
+        self.assertDictEqual(enrolls, expected_enrolls)
+        self.assertEqual(len(entities), 9)
 
 
 if __name__ == "__main__":

@@ -341,7 +341,6 @@ class TestTaskProjects(unittest.TestCase):
         self.assertEqual(task.execute(), None)
         self.assertEqual(len(task.get_projects().keys()), 1)
 
-    @httpretty.activate
     def test__get_projects_from_url(self):
         """Test downloading projects from an URL """
         setup_http_server()
@@ -350,10 +349,13 @@ class TestTaskProjects(unittest.TestCase):
         config = Config(CONF_FILE)
         config.set_param('projects', 'projects_url', projects_url)
         task = TaskProjects(config)
+
+        httpretty.enable(allow_net_connect=True)
         self.assertEqual(task.execute(), None)
 
         projects = task.get_projects()
         self.assertTrue(URL_PROJECTS_MAIN in projects)
+        httpretty.disable()
 
 
 if __name__ == "__main__":

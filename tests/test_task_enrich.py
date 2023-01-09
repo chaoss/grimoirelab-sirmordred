@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2019 Bitergia
+# Copyright (C) 2015-2021 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
 #
 # Authors:
 #     Alvaro del Castillo <acs@bitergia.com>
+#     Quan Zhou <quan@bitergia.com>
+#
+
 
 import logging
 import sys
@@ -25,17 +28,22 @@ import unittest
 
 import requests
 
-from sortinghat.db.database import Database
-
 # Hack to make sure that tests import the right packages
 # due to setuptools behaviour
 sys.path.insert(0, '..')
+
+from grimoire_elk.enriched.sortinghat_gelk import SortingHat
 
 from sirmordred.config import Config
 from sirmordred.error import DataEnrichmentError
 from sirmordred.task_projects import TaskProjects
 from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
+
+from sortinghat.cli.client import (SortingHatSchema)
+
+from sgqlc.operation import Operation
+
 
 CONF_FILE = 'test.cfg'
 CONF_FILE_NO_SH = 'test-no-sh.cfg'
@@ -45,26 +53,61 @@ GIT_BACKEND_SECTION = 'git'
 logging.basicConfig(level=logging.INFO)
 
 
+def read_file(filename, mode='r'):
+    with open(filename, mode) as f:
+        content = f.read()
+    return content
+
+
 class TestTaskEnrich(unittest.TestCase):
     """Task tests"""
 
+    @staticmethod
+    def get_organizations(task):
+        args = {
+            "page": 1,
+            "page_size": 10
+        }
+        op = Operation(SortingHatSchema.Query)
+        org = op.organizations(**args)
+        org.entities().name()
+        result = task.client.execute(op)
+        organizations = result['data']['organizations']['entities']
+
+        return organizations
+
+    @staticmethod
+    def delete_identity(task, args):
+        op = Operation(SortingHatSchema.SortingHatMutation)
+        identity = op.delete_identity(**args)
+        identity.uuid()
+        task.client.execute(op)
+
+    @staticmethod
+    def delete_organization(task, args):
+        op = Operation(SortingHatSchema.SortingHatMutation)
+        org = op.delete_organization(**args)
+        org.organization.name()
+        task.client.execute(op)
+
     def setUp(self):
         config = Config(CONF_FILE)
-        sh = config.get_conf().get('sortinghat', None)
+        task = TaskEnrich(config)
 
-        if not sh:
-            return
+        # Clean database
+        # Remove identities
+        entities = SortingHat.unique_identities(task.client)
+        mks = [e['mk'] for e in entities]
+        for i in mks:
+            arg = {
+                'uuid': i
+            }
+            self.delete_identity(task, arg)
 
-        self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
-                          'database': sh['database'], 'host': sh['host'],
-                          'port': None}
-
-        # Clean the database to start an empty state
-        Database.drop(**self.sh_kwargs)
-
-        # Create command
-        Database.create(**self.sh_kwargs)
-        self.sh_db = Database(**self.sh_kwargs)
+        # Remove organization
+        organizations = self.get_organizations(task)
+        for org in organizations:
+            self.delete_organization(task, org)
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
@@ -76,30 +119,108 @@ class TestTaskEnrich(unittest.TestCase):
         self.assertEqual(task.config, config)
         self.assertEqual(task.backend_section, backend_section)
 
+    def test_select_aliases(self):
+        config = Config(CONF_FILE)
+        cfg = config.get_conf()
+        # We need to load the projects
+        task = TaskEnrich(config)
+        expected_aliases = [
+            'git',
+            'git_author',
+            'git_enrich',
+            'affiliations'
+        ]
+        aliases = task.select_aliases(cfg, GIT_BACKEND_SECTION)
+        self.assertListEqual(aliases, expected_aliases)
+
+    def test_retain_identities(self):
+        """"""
+        config = Config(CONF_FILE)
+        cfg = config.get_conf()
+
+        # Remove old enriched index
+        es_enrichment = cfg['es_enrichment']['url']
+        enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
+        requests.delete(enrich_index, verify=False)
+
+        # We need to load the projects
+        TaskProjects(config).execute()
+        backend_section = GIT_BACKEND_SECTION
+
+        # Create raw data
+        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection.execute()
+
+        # Create enriched data
+        task = TaskEnrich(config, backend_section=backend_section)
+        self.assertEqual(task.execute(), None)
+
+        entities_before = SortingHat.unique_identities(task.client)
+
+        # No retain
+        self.assertEqual(task.retain_identities(None), None)
+        entities_after = SortingHat.unique_identities(task.client)
+        self.assertEqual(len(entities_before), len(entities_after))
+
+        # when the value is negative
+        self.assertEqual(task.retain_identities(-1), None)
+        entities_after = SortingHat.unique_identities(task.client)
+        self.assertEqual(len(entities_before), len(entities_after))
+
+        # import time
+        # time.sleep(1)
+        # 1 second
+        retention_time = 0.016667
+        task.retain_identities(retention_time)
+        entities_after = SortingHat.unique_identities(task.client)
+        self.assertGreater(len(entities_before), len(entities_after))
+
+    def test_execute_retain_data(self):
+        config = Config(CONF_FILE)
+        cfg = config.get_conf()
+        # We need to load the projects
+        TaskProjects(config).execute()
+        backend_section = GIT_BACKEND_SECTION
+        # Create raw data
+        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection.execute()
+
+        # Test enriched data
+        task = TaskEnrich(config, backend_section=backend_section)
+        task.execute()
+
+        es_enrichment = cfg['es_enrichment']['url']
+        enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
+
+        r = requests.get(enrich_index + "/_search?size=0", verify=False)
+        enriched_items_before = r.json()['hits']['total']
+        # enriched_items_before = r.json()['hits']['total']['value']
+
+        # 1 year
+        retention_time = 525600
+        cfg.set_param('general', 'retention_time', retention_time)
+        task.execute()
+
+        r = requests.get(enrich_index + "/_search?size=0", verify=False)
+        enriched_items_after = r.json()['hits']['total']
+        # enriched_items_after = r.json()['hits']['total']['value']
+
+        self.assertGreater(enriched_items_before, enriched_items_after)
+
     def test_execute(self):
         """Test whether the Task could be run"""
-
-        def setUp(self):
-            config = Config(CONF_FILE)
-            sh = config.get_conf()['sortinghat']
-
-            self.sh_kwargs = {'user': sh['user'], 'password': sh['password'],
-                              'database': sh['database'], 'host': sh['host'],
-                              'port': None}
-
-            # Clean the database to start an empty state
-
-            Database.drop(**self.sh_kwargs)
-
-            # Create command
-            Database.create(**self.sh_kwargs)
-            self.sh_db = Database(**self.sh_kwargs)
 
         config = Config(CONF_FILE)
         cfg = config.get_conf()
         # We need to load the projects
         TaskProjects(config).execute()
         backend_section = GIT_BACKEND_SECTION
+
+        # Create raw data
+        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection.execute()
+
+        # Test enriched data
         task = TaskEnrich(config, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
@@ -124,6 +245,12 @@ class TestTaskEnrich(unittest.TestCase):
         # We need to load the projects
         TaskProjects(config).execute()
         backend_section = GIT_BACKEND_SECTION
+
+        # Create raw data
+        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection.execute()
+
+        # Test enriched data
         task = TaskEnrich(config, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
