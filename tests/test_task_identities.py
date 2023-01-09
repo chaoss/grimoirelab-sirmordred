@@ -161,14 +161,14 @@ class TestTaskIdentitiesMerge(unittest.TestCase):
         op.individuals(**args)
         individual = op.individuals().entities()
         individual.profile().name()
-        individual.enrollments().organization().name()
+        individual.enrollments().group().name()
         result = task.client.execute(op)
         entities = result['data']['individuals']['entities']
 
         enrolls = {}
         for e in entities:
             name = e['profile']['name']
-            enroll = e['enrollments'][0]['organization']['name']
+            enroll = e['enrollments'][0]['group']['name']
             if name in enrolls:
                 enrolls[name].append(enroll)
             else:
