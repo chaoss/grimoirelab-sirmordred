@@ -1106,14 +1106,14 @@ six = ">=1.12"
 
 [[package]]
 name = "grimoire-elk"
-version = "0.104.0rc2"
+version = "0.104.0rc3"
 description = "GrimoireELK processes and stores software development data to ElasticSearch"
 category = "main"
 optional = false
 python-versions = ">=3.7.1,<4.0.0"
 files = [
-    {file = "grimoire_elk-0.104.0rc2-py3-none-any.whl", hash = "sha256:e46b4d6f6d337fdb8110fdde6b5de320c0217670e759be5badf26296cd396e30"},
-    {file = "grimoire_elk-0.104.0rc2.tar.gz", hash = "sha256:461094dd02d0b01094c847b7da52de3f6cee97f90de5c4124781fd653e75307b"},
+    {file = "grimoire_elk-0.104.0rc3-py3-none-any.whl", hash = "sha256:314f9e38564627af80cb0eb702a6fca330fbe8fcf5bea519aeb50ad7a62c3391"},
+    {file = "grimoire_elk-0.104.0rc3.tar.gz", hash = "sha256:9128c9c86b17bd4e3c4384f67fe4d83bdb878f98517983316ee32da4332168f8"},
 ]
 
 [package.dependencies]
@@ -1138,14 +1138,14 @@ urllib3 = ">=1.26,<2.0"
 
 [[package]]
 name = "grimoirelab-panels"
-version = "0.1.1"
+version = "0.1.2rc1"
 description = "Panels and visualizations for GrimoireLab dashboards"
 category = "main"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "grimoirelab-panels-0.1.1.tar.gz", hash = "sha256:2b9b6afbde8f63faab1f0eb8c739ade682304f9717416e04015d3fc825820bdc"},
-    {file = "grimoirelab_panels-0.1.1-py3-none-any.whl", hash = "sha256:f61e549d1c2c30e8d2448d17af4fd91a65eb871fb6e31b86a1fd30043f0cc8c3"},
+    {file = "grimoirelab_panels-0.1.2rc1-py3-none-any.whl", hash = "sha256:49d438e979b70209cd759163d563bc58cd663d62352802eac2b20c04573b13f7"},
+    {file = "grimoirelab_panels-0.1.2rc1.tar.gz", hash = "sha256:509a6a492e7905b06045dbaa25862e909cbfe9bdb41cf73c66cfea42cf5a0585"},
 ]
 
 [[package]]
@@ -2151,14 +2151,14 @@ files = [
 
 [[package]]
 name = "sortinghat"
-version = "0.8.0rc3"
+version = "0.8.0rc4"
 description = "A tool to manage identities."
 category = "main"
 optional = false
 python-versions = ">=3.7.1,<4.0.0"
 files = [
-    {file = "sortinghat-0.8.0rc3-py3-none-any.whl", hash = "sha256:581efeb6dfabb9326a69b96d0d51e7b437bbeee29754459f5fd5009da7577f86"},
-    {file = "sortinghat-0.8.0rc3.tar.gz", hash = "sha256:4ffacf8530108fb67d84911f0baecfd7b302f97d69b128d0f4fb8897b0953b0c"},
+    {file = "sortinghat-0.8.0rc4-py3-none-any.whl", hash = "sha256:b248d92b5f86c3dfaff6d544992eda629fe42edda6d5957f44f2524ffd423f95"},
+    {file = "sortinghat-0.8.0rc4.tar.gz", hash = "sha256:38a9f5402cedadb5af7cf4555d48de103afe884bed7808bf2644f28875744c35"},
 ]
 
 [package.dependencies]
