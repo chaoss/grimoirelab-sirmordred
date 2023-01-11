@@ -467,15 +467,21 @@ class Config():
                 },
                 "path": {
                     "optional": True,
-                    "default": "api/",
+                    "default": None,
                     "type": str,
-                    "description": "GraphQL path by default is `api/`"
+                    "description": "GraphQL path"
                 },
                 "port": {
                     "optional": True,
-                    "default": 8000,
+                    "default": None,
                     "type": int,
-                    "description": "GraphQL server port by default is `8000`"
+                    "description": "GraphQL server port"
+                },
+                "ssl": {
+                    "optional": True,
+                    "default": False,
+                    "type": bool,
+                    "description": "GraphQL server use SSL/TSL connection"
                 }
             }
         }

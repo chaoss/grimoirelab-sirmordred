@@ -78,7 +78,10 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
  * **autogender** (bool: False): Add gender to the profiles (executes autogender)
  * **autoprofile** (list: ['customer', 'git', 'github']): Order in which to get the identities information for filling the profile (**Required**)
  * **database** (str: sortinghat_db): Name of the Sortinghat database (**Required**)
- * **host** (str: mariadb): Host with the Sortinghat database (**Required**)
+ * **host** (str: 127.0.0.1):  Host with the Sortinghat database (**Required**)
+ * **port** (int: None):  GraphQL server port
+ * **path** (str: None) GraphQL path
+ * **ssl** (bool: False) GraphQL server use SSL/TSL connection
  * **matching** (list: ['email']): Algorithm for matching identities in Sortinghat (**Required**)
  * **password** (str: ): Password to access the Sortinghat database (**Required**)
  * **reset_on_load** (bool: False): Unmerge and remove affiliations for all identities on load
