@@ -52,18 +52,17 @@ class Task():
         self.db_user = sortinghat['user'] if sortinghat else None
         self.db_password = sortinghat['password'] if sortinghat else None
         self.db_host = sortinghat['host'] if sortinghat else '127.0.0.1'
-        self.db_path = sortinghat['path'] if sortinghat else 'api/'
-        self.db_port = sortinghat['port'] if sortinghat else '8000'
+        self.db_path = sortinghat.get('path', None) if sortinghat else None
+        self.db_port = sortinghat.get('port', None) if sortinghat else None
+        self.db_ssl = sortinghat.get('ssl', False) if sortinghat else False
         self.db_unaffiliate_group = sortinghat['unaffiliated_group'] if sortinghat else None
-
-        self.client = SortingHatClient(host=self.db_host, port=self.db_port,
-                                       path=self.db_path, ssl=False,
-                                       user=self.db_user, password=self.db_password)
-        self.client.connect()
-
-        self.sh_kwargs = {'user': self.db_user, 'password': self.db_password,
-                          'database': self.db_sh, 'host': self.db_host,
-                          'port': None}
+        if sortinghat:
+            self.client = SortingHatClient(host=self.db_host, port=self.db_port,
+                                           path=self.db_path, ssl=self.db_ssl,
+                                           user=self.db_user, password=self.db_password)
+            self.client.connect()
+        else:
+            self.client = None
 
         self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
 

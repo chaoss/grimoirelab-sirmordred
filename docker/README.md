@@ -95,14 +95,17 @@ functionality, if you wanna to learn more go to its command line help after
 installing it or to https://github.com/MetricsGrimoire/sortinghat
 ```
 [sortinghat]
-host = mariadb
+host = sortinghat
 user = root
 password =
+port = 8000
+path = api/
+ssl = false
 database = grimoire_sh
 load_orgs = true
 orgs_file = [/home/bitergia/conf/orgs_file.json]
 #matching  see: sortinghat unify --help
-matching = [email-name, github]
+matching = [email, name, github]
 autoprofile = [customer, git, github]
 sleep_for = 86400
 unaffiliated_group = Unknown
