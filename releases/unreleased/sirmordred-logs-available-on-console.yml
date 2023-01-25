@@ -1,0 +1,10 @@
+---
+title: SirMordred logs available on console
+category: added
+author: Quan Zhou <quan@bitergia.com>
+issue: null
+notes: >
+    All SirMordred logs are now available on the console output.
+
+    The `logs_dir` parameter in the `general` section is optional
+    and it is only needed if you also want the logs in a file.
