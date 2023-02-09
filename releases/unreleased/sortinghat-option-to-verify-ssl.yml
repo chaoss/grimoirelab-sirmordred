@@ -1,0 +1,8 @@
+---
+title: SortingHat option to verify SSL
+category: added
+author: Jose Javier Merchante <jjmerchante@bitergia.com>
+issue: null
+notes: |
+  Include `verify_ssl` option to SortingHat configuration to verify
+  the connection with the server. By default it is `True`.

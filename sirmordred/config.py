@@ -482,6 +482,12 @@ class Config():
                     "default": False,
                     "type": bool,
                     "description": "GraphQL server use SSL/TSL connection"
+                },
+                "verify_ssl": {
+                    "optional": True,
+                    "default": True,
+                    "type": bool,
+                    "description": "Verify SSL connection to the server"
                 }
             }
         }
