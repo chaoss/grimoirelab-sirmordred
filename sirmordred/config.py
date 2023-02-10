@@ -129,8 +129,8 @@ class Config():
                     "description": "Debug mode (logging mainly)"
                 },
                 "logs_dir": {
-                    "optional": False,
-                    "default": "logs",
+                    "optional": True,
+                    "default": None,
                     "type": str,
                     "description": "Directory with the logs of sirmordred"
                 },

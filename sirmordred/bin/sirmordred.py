@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2019 Bitergia
+# Copyright (C) 2015-2023 Bitergia
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ def main():
     try:
         config = Config(args.config_files[0], args.config_files[1:])
         config_dict = config.get_conf()
-        logs_dir = config_dict['general']['logs_dir']
+        logs_dir = config_dict['general'].get('logs_dir', None)
         debug_mode = config_dict['general']['debug']
         logger = setup_logs(logs_dir, debug_mode)
     except RuntimeError as error:
@@ -87,20 +87,24 @@ def setup_logs(logs_dir, debug_mode):
 
     logger = logging.getLogger()
     logger.setLevel(logging_mode)
-    # create file handler which logs even debug messages
 
-    fh_filepath = os.path.join(logs_dir, 'all.log')
-    fh = logging.FileHandler(fh_filepath)
-    fh.setLevel(logging_mode)
-    # create console handler with a higher log level
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
+
+    # create file handler
+    if logs_dir:
+        fh_filepath = os.path.join(logs_dir, 'all.log')
+        fh = logging.FileHandler(fh_filepath)
+        fh.setLevel(logging_mode)
+        # Set format
+        fh.setFormatter(formatter)
+        # add the handlers to the logger
+        logger.addHandler(fh)
+
+    # create console handler
+    ch = logging.StreamHandler()
+    ch.setLevel(logging_mode)
     ch.setFormatter(formatter)
-    # add the handlers to the logger
-    logger.addHandler(fh)
     logger.addHandler(ch)
 
     # this is needed because the perceval log messages are similar to ELK/mordred ones
