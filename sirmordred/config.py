@@ -488,6 +488,12 @@ class Config():
                     "default": True,
                     "type": bool,
                     "description": "Verify SSL connection to the server"
+                },
+                "tenant": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "Tenant name when multi-tenancy is enabled"
                 }
             }
         }
