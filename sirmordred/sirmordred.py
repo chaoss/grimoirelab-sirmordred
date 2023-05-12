@@ -150,12 +150,6 @@ class SirMordred:
         # logger.debug('repos to be retrieved: %s ', enabled)
         return enabled
 
-    def execute_tasks(self, tasks_cls):
-        """
-            Just a wrapper to the execute_batch_tasks method
-        """
-        self.execute_batch_tasks(tasks_cls)
-
     def execute_nonstop_tasks(self, tasks_cls):
         """
             Just a wrapper to the execute_batch_tasks method
@@ -169,7 +163,7 @@ class SirMordred:
         """
         Start a task manager per backend to complete the tasks.
 
-        :param task_cls: list of tasks classes to be executed
+        :param tasks_cls: list of tasks classes to be executed
         :param big_delay: seconds before global tasks are executed, should be days usually
         :param small_delay: seconds before backend tasks are executed, should be minutes
         :param wait_for_threads: boolean to set when threads are infinite or
@@ -248,18 +242,21 @@ class SirMordred:
         """
         Tasks that should be done just one time
         """
+        stopper = threading.Event()
 
         if self.conf['phases']['panels']:
-            tasks_cls = [TaskPanels, TaskPanelsMenu]
-            self.execute_tasks(tasks_cls)
-        # Not needed in SortingHat GraphQL
-        # if self.conf['phases']['identities']:
-        #     tasks_cls = [TaskInitSortingHat]
-        #     self.execute_tasks(tasks_cls)
+            tasks = [TaskPanels, TaskPanelsMenu]
+            stopper.set()
+            tm = TasksManager(tasks, "Global tasks", stopper, self.config)
+            tm.start()
+            tm.join()
 
         logger.info("Loading projects")
-        tasks_cls = [TaskProjects]
-        self.execute_tasks(tasks_cls)
+        tasks = [TaskProjects]
+        stopper.set()
+        tm = TasksManager(tasks, "Global tasks", stopper, self.config)
+        tm.start()
+        tm.join()
         logger.info("Projects loaded")
 
         return
@@ -278,7 +275,7 @@ class SirMordred:
         logger.info("")
         logger.info("----------------------------")
         logger.info("Starting SirMordred engine ...")
-        logger.info("- - - - - - - - - - - - - - ")
+        logger.info("----------------------------")
 
         # check we have access to the needed ES
         if not self.check_es_access():

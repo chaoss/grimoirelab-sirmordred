@@ -88,11 +88,10 @@ class TasksManager(threading.Thread):
             logger.debug('[%s] no tasks', self.backend_section)
 
         logger.debug('[%s] Tasks will be executed in this order: %s', self.backend_section, self.tasks)
-        while not self.stopper.is_set():
-            # we give 1 extra second to the stopper, so this loop does
-            # not finish before it is set.
-            time.sleep(1)
 
+        stop_task = False
+
+        while not stop_task:
             for task in self.tasks:
                 logger.debug('[%s] Tasks started: %s', self.backend_section, task)
                 try:
@@ -107,6 +106,8 @@ class TasksManager(threading.Thread):
             if timer > 0 and self.config.get_conf()['general']['update']:
                 logger.info("[%s] sleeping for %s seconds ", self.backend_section, timer)
                 time.sleep(timer)
+
+            stop_task = self.stopper.is_set()
 
         logger.debug('[%s] Task is exiting', self.backend_section)
 
