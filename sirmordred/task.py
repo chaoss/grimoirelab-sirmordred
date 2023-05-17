@@ -56,12 +56,14 @@ class Task():
         self.db_port = sortinghat.get('port', None) if sortinghat else None
         self.db_ssl = sortinghat.get('ssl', False) if sortinghat else False
         self.db_verify_ssl = sortinghat.get('verify_ssl', True) if sortinghat else True
+        self.db_tenant = sortinghat.get('tenant', True) if sortinghat else None
         self.db_unaffiliate_group = sortinghat['unaffiliated_group'] if sortinghat else None
         if sortinghat:
             self.client = SortingHatClient(host=self.db_host, port=self.db_port,
                                            path=self.db_path, ssl=self.db_ssl,
                                            user=self.db_user, password=self.db_password,
-                                           verify_ssl=self.db_verify_ssl)
+                                           verify_ssl=self.db_verify_ssl,
+                                           tenant=self.db_tenant)
             self.client.connect()
         else:
             self.client = None

@@ -195,6 +195,7 @@ class TaskEnrich(Task):
                                self.db_path,
                                self.db_ssl,
                                self.db_verify_ssl,
+                               self.db_tenant,
                                None,  # args.refresh_projects,
                                None,  # args.refresh_identities,
                                author_id=None,
