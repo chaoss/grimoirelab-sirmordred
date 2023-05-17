@@ -1,8 +1,0 @@
----
-title: Optional configuration for SortingHat
-category: added
-author: Jose Javier Merchante <jjmerchante@bitergia.com>
-issue: null
-notes: >
-  Include an optional configuration for SortingHat to define the name
-  of the tenant when multi-tenancy is enabled.
