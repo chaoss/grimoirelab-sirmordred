@@ -234,40 +234,40 @@ class TaskEnrich(Task):
             enrich_backend.elastic.bulk_upload(eitems, field_id)
 
         # Refresh identities
-        logger.info("[%s] Refreshing identities", self.backend_section)
 
         if studies:
             after = self.last_autorefresh_studies
         else:
             after = self.last_autorefresh
 
-        # As we are going to recover modified indentities just below, store this time
+        logger.info(f"[{self.backend_section}] Refreshing identities from {after}")
+
+        # As we are going to recover modified identities just below, store this time
         # to make sure next iteration we are not loosing any modification, but don't
         # update corresponding field with this below until we make sure the update
         # was done in ElasticSearch
         next_autorefresh = self.__update_last_autorefresh()
 
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
-        uuids_refresh = SortingHat.search_last_modified_unique_identities(self.client, after)
-        ids_refresh = SortingHat.search_last_modified_identities(self.client, after)
         author_fields = ["author_uuid"]
         try:
             meta_fields = enrich_backend.meta_fields
             author_fields += meta_fields
         except AttributeError:
             pass
-        if uuids_refresh:
-            logger.debug("Refreshing identity uuids for %s", self.backend_section)
-            eitems = refresh_identities(enrich_backend, author_fields=author_fields, author_values=uuids_refresh)
+        logger.debug("Refreshing identity ids for %s", self.backend_section)
+        total = 0
+        time_start = datetime.now()
+        for individuals in SortingHat.search_last_modified_identities(self.client, after):
+            eitems = refresh_identities(enrich_backend, author_fields=author_fields, individuals=individuals)
             enrich_backend.elastic.bulk_upload(eitems, field_id)
-        else:
-            logger.debug("No uuids to be refreshed found")
-        if ids_refresh:
-            logger.debug("Refreshing identity ids for %s", self.backend_section)
-            eitems = refresh_identities(enrich_backend, author_fields=author_fields, author_values=ids_refresh)
-            enrich_backend.elastic.bulk_upload(eitems, field_id)
+            total += len(individuals)
+            logger.debug(f"[{self.backend_section}] Individuals refreshed: {total}")
         else:
             logger.debug("No ids to be refreshed found")
+
+        spent_time = str(datetime.now() - time_start).split('.')[0]
+        logger.info(f'[{self.backend_section}] Refreshed {total} identities in {spent_time}')
 
         # Update corresponding autorefresh date
         if studies:
