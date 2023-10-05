@@ -440,7 +440,6 @@ class TaskEnrich(Task):
 
             if autorefresh and self.db:
                 logger.info('[%s] autorefresh start', self.backend_section)
-                a = self._get_enrich_backend()
                 self.__autorefresh(self._get_enrich_backend())
                 logger.info('[%s] autorefresh end', self.backend_section)
             else:

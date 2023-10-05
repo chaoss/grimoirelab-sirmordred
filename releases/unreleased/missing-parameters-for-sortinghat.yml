@@ -1,0 +1,8 @@
+---
+title: Missing database parameters for SortingHat
+category: fixed
+author: null
+issue: null
+notes: >
+  SortingHat database parameters were not included during the initialization of
+  the enrich backend.

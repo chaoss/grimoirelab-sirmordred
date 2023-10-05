@@ -188,7 +188,9 @@ class Task():
             json_projects_map = self.conf['projects']['projects_file']
 
         enrich_backend = connector[2](self.db_sh, json_projects_map,
-                                      self.db_user, self.db_password, self.db_host)
+                                      self.db_user, self.db_password, self.db_host,
+                                      self.db_path, self.db_port, self.db_ssl, self.db_verify_ssl,
+                                      self.db_tenant)
         elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
                                      self.conf[self.backend_section]['enriched_index'],
                                      clean, enrich_backend)
