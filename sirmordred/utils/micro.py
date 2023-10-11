@@ -34,26 +34,26 @@ from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
 
-DEBUG_LOG_FORMAT = "[%(asctime)s - %(name)s - %(levelname)s] - %(message)s"
-INFO_LOG_FORMAT = "%(asctime)s %(message)s"
 COLOR_LOG_FORMAT_SUFFIX = "\033[1m %(log_color)s "
 LOG_COLORS = {'DEBUG': 'white', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'red,bg_white'}
 
 
 def main():
     args = get_params()
-    config_logging(args.debug, args.logs_dir)
-    micro_mordred(args.cfg_path, args.backend_sections,
+    config = Config(args.cfg_path)
+    short_name = config['general']['short_name']
+    config_logging(args.debug, args.logs_dir, short_name)
+    micro_mordred(config, args.backend_sections,
                   args.repos_to_check, args.raw,
                   args.identities_merge,
                   args.enrich,
                   args.panels)
 
 
-def micro_mordred(cfg_path, backend_sections, repos_to_check, raw, identities_merge, enrich, panels):
-    """Execute the Mordred tasks using the configuration file (`cfg_path`).
+def micro_mordred(config, backend_sections, repos_to_check, raw, identities_merge, enrich, panels):
+    """Execute the Mordred tasks using the configuration file.
 
-    :param cfg_path: the path of a Mordred configuration file
+    :param config: Mordred configuration file
     :param backend_sections: the backend sections where the raw/enrich/identities phases will be executed
     :param repos_to_check: process a repository only if it is in this list, or `None` for all repos
     :param raw: if true, it activates the collection of raw data
@@ -61,8 +61,6 @@ def micro_mordred(cfg_path, backend_sections, repos_to_check, raw, identities_me
     :param enrich: if true, it activates the enrichment of the raw data
     :param panels: if true, it activates the upload of all panels declared in the configuration file
     """
-
-    config = Config(cfg_path)
 
     if raw:
         for backend in backend_sections:
@@ -145,14 +143,14 @@ def get_panels(config):
     logging.info("Panels creation finished!")
 
 
-def config_logging(debug, logs_dir):
+def config_logging(debug, logs_dir, short_name):
     """Config logging level output output"""
 
     if debug:
-        fmt = DEBUG_LOG_FORMAT
+        fmt = f"[%(asctime)s - {short_name} - %(name)s - %(levelname)s] - %(message)s"
         logging_mode = logging.DEBUG
     else:
-        fmt = INFO_LOG_FORMAT
+        fmt = f"%(asctime)s - {short_name} - %(message)s"
         logging_mode = logging.INFO
 
     # Setting the color scheme and level into the root logger
