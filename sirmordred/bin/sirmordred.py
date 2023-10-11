@@ -62,7 +62,8 @@ def main():
         config_dict = config.get_conf()
         logs_dir = config_dict['general'].get('logs_dir', None)
         debug_mode = config_dict['general']['debug']
-        logger = setup_logs(logs_dir, debug_mode)
+        short_name = config_dict['general']['short_name']
+        logger = setup_logs(logs_dir, debug_mode, short_name)
     except RuntimeError as error:
         print("Error while consuming configuration: {}".format(error))
         return 1
@@ -78,7 +79,7 @@ def main():
     SirMordred(config).start()
 
 
-def setup_logs(logs_dir, debug_mode):
+def setup_logs(logs_dir, debug_mode, short_name):
 
     if debug_mode:
         logging_mode = logging.DEBUG
@@ -89,7 +90,7 @@ def setup_logs(logs_dir, debug_mode):
     logger.setLevel(logging_mode)
 
     # create formatter and add it to the handlers
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(f'%(asctime)s - {short_name} - %(name)s - %(levelname)s - %(message)s')
 
     # create file handler
     if logs_dir:
