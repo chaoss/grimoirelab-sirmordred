@@ -43,6 +43,7 @@ from grimoire_elk.enriched.utils import grimoire_con
 from sirmordred.config import Config
 from sirmordred.error import DataCollectionError
 from sirmordred.error import DataEnrichmentError
+from sirmordred.task_autorefresh import TaskAutorefresh
 from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_identities import TaskIdentitiesMerge
@@ -297,14 +298,10 @@ class SirMordred:
         if self.conf['phases']['collection']:
             all_tasks_cls.append(TaskRawDataCollection)
         if self.conf['phases']['identities']:
-            # load identities and orgs periodically for updates
-            # all_tasks_cls.append(TaskIdentitiesLoad) Not supported on the new sortinghat graphQL
             all_tasks_cls.append(TaskIdentitiesMerge)
-            # This is done in enrichement before doing the enrich
-            # if self.conf['phases']['collection']:
-            #     all_tasks_cls.append(TaskIdentitiesCollection)
         if self.conf['phases']['enrichment']:
             all_tasks_cls.append(TaskEnrich)
+            all_tasks_cls.append(TaskAutorefresh)
 
         # this is the main loop, where the execution should spend
         # most of its time
