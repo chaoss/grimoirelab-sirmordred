@@ -302,8 +302,10 @@ class TaskEnrich(Task):
         logger.debug("Doing autorefresh for Areas of Code study")
 
         # Create a GitEnrich backend tweaked to work with AOC index
-        aoc_backend = GitEnrich(self.db_sh, cfg['projects']['projects_file'],
-                                self.db_user, self.db_password, self.db_host)
+        aoc_backend = GitEnrich(db_sortinghat=self.db_sh, json_projects_map=cfg['projects']['projects_file'],
+                                db_user=self.db_user, db_password=self.db_password, db_host=self.db_host,
+                                db_port=self.db_port, db_path=self.db_path, db_ssl=self.db_ssl,
+                                db_verify_ssl=self.db_verify_ssl, db_tenant=self.db_tenant)
         aoc_backend.mapping = None
         aoc_backend.roles = ['author']
         elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
