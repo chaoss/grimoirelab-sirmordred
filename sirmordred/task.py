@@ -187,10 +187,10 @@ class Task():
         if 'projects_file' in self.conf['projects']:
             json_projects_map = self.conf['projects']['projects_file']
 
-        enrich_backend = connector[2](self.db_sh, json_projects_map,
-                                      self.db_user, self.db_password, self.db_host,
-                                      self.db_path, self.db_port, self.db_ssl, self.db_verify_ssl,
-                                      self.db_tenant)
+        enrich_backend = connector[2](db_sortinghat=self.db_sh, json_projects_map=json_projects_map,
+                                      db_user=self.db_user, db_password=self.db_password, db_host=self.db_host,
+                                      db_port=self.db_port, db_path=self.db_path, db_ssl=self.db_ssl,
+                                      db_verify_ssl=self.db_verify_ssl, db_tenant=self.db_tenant)
         elastic_enrich = get_elastic(self.conf['es_enrichment']['url'],
                                      self.conf[self.backend_section]['enriched_index'],
                                      clean, enrich_backend)
