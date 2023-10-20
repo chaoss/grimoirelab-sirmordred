@@ -1,8 +1,0 @@
----
-title: Log format updated with the Mordred project name
-category: changed
-author: Jose Javier Merchante <jjmerchante@bitergia.com>
-issue: null
-notes: >
-  Update the log format of SirMordred and MicroMordred to
-  include the name of the project.
