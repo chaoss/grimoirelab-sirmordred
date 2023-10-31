@@ -60,8 +60,8 @@ class TaskAutorefresh(Task):
         for pro in projects:
             for sect in projects[pro].keys():
                 for backend_section in Config.get_backend_sections():
-                    if sect.startswith(backend_section) and backend_section in self.conf:
-                        backends.append(backend_section)
+                    if sect.startswith(backend_section) and sect in self.conf:
+                        backends.append(sect)
 
         # Remove duplicates
         backends = list(set(backends))
@@ -95,7 +95,9 @@ class TaskAutorefresh(Task):
     def __autorefresh_areas_of_code(self, after):
         """Execute autorefresh for areas of code study if configured"""
 
-        if 'studies' not in self.conf['git'] or 'enrich_areas_of_code:git' not in self.conf['git']['studies']:
+        if 'git' not in self.conf or \
+           'studies' not in self.conf['git'] or \
+           'enrich_areas_of_code:git' not in self.conf['git']['studies']:
             logger.info("Not doing autorefresh for studies, Areas of Code study is not active.")
             return
 
