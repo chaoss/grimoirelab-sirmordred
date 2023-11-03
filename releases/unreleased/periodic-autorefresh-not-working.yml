@@ -1,0 +1,8 @@
+---
+title: Periodic autorefresh not working
+category: fixed
+author: Jose Javier Merchante <jjmerchante@bitergia.com>
+issue: null
+notes: >
+  Periodic refresh of identities was not working for backend sections that
+  included `:` in their name.
