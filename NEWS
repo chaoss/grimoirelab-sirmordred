@@ -1,5 +1,14 @@
 # Releases
 
+## sirmordred 0.10.1 - (2023-11-06)
+
+**Bug fixes:**
+
+ * Periodic autorefresh not working\
+   Periodic refresh of identities was not working for backend sections
+   that included `:` in their name.
+
+
 ## sirmordred 0.10.0 - (2023-10-20)
 
 **New features:**
