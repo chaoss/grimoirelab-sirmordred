@@ -1000,13 +1000,13 @@ grpc = ["grpcio (>=1.44.0,<2.0.0.dev0)"]
 
 [[package]]
 name = "graal"
-version = "0.4.21rc1"
+version = "0.4.21"
 description = "A generic source code analyzer"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "graal-0.4.21rc1-py3-none-any.whl", hash = "sha256:632ddf7dc8fd40599bca4e9523fb3b4c06a0ae779cb5a6eda73c5b8ff3a0a6b2"},
-    {file = "graal-0.4.21rc1.tar.gz", hash = "sha256:1bcfe7c2a34221bee7bf64462c84148cda86c9eaf4969a30d40401c7ceb669bd"},
+    {file = "graal-0.4.21-py3-none-any.whl", hash = "sha256:50cf811a24f05bbe336ecf0d3c99a61318ebc1719fe7968b093101648ec30a87"},
+    {file = "graal-0.4.21.tar.gz", hash = "sha256:86c2b449f0037e4d2b55408490cce85d6e265ef78bae63e6ff050daac6efeaa4"},
 ]
 
 [package.dependencies]
@@ -1106,13 +1106,13 @@ six = ">=1.12"
 
 [[package]]
 name = "grimoire-elk"
-version = "0.109.6rc1"
+version = "0.109.6"
 description = "GrimoireELK processes and stores software development data to ElasticSearch"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "grimoire_elk-0.109.6rc1-py3-none-any.whl", hash = "sha256:e478f04b95738e306cc8a7db908ab7dc744e6fbb371f3029068f9a2fe0dbc604"},
-    {file = "grimoire_elk-0.109.6rc1.tar.gz", hash = "sha256:393e6d70bd49354369b4f11e1fcab06a63175f9d04a7c92b381d6aa0606f4d33"},
+    {file = "grimoire_elk-0.109.6-py3-none-any.whl", hash = "sha256:d658153c104218b9a3db24d6441292bfb65fb60fb9263c6f769d9f429e82a901"},
+    {file = "grimoire_elk-0.109.6.tar.gz", hash = "sha256:3d556692566072edef37d776e22d54e0f2f8452d397b18696f61c25d0d625a71"},
 ]
 
 [package.dependencies]
@@ -2152,13 +2152,13 @@ files = [
 
 [[package]]
 name = "sortinghat"
-version = "0.19.1rc1"
+version = "0.19.1"
 description = "A tool to manage identities."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "sortinghat-0.19.1rc1-py3-none-any.whl", hash = "sha256:5bda024f8596699effd628b6f51e5188e3e3a5a37874885bda8c41eeab8de949"},
-    {file = "sortinghat-0.19.1rc1.tar.gz", hash = "sha256:42cc877927b474d44baa50c1babe5f6aa44af0cf4e834935ef1604e54d9ce4b0"},
+    {file = "sortinghat-0.19.1-py3-none-any.whl", hash = "sha256:612fcc735af4378dd7ee0ab4107fdcdcd0a7215d7e653347e9553dcd9ec4f8c4"},
+    {file = "sortinghat-0.19.1.tar.gz", hash = "sha256:584143b11c1b4c4a2dbf4947686fa916c52a15b4e63d27659de74b3b3e07c408"},
 ]
 
 [package.dependencies]
