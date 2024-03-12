@@ -1,5 +1,9 @@
 # Releases
 
+  ## sirmordred 0.10.10 - (2024-03-12)
+  
+  * Update Poetry's package dependencies
+
   ## sirmordred 0.10.9 - (2024-03-01)
   
   * Update Poetry's package dependencies
