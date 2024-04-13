@@ -1,5 +1,13 @@
 # Releases
 
+## sirmordred 1.0.0 - (2024-04-13)
+
+**New features:**
+
+ * First major release\
+   GrimoireLab reached a stable status. This is our first major release.
+
+
   ## sirmordred 0.10.11 - (2024-03-27)
   
   * Update Poetry's package dependencies
