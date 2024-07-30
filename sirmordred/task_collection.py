@@ -22,12 +22,13 @@
 #
 
 import logging
-import time
 import traceback
 
 from grimoire_elk.elk import feed_backend
 from grimoire_elk.elastic_items import ElasticItems
 from grimoire_elk.elastic import ElasticSearch
+
+from grimoirelab_toolkit.datetime import datetime_utcnow
 
 from sirmordred.error import DataCollectionError
 from sirmordred.task import Task
@@ -74,7 +75,7 @@ class TaskRawDataCollection(Task):
             logging.info('%s collect disabled', self.backend_section)
             return errors
 
-        t2 = time.time()
+        time_start = datetime_utcnow()
         logger.info('[%s] collection phase starts', self.backend_section)
         print("Collection for {}: starting...".format(self.backend_section))
         clean = False
@@ -142,8 +143,7 @@ class TaskRawDataCollection(Task):
                 raise DataCollectionError('Failed to collect data from %s' % url)
             logger.info('[%s] collection finished for %s', self.backend_section, self.anonymize_url(repo))
 
-        t3 = time.time()
-        spent_time = time.strftime("%H:%M:%S", time.gmtime(t3 - t2))
+        spent_time = str(datetime_utcnow() - time_start).split('.')[0]
         logger.info('[%s] collection phase finished in %s',
                     self.backend_section, spent_time)
         print("Collection for {}: finished after {} hours".format(self.backend_section,
