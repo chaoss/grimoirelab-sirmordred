@@ -50,6 +50,7 @@ from sirmordred.task_identities import TaskIdentitiesMerge
 from sirmordred.task_manager import TasksManager
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
+from sortinghat.cli.client import SortingHatClient
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +199,7 @@ class SirMordred:
             repos_backend = self._get_repos_by_backend()
             for backend in repos_backend:
                 # Start new Threads and add them to the threads list to complete
-                t = TasksManager(backend_tasks, backend, stopper, self.config, small_delay)
+                t = TasksManager(backend_tasks, backend, stopper, self.config, self.client, small_delay)
                 threads.append(t)
                 t.start()
 
@@ -206,7 +207,7 @@ class SirMordred:
         if len(global_tasks) > 0:
             # FIXME timer is applied to all global_tasks, does it make sense?
             # All tasks are executed in the same thread sequentially
-            gt = TasksManager(global_tasks, "Global tasks", stopper, self.config, big_delay)
+            gt = TasksManager(global_tasks, "Global tasks", stopper, self.config, self.client, big_delay)
             threads.append(gt)
             gt.start()
             if big_delay > 0:
@@ -248,14 +249,14 @@ class SirMordred:
         if self.conf['phases']['panels']:
             tasks = [TaskPanels, TaskPanelsMenu]
             stopper.set()
-            tm = TasksManager(tasks, "Global tasks", stopper, self.config)
+            tm = TasksManager(tasks, "Global tasks", stopper, self.config, self.client)
             tm.start()
             tm.join()
 
         logger.info("Loading projects")
         tasks = [TaskProjects]
         stopper.set()
-        tm = TasksManager(tasks, "Global tasks", stopper, self.config)
+        tm = TasksManager(tasks, "Global tasks", stopper, self.config, self.client)
         tm.start()
         tm.join()
         logger.info("Projects loaded")
@@ -280,7 +281,7 @@ class SirMordred:
 
         # check we have access to the needed ES
         if not self.check_es_access():
-            print('Can not access Elasticsearch service. Exiting sirmordred ...')
+            print('Can not access ElasticSearch/OpenSearch service. Exiting sirmordred ...')
             sys.exit(1)
 
         # If bestiary is configured check that it is working
@@ -288,6 +289,9 @@ class SirMordred:
             if not self.check_bestiary_access():
                 print('Can not access bestiary service. Exiting sirmordred ...')
                 sys.exit(1)
+
+        # Create SortingHat Client
+        self.__create_sh_client(self.config)
 
         # Initial round: panels and projects loading
         self.__execute_initial_load()
@@ -336,3 +340,28 @@ class SirMordred:
                 logger.error(var)
 
         logger.info("Finished SirMordred engine ...")
+
+    def __create_sh_client(self, config):
+        self.config = config
+        self.conf = config.get_conf()
+
+        sortinghat = self.conf.get('sortinghat', None)
+        self.db_sh = sortinghat['database'] if sortinghat else None
+        self.db_user = sortinghat['user'] if sortinghat else None
+        self.db_password = sortinghat['password'] if sortinghat else None
+        self.db_host = sortinghat['host'] if sortinghat else '127.0.0.1'
+        self.db_path = sortinghat.get('path', None) if sortinghat else None
+        self.db_port = sortinghat.get('port', None) if sortinghat else None
+        self.db_ssl = sortinghat.get('ssl', False) if sortinghat else False
+        self.db_verify_ssl = sortinghat.get('verify_ssl', True) if sortinghat else True
+        self.db_tenant = sortinghat.get('tenant', True) if sortinghat else None
+        self.db_unaffiliate_group = sortinghat['unaffiliated_group'] if sortinghat else None
+        if sortinghat and not hasattr(self, 'client'):
+            self.client = SortingHatClient(host=self.db_host, port=self.db_port,
+                                           path=self.db_path, ssl=self.db_ssl,
+                                           user=self.db_user, password=self.db_password,
+                                           verify_ssl=self.db_verify_ssl,
+                                           tenant=self.db_tenant)
+            self.client.connect()
+        elif not sortinghat:
+            self.client = None

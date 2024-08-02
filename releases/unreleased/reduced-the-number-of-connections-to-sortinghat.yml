@@ -1,0 +1,9 @@
+---
+title: Reduced the number of connections to SortingHat
+category: performance
+author: Quan Zhou
+issue: null
+notes: >
+    Mordred makes a lot of connections to the SortingHat server
+    which could cause the uWSGI queue to fill up. When the uWSGI
+    queue is full, Mordred cannot connect to the SortingHat server.

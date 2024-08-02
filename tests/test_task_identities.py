@@ -37,7 +37,7 @@ from grimoire_elk.enriched.sortinghat_gelk import SortingHat
 from sirmordred.config import Config
 from sirmordred.task_identities import TaskIdentitiesMerge
 
-from sortinghat.cli.client import SortingHatSchema
+from sortinghat.cli.client import SortingHatClient, SortingHatSchema
 
 
 CONF_FILE = 'test.cfg'
@@ -54,6 +54,17 @@ def read_file(filename, mode='r'):
 
 class TestTaskIdentitiesMerge(unittest.TestCase):
     """Task tests"""
+
+    def _setup(self, conf_file):
+        self.config = Config(conf_file)
+        self.conf = self.config.get_conf()
+        sh = self.conf.get('sortinghat')
+        self.sortinghat_client = SortingHatClient(host=sh['host'], port=sh.get('port', None),
+                                                  path=sh.get('path', None), ssl=sh.get('ssl', False),
+                                                  user=sh['user'], password=sh['password'],
+                                                  verify_ssl=sh.get('verify_ssl', True),
+                                                  tenant=sh.get('tenant', True))
+        self.sortinghat_client.connect()
 
     @staticmethod
     def get_organizations(task):
@@ -105,8 +116,8 @@ class TestTaskIdentitiesMerge(unittest.TestCase):
         task.client.execute(op)
 
     def setUp(self):
-        config = Config(CONF_FILE)
-        task = TaskIdentitiesMerge(config)
+        self._setup(CONF_FILE)
+        task = TaskIdentitiesMerge(self.config, self.sortinghat_client)
 
         # Clean database
         # Remove identities
@@ -137,20 +148,20 @@ class TestTaskIdentitiesMerge(unittest.TestCase):
     def test_initialization(self):
         """Test whether attributes are initializated"""
 
-        config = Config(CONF_FILE)
-        task = TaskIdentitiesMerge(config)
+        self._setup(CONF_FILE)
+        task = TaskIdentitiesMerge(self.config, self.sortinghat_client)
 
-        self.assertEqual(task.config, config)
+        self.assertEqual(task.config, self.config)
 
     def test_is_backend_task(self):
-        config = Config(CONF_FILE)
-        task = TaskIdentitiesMerge(config)
+        self._setup(CONF_FILE)
+        task = TaskIdentitiesMerge(self.config, self.sortinghat_client)
 
         self.assertFalse(task.is_backend_task())
 
     def test_execute(self):
-        config = Config(CONF_FILE)
-        task = TaskIdentitiesMerge(config)
+        self._setup(CONF_FILE)
+        task = TaskIdentitiesMerge(self.config, self.sortinghat_client)
 
         self.assertIsNone(task.execute())
         args = {

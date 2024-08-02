@@ -38,8 +38,8 @@ logger = logging.getLogger(__name__)
 class TaskIdentitiesMerge(Task):
     """ Task for processing identities in SortingHat """
 
-    def __init__(self, conf):
-        super().__init__(conf)
+    def __init__(self, conf, soringhat_client):
+        super().__init__(conf, soringhat_client)
         self.last_autorefresh = datetime.utcnow()  # Last autorefresh date
 
     def is_backend_task(self):

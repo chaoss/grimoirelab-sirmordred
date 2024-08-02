@@ -34,6 +34,8 @@ from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_projects import TaskProjects
 
+from sortinghat.cli.client import SortingHatClient
+
 CONF_FILE = 'test.cfg'
 
 
@@ -42,9 +44,17 @@ class TestTasksManager(unittest.TestCase):
 
     def setUp(self):
         self.config = Config(CONF_FILE)
+        self.conf = self.config.get_conf()
+        sh = self.conf.get('sortinghat')
+        self.sortinghat_client = SortingHatClient(host=sh['host'], port=sh.get('port', None),
+                                                  path=sh.get('path', None), ssl=sh.get('ssl', False),
+                                                  user=sh['user'], password=sh['password'],
+                                                  verify_ssl=sh.get('verify_ssl', True),
+                                                  tenant=sh.get('tenant', True))
+        self.sortinghat_client.connect()
         mordred = SirMordred(self.config)
 
-        task = TaskProjects(self.config)
+        task = TaskProjects(self.config, self.sortinghat_client)
         self.assertEqual(task.execute(), None)
 
         self.backends = mordred._get_repos_by_backend()
@@ -217,11 +227,12 @@ class TestTasksManager(unittest.TestCase):
         self.assertEqual(self.backends[backend], ['bitergia'])
 
     def test_initialization(self):
-        """Test whether attributes are initializated"""
+        """Test whether attributes are initialized"""
 
         small_delay = 0
         first_backend = self.backends[list(self.backends.keys())[0]]
-        manager = TasksManager(self.backend_tasks, first_backend, self.stopper, self.config, timer=small_delay)
+        manager = TasksManager(self.backend_tasks, first_backend, self.stopper, self.config,
+                               self.sortinghat_client, timer=small_delay)
 
         self.assertEqual(manager.config, self.config)
         self.assertEqual(manager.stopper, self.stopper)
@@ -235,12 +246,13 @@ class TestTasksManager(unittest.TestCase):
 
         small_delay = 0
         first_backend = list(self.backends.keys())[0]
-        manager = TasksManager(self.backend_tasks, first_backend, self.stopper, self.config, timer=small_delay)
+        manager = TasksManager(self.backend_tasks, first_backend, self.stopper, self.config,
+                               self.sortinghat_client, timer=small_delay)
 
         self.assertEqual(manager.tasks, [])
 
         for tc in manager.tasks_cls:
-            task = tc(manager.config)
+            task = tc(manager.config, manager.client)
             task.set_backend_section(manager.backend_section)
             manager.tasks.append(task)
 
@@ -250,7 +262,8 @@ class TestTasksManager(unittest.TestCase):
         """Test whether an exception is thrown if a task fails"""
 
         small_delay = 0
-        manager = TasksManager(self.backend_tasks, "fake-section", self.stopper, self.config, timer=small_delay)
+        manager = TasksManager(self.backend_tasks, "fake-section", self.stopper,
+                               self.config, self.sortinghat_client, timer=small_delay)
 
         with self.assertRaises(Exception):
             manager.run()

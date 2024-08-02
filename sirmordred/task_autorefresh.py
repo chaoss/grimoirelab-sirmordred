@@ -43,8 +43,8 @@ logger = logging.getLogger(__name__)
 class TaskAutorefresh(Task):
     """Refresh the last modified identities for all the backends."""
 
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, config, sortinghat_client):
+        super().__init__(config, sortinghat_client)
 
         self.last_autorefresh_backend = {}
 

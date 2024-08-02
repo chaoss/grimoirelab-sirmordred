@@ -33,6 +33,8 @@ sys.path.insert(0, '..')
 from sirmordred.config import Config
 from sirmordred.task import Task
 
+from sortinghat.cli.client import SortingHatClient
+
 CONF_FILE = 'test.cfg'
 BACKEND_NAME = 'stackexchange'
 COLLECTION_URL_STACKEXCHANGE = 'http://127.0.0.1:9200'
@@ -47,14 +49,23 @@ def read_file(filename, mode='r'):
 
 class TestTask(unittest.TestCase):
     """Task tests"""
+    def setUp(self):
+        self.config = Config(CONF_FILE)
+        self.conf = self.config.get_conf()
+        sh = self.conf.get('sortinghat')
+        self.sortinghat_client = SortingHatClient(host=sh['host'], port=sh.get('port', None),
+                                                  path=sh.get('path', None), ssl=sh.get('ssl', False),
+                                                  user=sh['user'], password=sh['password'],
+                                                  verify_ssl=sh.get('verify_ssl', True),
+                                                  tenant=sh.get('tenant', True))
+        self.sortinghat_client.connect()
 
     def test_initialization(self):
         """Test whether attributes are initializated"""
 
-        config = Config(CONF_FILE)
-        task = Task(config)
+        task = Task(self.config, self.sortinghat_client)
 
-        self.assertEqual(task.config, config)
+        self.assertEqual(task.config, self.config)
         self.assertEqual(task.db_sh, task.conf['sortinghat']['database'])
         self.assertEqual(task.db_user, task.conf['sortinghat']['user'])
         self.assertEqual(task.db_password, task.conf['sortinghat']['password'])
@@ -63,15 +74,13 @@ class TestTask(unittest.TestCase):
     def test_run(self):
         """Test whether the Task could be run"""
 
-        config = Config(CONF_FILE)
-        task = Task(config)
+        task = Task(self.config, self.sortinghat_client)
         self.assertEqual(task.execute(), None)
 
     def test_compose_p2o_params(self):
         """Test whether p2o params are built correctly for a backend and a repository"""
 
-        config = Config(CONF_FILE)
-        task = Task(config)
+        task = Task(self.config, self.sortinghat_client)
         params = task._compose_p2o_params("stackexchange", "https://stackoverflow.com/questions/tagged/example")
         self.assertDictEqual(params, {'url': "https://stackoverflow.com/questions/tagged/example"})
 
@@ -92,8 +101,7 @@ class TestTask(unittest.TestCase):
     def test_extract_repo_tags(self):
         """Test the extraction of tags in repositories"""
 
-        config = Config(CONF_FILE)
-        task = Task(config)
+        task = Task(self.config, self.sortinghat_client)
         url, tags = task._extract_repo_tags("git", "https://github.com/zhquan_example/repo --labels=[ENG, SUPP]")
         self.assertEqual(url, "https://github.com/zhquan_example/repo")
         self.assertListEqual(tags, ["ENG", "SUPP"])
@@ -113,8 +121,7 @@ class TestTask(unittest.TestCase):
 
         expected_repo_params = json.loads(read_file('data/task-params-expected'))
 
-        config = Config(CONF_FILE)
-        task = Task(config)
+        task = Task(self.config, self.sortinghat_client)
 
         for backend in expected_repo_params.keys():
             repo = expected_repo_params.get(backend)['repo']
@@ -126,8 +133,7 @@ class TestTask(unittest.TestCase):
     def test_get_collection_url(self):
         """Test whether the collection url could be overwritten in a backend"""
 
-        config = Config(CONF_FILE)
-        task = Task(config)
+        task = Task(self.config, self.sortinghat_client)
         task.backend_section = "stackexchange"
 
         self.assertEqual(task._get_collection_url(), COLLECTION_URL_STACKEXCHANGE)
