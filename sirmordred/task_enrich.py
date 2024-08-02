@@ -53,8 +53,8 @@ logger = logging.getLogger(__name__)
 class TaskEnrich(Task):
     """ Basic class shared by all enriching tasks """
 
-    def __init__(self, config, backend_section=None, allowed_repos=None):
-        super().__init__(config)
+    def __init__(self, config, sortinghat_client, backend_section=None, allowed_repos=None):
+        super().__init__(config, sortinghat_client)
         self.backend_section = backend_section
         self.allowed_repos = set(allowed_repos) if allowed_repos else None
         # This will be options in next iteration
