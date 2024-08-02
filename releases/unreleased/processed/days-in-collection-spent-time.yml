@@ -1,8 +1,0 @@
----
-title: Days in collection spent time
-category: fixed
-author: Jose Javier Merchante <jjmerchante@bitergia.com>
-issue: null
-notes: >
-  Include days in logs when the collection spent time is more than
-  one day.
