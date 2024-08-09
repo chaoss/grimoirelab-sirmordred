@@ -249,12 +249,16 @@ class TaskEnrich(Task):
         next_autorefresh = self.__update_last_autorefresh()
 
         logger.debug('Getting last modified identities from SH since %s for %s', after, self.backend_section)
+
         author_fields = ["author_uuid"]
+        for role in enrich_backend.roles:
+            author_fields.append(role + '_uuid')
         try:
             meta_fields = enrich_backend.meta_fields
             author_fields += meta_fields
         except AttributeError:
             pass
+
         logger.debug("Refreshing identity ids for %s", self.backend_section)
         total = 0
         time_start = datetime.now()
