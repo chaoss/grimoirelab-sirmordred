@@ -1,5 +1,15 @@
 # Releases
 
+## sirmordred 1.1.0 - (2024-08-30)
+
+**Performance improvements:**
+
+ * Reduced the number of connections to SortingHat\
+   Mordred makes a lot of connections to the SortingHat server which
+   could cause the uWSGI queue to fill up. When the uWSGI queue is full,
+   Mordred cannot connect to the SortingHat server.
+
+
   ## sirmordred 1.0.5 - (2024-08-13)
   
   * Update Poetry's package dependencies
