@@ -50,7 +50,7 @@ class TasksManager(threading.Thread):
     IDENTITIES_TASKS_ON_LOCK = threading.Lock()
     IDENTITIES_TASKS_ON = False
 
-    def __init__(self, tasks_cls, backend_section, stopper, config, timer=0):
+    def __init__(self, tasks_cls, backend_section, stopper, config, sortinghat_client, timer=0):
         """
         :tasks_cls : tasks classes to be executed using the backend
         :backend_section: perceval backend section name
@@ -64,6 +64,7 @@ class TasksManager(threading.Thread):
         self.stopper = stopper  # To stop the thread from parent
         self.timer = timer
         self.thread_id = None
+        self.client = sortinghat_client
 
     def add_task(self, task):
         self.tasks.append(task)
@@ -80,7 +81,7 @@ class TasksManager(threading.Thread):
         logger.debug(self.tasks_cls)
         for tc in self.tasks_cls:
             # create the real Task from the class
-            task = tc(self.config)
+            task = tc(self.config, self.client)
             task.set_backend_section(self.backend_section)
             self.tasks.append(task)
 

@@ -39,7 +39,7 @@ from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_projects import TaskProjects
 
-from sortinghat.cli.client import SortingHatSchema
+from sortinghat.cli.client import SortingHatClient, SortingHatSchema
 
 from sgqlc.operation import Operation
 
@@ -131,8 +131,16 @@ class TestTaskAutorefresh(unittest.TestCase):
         client.execute(op)
 
     def setUp(self):
-        config = Config(CONF_FILE)
-        task = TaskAutorefresh(config)
+        self.config = Config(CONF_FILE)
+        self.conf = self.config.get_conf()
+        sh = self.conf.get('sortinghat')
+        self.sortinghat_client = SortingHatClient(host=sh['host'], port=sh.get('port', None),
+                                                  path=sh.get('path', None), ssl=sh.get('ssl', False),
+                                                  user=sh['user'], password=sh['password'],
+                                                  verify_ssl=sh.get('verify_ssl', True),
+                                                  tenant=sh.get('tenant', True))
+        self.sortinghat_client.connect()
+        task = TaskAutorefresh(self.config, self.sortinghat_client)
 
         # Clean database
         entities = SortingHat.unique_identities(task.client)
@@ -162,16 +170,14 @@ class TestTaskAutorefresh(unittest.TestCase):
     def test_initialization(self):
         """Test whether attributes are initialized"""
 
-        config = Config(CONF_FILE)
-        task = TaskAutorefresh(config)
+        task = TaskAutorefresh(self.config, self.sortinghat_client)
 
-        self.assertEqual(task.config, config)
+        self.assertEqual(task.config, self.config)
 
     def test_is_backend_task(self):
         """Test whether the Task is not a backend task"""
 
-        config = Config(CONF_FILE)
-        task = TaskAutorefresh(config)
+        task = TaskAutorefresh(self.config, self.sortinghat_client)
 
         self.assertFalse(task.is_backend_task())
 
@@ -179,18 +185,16 @@ class TestTaskAutorefresh(unittest.TestCase):
         """Test whether the Task could be run"""
 
         # Create a raw and enriched indexes
-        config = Config(CONF_FILE)
-
-        TaskProjects(config).execute()
+        TaskProjects(self.config, self.sortinghat_client).execute()
         backend_section = GIT_BACKEND_SECTION
 
-        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection = TaskRawDataCollection(self.config, backend_section=backend_section)
         task_collection.execute()
 
-        task_enrich = TaskEnrich(config, backend_section=backend_section)
+        task_enrich = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
         task_enrich.execute()
 
-        task_autorefresh = TaskAutorefresh(config)
+        task_autorefresh = TaskAutorefresh(self.config, self.sortinghat_client)
         task_autorefresh.config.set_param('es_enrichment', 'autorefresh', True)
         # This does nothing because it uses now as from_date:
         task_autorefresh.execute()
@@ -205,7 +209,7 @@ class TestTaskAutorefresh(unittest.TestCase):
         self.assertIsNone(task_autorefresh.execute())
 
         # Check that the autorefresh went well
-        cfg = config.get_conf()
+        cfg = self.conf
         es_enrichment = cfg['es_enrichment']['url']
         enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
 

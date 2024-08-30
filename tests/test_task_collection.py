@@ -111,7 +111,8 @@ class TestTaskRawDataCollection(unittest.TestCase):
         raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
 
         r = requests.get(raw_index + "/_search?size=0", verify=False)
-        raw_items = r.json()['hits']['total']
+        total = r.json()['hits']['total']
+        raw_items = total['value'] if isinstance(total, dict) else total
         self.assertEqual(raw_items, 3603)
 
     def test_execute_no_collection(self):
@@ -130,7 +131,8 @@ class TestTaskRawDataCollection(unittest.TestCase):
         raw_index = es_collection + "/" + cfg[GIT_BACKEND_SECTION]['raw_index']
 
         r = requests.get(raw_index + "/_search?size=0", verify=False)
-        raw_items = r.json()['hits']['total']
+        total = r.json()['hits']['total']
+        raw_items = total['value'] if isinstance(total, dict) else total
         self.assertEqual(raw_items, 40)
 
     def test_execute_filter_no_collection(self):

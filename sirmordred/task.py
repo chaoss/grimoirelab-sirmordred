@@ -29,7 +29,6 @@ import re
 from grimoire_elk.elk import get_ocean_backend
 from grimoire_elk.utils import get_connector_from_name, get_elastic
 from grimoire_elk.enriched.utils import grimoire_con
-from sortinghat.cli.client import SortingHatClient
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +41,11 @@ class Task():
                          'studies', 'node_regex', 'anonymize']
     PARAMS_WITH_SPACES = ['blacklist-jobs']
 
-    def __init__(self, config):
+    def __init__(self, config, sortinghat_client=None):
         self.backend_section = None
         self.config = config
         self.conf = config.get_conf()
+        self.client = sortinghat_client
 
         sortinghat = self.conf.get('sortinghat', None)
         self.db_sh = sortinghat['database'] if sortinghat else None
@@ -58,15 +58,6 @@ class Task():
         self.db_verify_ssl = sortinghat.get('verify_ssl', True) if sortinghat else True
         self.db_tenant = sortinghat.get('tenant', True) if sortinghat else None
         self.db_unaffiliate_group = sortinghat['unaffiliated_group'] if sortinghat else None
-        if sortinghat:
-            self.client = SortingHatClient(host=self.db_host, port=self.db_port,
-                                           path=self.db_path, ssl=self.db_ssl,
-                                           user=self.db_user, password=self.db_password,
-                                           verify_ssl=self.db_verify_ssl,
-                                           tenant=self.db_tenant)
-            self.client.connect()
-        else:
-            self.client = None
 
         self.grimoire_con = grimoire_con(conn_retries=12)  # 30m retry
 

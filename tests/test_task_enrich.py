@@ -40,7 +40,7 @@ from sirmordred.task_projects import TaskProjects
 from sirmordred.task_collection import TaskRawDataCollection
 from sirmordred.task_enrich import TaskEnrich
 
-from sortinghat.cli.client import (SortingHatSchema)
+from sortinghat.cli.client import SortingHatClient, SortingHatSchema
 
 from sgqlc.operation import Operation
 
@@ -61,6 +61,21 @@ def read_file(filename, mode='r'):
 
 class TestTaskEnrich(unittest.TestCase):
     """Task tests"""
+
+    def _setup(self, conf_file):
+        self.config = Config(conf_file)
+        self.conf = self.config.get_conf()
+        sh = self.conf.get('sortinghat', None)
+        if sh:
+            self.sortinghat_client = SortingHatClient(host=sh['host'], port=sh.get('port', None),
+                                                      path=sh.get('path', None), ssl=sh.get('ssl', False),
+                                                      user=sh['user'], password=sh['password'],
+                                                      verify_ssl=sh.get('verify_ssl', True),
+                                                      tenant=sh.get('tenant', True))
+            self.sortinghat_client.connect()
+        else:
+
+            self.sortinghat_client = None
 
     @staticmethod
     def get_organizations(task):
@@ -91,8 +106,8 @@ class TestTaskEnrich(unittest.TestCase):
         task.client.execute(op)
 
     def setUp(self):
-        config = Config(CONF_FILE)
-        task = TaskEnrich(config)
+        self._setup(CONF_FILE)
+        task = TaskEnrich(self.config, self.sortinghat_client)
 
         # Clean database
         # Remove identities
@@ -112,18 +127,18 @@ class TestTaskEnrich(unittest.TestCase):
     def test_initialization(self):
         """Test whether attributes are initializated"""
 
-        config = Config(CONF_FILE)
+        self._setup(CONF_FILE)
         backend_section = GIT_BACKEND_SECTION
-        task = TaskEnrich(config, backend_section=backend_section)
+        task = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
 
-        self.assertEqual(task.config, config)
+        self.assertEqual(task.config, self.config)
         self.assertEqual(task.backend_section, backend_section)
 
     def test_select_aliases(self):
-        config = Config(CONF_FILE)
-        cfg = config.get_conf()
+        self._setup(CONF_FILE)
+        cfg = self.conf
         # We need to load the projects
-        task = TaskEnrich(config)
+        task = TaskEnrich(self.config, self.sortinghat_client)
         expected_aliases = [
             'git',
             'git_author',
@@ -135,8 +150,9 @@ class TestTaskEnrich(unittest.TestCase):
 
     def test_retain_identities(self):
         """"""
-        config = Config(CONF_FILE)
-        cfg = config.get_conf()
+
+        self._setup(CONF_FILE)
+        cfg = self.conf
 
         # Remove old enriched index
         es_enrichment = cfg['es_enrichment']['url']
@@ -144,15 +160,15 @@ class TestTaskEnrich(unittest.TestCase):
         requests.delete(enrich_index, verify=False)
 
         # We need to load the projects
-        TaskProjects(config).execute()
+        TaskProjects(self.config, self.sortinghat_client).execute()
         backend_section = GIT_BACKEND_SECTION
 
         # Create raw data
-        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection = TaskRawDataCollection(self.config, backend_section=backend_section)
         task_collection.execute()
 
         # Create enriched data
-        task = TaskEnrich(config, backend_section=backend_section)
+        task = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
         entities_before = SortingHat.unique_identities(task.client)
@@ -176,25 +192,25 @@ class TestTaskEnrich(unittest.TestCase):
         self.assertGreater(len(entities_before), len(entities_after))
 
     def test_execute_retain_data(self):
-        config = Config(CONF_FILE)
-        cfg = config.get_conf()
+        self._setup(CONF_FILE)
+        cfg = self.conf
         # We need to load the projects
-        TaskProjects(config).execute()
+        TaskProjects(self.config, self.sortinghat_client).execute()
         backend_section = GIT_BACKEND_SECTION
         # Create raw data
-        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection = TaskRawDataCollection(self.config, backend_section=backend_section)
         task_collection.execute()
 
         # Test enriched data
-        task = TaskEnrich(config, backend_section=backend_section)
+        task = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
         task.execute()
 
         es_enrichment = cfg['es_enrichment']['url']
         enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
 
         r = requests.get(enrich_index + "/_search?size=0", verify=False)
-        enriched_items_before = r.json()['hits']['total']
-        # enriched_items_before = r.json()['hits']['total']['value']
+        total = r.json()['hits']['total']
+        enriched_items_before = total['value'] if isinstance(total, dict) else total
 
         # 1 year
         retention_time = 525600
@@ -202,26 +218,26 @@ class TestTaskEnrich(unittest.TestCase):
         task.execute()
 
         r = requests.get(enrich_index + "/_search?size=0", verify=False)
-        enriched_items_after = r.json()['hits']['total']
-        # enriched_items_after = r.json()['hits']['total']['value']
+        total = r.json()['hits']['total']
+        enriched_items_after = total['value'] if isinstance(total, dict) else total
 
         self.assertGreater(enriched_items_before, enriched_items_after)
 
     def test_execute(self):
         """Test whether the Task could be run"""
 
-        config = Config(CONF_FILE)
-        cfg = config.get_conf()
+        self._setup(CONF_FILE)
+        cfg = self.conf
         # We need to load the projects
-        TaskProjects(config).execute()
+        TaskProjects(self.config, self.sortinghat_client).execute()
         backend_section = GIT_BACKEND_SECTION
 
         # Create raw data
-        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection = TaskRawDataCollection(self.config, backend_section=backend_section)
         task_collection.execute()
 
         # Test enriched data
-        task = TaskEnrich(config, backend_section=backend_section)
+        task = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
         # Check that the enrichment went well
@@ -231,27 +247,29 @@ class TestTaskEnrich(unittest.TestCase):
         enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
 
         r = requests.get(raw_index + "/_search?size=0", verify=False)
-        raw_items = r.json()['hits']['total']
+        total = r.json()['hits']['total']
+        raw_items = total['value'] if isinstance(total, dict) else total
         r = requests.get(enrich_index + "/_search?size=0", verify=False)
-        enriched_items = r.json()['hits']['total']
+        total = r.json()['hits']['total']
+        enriched_items = total['value'] if isinstance(total, dict) else total
 
         self.assertEqual(raw_items, enriched_items)
 
     def test_execute_no_sh(self):
         """Test whether the Task could be run without SortingHat"""
 
-        config = Config(CONF_FILE_NO_SH)
-        cfg = config.get_conf()
+        self._setup(CONF_FILE_NO_SH)
+        cfg = self.conf
         # We need to load the projects
-        TaskProjects(config).execute()
+        TaskProjects(self.config, self.sortinghat_client).execute()
         backend_section = GIT_BACKEND_SECTION
 
         # Create raw data
-        task_collection = TaskRawDataCollection(config, backend_section=backend_section)
+        task_collection = TaskRawDataCollection(self.config, backend_section=backend_section)
         task_collection.execute()
 
         # Test enriched data
-        task = TaskEnrich(config, backend_section=backend_section)
+        task = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
         self.assertEqual(task.execute(), None)
 
         # Check that the enrichment went well
@@ -261,20 +279,23 @@ class TestTaskEnrich(unittest.TestCase):
         enrich_index = es_enrichment + "/" + cfg[GIT_BACKEND_SECTION]['enriched_index']
 
         r = requests.get(raw_index + "/_search?size=0", verify=False)
-        raw_items = r.json()['hits']['total']
+        total = r.json()['hits']['total']
+        raw_items = total['value'] if isinstance(total, dict) else total
+
         r = requests.get(enrich_index + "/_search?size=0", verify=False)
-        enriched_items = r.json()['hits']['total']
+        total = r.json()['hits']['total']
+        enriched_items = total['value'] if isinstance(total, dict) else total
 
         self.assertEqual(raw_items, enriched_items)
 
     def test_studies(self):
         """Test whether the studies configuration works """
-        config = Config(CONF_FILE)
-        cfg = config.get_conf()
+        self._setup(CONF_FILE)
+        cfg = self.conf
         # We need to load the projects
-        TaskProjects(config).execute()
+        TaskProjects(self.config, self.sortinghat_client).execute()
         backend_section = GIT_BACKEND_SECTION
-        task = TaskEnrich(config, backend_section=backend_section)
+        task = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
 
         # Configure no studies
         cfg.set_param('git', 'studies', None)
@@ -311,7 +332,7 @@ class TestTaskEnrich(unittest.TestCase):
 
         # proj_file -> 'test-projects-archive.json' stored within the conf file
         conf_file = 'archives-test.cfg'
-        config = Config(conf_file)
+        self._setup(conf_file)
 
         backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
                             'discourse', 'dockerhub', 'gerrit', 'github:issue', 'github:pull',
@@ -320,13 +341,13 @@ class TestTaskEnrich(unittest.TestCase):
                             'redmine', 'remo', 'rss', 'stackexchange', 'slack', 'telegram', 'twitter']
 
         # We need to load the projects
-        TaskProjects(config).execute()
+        TaskProjects(self.config, self.sortinghat_client).execute()
         for backend_section in backend_sections:
-            task = TaskRawDataCollection(config, backend_section=backend_section)
+            task = TaskRawDataCollection(self.config, backend_section=backend_section)
             task.execute()
 
         for backend_section in backend_sections:
-            task = TaskEnrich(config, backend_section=backend_section)
+            task = TaskEnrich(self.config, self.sortinghat_client, backend_section=backend_section)
             self.assertEqual(task.execute(), None)
 
 
