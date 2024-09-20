@@ -147,9 +147,9 @@ class Task():
                 continue
 
             # If param is boolean, no values must be added
-            if type(section_param) == bool:
+            if isinstance(section_param, bool):
                 params.append("--" + p) if section_param else None
-            elif type(section_param) == list:
+            elif isinstance(section_param, list):
                 # '--blacklist-jobs', 'a', 'b', 'c'
                 # 'a', 'b', 'c' must be added as items in the list
                 params.append("--" + p)

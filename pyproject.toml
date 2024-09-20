@@ -41,12 +41,12 @@ classifiers = [
 'panels_config.py' = 'sirmordred.utils.panels_config:main'
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 
-colorlog = "4.1.0"
+colorlog = "^6.4.1"
 elasticsearch = "6.3.1"
 elasticsearch-dsl = "6.3.1"
-file-read-backwards = "2.0.0"
+file-read-backwards = "^3.1.0"
 grimoirelab-toolkit = { version = ">=0.3", allow-prereleases = true}
 sortinghat = { version = ">=0.7.20", allow-prereleases = true}
 kidash = { version = ">=0.5", allow-prereleases = true}
@@ -62,8 +62,8 @@ graal = { version = ">=0.3", allow-prereleases = true}
 
 [tool.poetry.dev-dependencies]
 httpretty = "^1.1.4"
-flake8 = "^4.0.1"
-coverage = "^6.3.2"
+flake8 = "^7.1.1"
+coverage = "^7.2.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
