@@ -41,8 +41,8 @@ logger = logging.getLogger(__name__)
 class TaskRawDataCollection(Task):
     """ Basic class shared by all collection tasks """
 
-    def __init__(self, config, backend_section=None, allowed_repos=None):
-        super().__init__(config)
+    def __init__(self, config, sortinghat_client=None, backend_section=None, allowed_repos=None):
+        super().__init__(config, sortinghat_client)
 
         self.backend_section = backend_section
         self.allowed_repos = set(allowed_repos) if allowed_repos else None

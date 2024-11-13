@@ -264,8 +264,8 @@ class TaskPanels(Task):
     # Panels to be uploaded always, no matter the data sources configured
     panels_common = panels_multi_ds + ["panels/json/about.json"]
 
-    def __init__(self, conf):
-        super().__init__(conf)
+    def __init__(self, conf, sortinghat_client=None):
+        super().__init__(conf, sortinghat_client)
         # Read panels and menu description from yaml file
         with open(self.conf['general']['menu_file'], 'r') as f:
             try:
@@ -473,8 +473,8 @@ class TaskPanelsMenu(Task):
         }
     }
 
-    def __init__(self, conf):
-        super().__init__(conf)
+    def __init__(self, conf, sortinghat_client=None):
+        super().__init__(conf, sortinghat_client)
         # Read panels and menu description from yaml file """
         with open(self.conf['general']['menu_file'], 'r') as f:
             try:
