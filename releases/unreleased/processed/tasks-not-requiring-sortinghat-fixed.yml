@@ -1,9 +1,0 @@
----
-title: Panels import bug and Micro Mordred failure
-category: fixed
-author: Jose Javier Merchante <jjmerchante@bitergia.com>
-issue: null
-notes: >
-  A bug was causing Panels to fail to import in Kibiter
-  and preventing micro Mordred from working. The issue
-  was in tasks that didn’t require a SortingHat client to run.
