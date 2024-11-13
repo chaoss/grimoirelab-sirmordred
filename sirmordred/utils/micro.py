@@ -33,6 +33,7 @@ from sirmordred.task_identities import TaskIdentitiesMerge
 from sirmordred.task_enrich import TaskEnrich
 from sirmordred.task_panels import TaskPanels, TaskPanelsMenu
 from sirmordred.task_projects import TaskProjects
+from sortinghat.cli.client import SortingHatClient
 
 COLOR_LOG_FORMAT_SUFFIX = "\033[1m %(log_color)s "
 LOG_COLORS = {'DEBUG': 'white', 'INFO': 'cyan', 'WARNING': 'yellow', 'ERROR': 'red', 'CRITICAL': 'red,bg_white'}
@@ -48,6 +49,34 @@ def main():
                   args.identities_merge,
                   args.enrich,
                   args.panels)
+
+
+def create_sortinghat_client(config):
+    """Create a SortingHat client"""
+
+    conf = config.get_conf()
+
+    sortinghat = conf.get('sortinghat', None)
+    if not sortinghat:
+        return None
+
+    db_user = sortinghat['user'] if sortinghat else None
+    db_password = sortinghat['password'] if sortinghat else None
+    db_host = sortinghat['host'] if sortinghat else '127.0.0.1'
+    db_path = sortinghat.get('path', None) if sortinghat else None
+    db_port = sortinghat.get('port', None) if sortinghat else None
+    db_ssl = sortinghat.get('ssl', False) if sortinghat else False
+    db_verify_ssl = sortinghat.get('verify_ssl', True) if sortinghat else True
+    db_tenant = sortinghat.get('tenant', True) if sortinghat else None
+
+    client = SortingHatClient(host=db_host, port=db_port,
+                              path=db_path, ssl=db_ssl,
+                              user=db_user, password=db_password,
+                              verify_ssl=db_verify_ssl,
+                              tenant=db_tenant)
+    client.connect()
+
+    return client
 
 
 def micro_mordred(config, backend_sections, repos_to_check, raw, identities_merge, enrich, panels):
@@ -66,12 +95,17 @@ def micro_mordred(config, backend_sections, repos_to_check, raw, identities_merg
         for backend in backend_sections:
             get_raw(config, backend, repos_to_check)
 
+    if identities_merge or enrich:
+        sortinghat_client = create_sortinghat_client(config)
+    else:
+        sortinghat_client = None
+
     if identities_merge:
-        get_identities_merge(config)
+        get_identities_merge(config, sortinghat_client)
 
     if enrich:
         for backend in backend_sections:
-            get_enrich(config, backend, repos_to_check)
+            get_enrich(config, sortinghat_client, backend, repos_to_check)
 
     if panels:
         get_panels(config)
@@ -97,29 +131,31 @@ def get_raw(config, backend_section, repos_to_check=None):
         sys.exit(-1)
 
 
-def get_identities_merge(config):
+def get_identities_merge(config, sortinghat_client):
     """Execute the merge identities phase
 
+    :param sortinghat_client: a SortingHat client
     :param config: a Mordred config object
     """
     TaskProjects(config).execute()
-    task = TaskIdentitiesMerge(config)
+    task = TaskIdentitiesMerge(config, sortinghat_client)
     task.execute()
     logging.info("Merging identities finished!")
 
 
-def get_enrich(config, backend_section, repos_to_check=None):
+def get_enrich(config, sortinghat_client, backend_section, repos_to_check=None):
     """Execute the enrich phase for a given backend section
 
     Repos are only checked if they are in BOTH `repos_to_check` and the `projects.json`
 
     :param config: a Mordred config object
+    :param sortinghat_client: a SortingHat client
     :param backend_section: the backend section where the enrich phase is executed
     :param repos_to_check: A list of repo URLs to check, or None to check all repos
     """
 
     TaskProjects(config).execute()
-    task = TaskEnrich(config, backend_section=backend_section, allowed_repos=repos_to_check)
+    task = TaskEnrich(config, sortinghat_client, backend_section=backend_section, allowed_repos=repos_to_check)
     try:
         task.execute()
         logging.info("Loading enriched data finished!")
