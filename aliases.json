@@ -256,7 +256,7 @@
       }
     ]
   },
-  "github": {
+  "github:issue": {
     "raw": [
       {
         "alias": "github-raw"
