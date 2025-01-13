@@ -1,4 +1,4 @@
-# SirMordred [![Build Status](https://github.com/chaoss/grimoirelab-sirmordred/workflows/tests/badge.svg)](https://github.com/chaoss/grimoirelab-sirmordred/actions?query=workflow:tests+branch:master+event:push) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=master)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=master) [![PyPI version](https://badge.fury.io/py/sirmordred.svg)](https://badge.fury.io/py/sirmordred)
+# SirMordred [![Build Status](https://github.com/chaoss/grimoirelab-sirmordred/workflows/tests/badge.svg)](https://github.com/chaoss/grimoirelab-sirmordred/actions?query=workflow:tests+branch:main+event:push) [![Coverage Status](https://coveralls.io/repos/github/chaoss/grimoirelab-sirmordred/badge.svg?branch=main)](https://coveralls.io/github/chaoss/grimoirelab-sirmordred?branch=main) [![PyPI version](https://badge.fury.io/py/sirmordred.svg)](https://badge.fury.io/py/sirmordred)
 
 SirMordred is the tool used to coordinate the execution of the GrimoireLab platform, via two main configuration files, the `setup.cfg` and `projects.json`, which are summarized in their corresponding sections.
 
@@ -104,7 +104,7 @@ The template of a backend section is shown above.
 Further information about Perceval backends parameters are available at:
 
 * Params details: https://perceval.readthedocs.io/en/latest/perceval/perceval-backends.html
-* Examples: https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
+* Examples: https://github.com/chaoss/grimoirelab-sirmordred/blob/main/tests/test_studies.cfg
 
 Note that some backend sections allow to specify specific enrichment options, which are listed below.
 
@@ -121,7 +121,7 @@ Note that some backend sections allow to specify specific enrichment options, wh
 
 A template of a study section is shown above. A complete list of studies parameters is available at:
 
-* https://github.com/chaoss/grimoirelab-sirmordred/blob/master/tests/test_studies.cfg
+* https://github.com/chaoss/grimoirelab-sirmordred/blob/main/tests/test_studies.cfg
 
 ## Projects.json [&uarr;](#contents)
 
@@ -1434,7 +1434,7 @@ studies = [enrich_demography:weblate] (optional)
 
 Micro Mordred is a simplified version of Mordred which omits the use of its scheduler. Thus, Micro Mordred allows running single Mordred tasks (e.g., raw collection, enrichment) per execution.
 
-Micro Mordred is located in the [sirmordred/utils](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/sirmordred/utils/micro.py) folder of this same repository. It can be executed via command line, its parameters are summarized below:
+Micro Mordred is located in the [sirmordred/utils](https://github.com/chaoss/grimoirelab-sirmordred/tree/main/sirmordred/utils/micro.py) folder of this same repository. It can be executed via command line, its parameters are summarized below:
 ```
 --debug: execute Micro Mordred in debug mode
 

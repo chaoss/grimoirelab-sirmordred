@@ -183,7 +183,7 @@ The final results should be something similar to the image below.
 
 Now that you have the ElasticSearch, Kibiter and MariaDB running on your system and the project configured in the PyCharm, we can execute micro-mordred/sirmordred. 
 
-To execute micro-mordred, define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/sirmordred/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/sirmordred/utils/projects.json), and
+To execute micro-mordred, define a [setup.cfg](https://github.com/chaoss/grimoirelab-sirmordred/blob/main/sirmordred/utils/setup.cfg) and [projects.json](https://github.com/chaoss/grimoirelab-sirmordred/blob/main/sirmordred/utils/projects.json), and
 run the following commands, which will collect and enrich the data coming from the git sections and upload the corresponding panels to Kibiter:
 ```
 micro.py --raw --enrich --cfg ./setup.cfg --backends git cocom
@@ -380,7 +380,7 @@ Following is a list of common problems encountered while setting up GrimoireLab
 #### Empty Index [&uarr;](#troubleshooting-)
 
 * Indications and Diagnosis:
-  Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/master/sirmordred/utils/micro.py)
+  Check for the following error after executing [Micro Mordred](https://github.com/chaoss/grimoirelab-sirmordred/tree/main/sirmordred/utils/micro.py)
   using ```micro.py --raw --enrich --panels --cfg ./setup.cfg --backends git```(Here, using git as backend)
   ```
   [git] Problem executing study enrich_areas_of_code:git, RequestError(400, 'search_phase_execution_exception', 'No mapping 
@@ -393,7 +393,7 @@ Following is a list of common problems encountered while setting up GrimoireLab
   
   There are 2 methods to solve this problem:
  
-  Method 1: Disable the param [latest-items](https://github.com/chaoss/grimoirelab-sirmordred/blob/master/sirmordred/utils/setup.cfg#L78) by setting it to false.
+  Method 1: Disable the param [latest-items](https://github.com/chaoss/grimoirelab-sirmordred/blob/main/sirmordred/utils/setup.cfg#L78) by setting it to false.
   
   Method 2: Delete the local clone of the repo (which is stored in ```~/.perceval/repositories```).
  
@@ -979,15 +979,15 @@ About possible solutions:
 * (3) can be solved by merging those identities under the same individual, which can be done via SortingHat too.
 
 Note: by default, SortingHat is importing the list of organizations and domains
-[from this file](https://github.com/chaoss/grimoirelab/blob/master/default-grimoirelab-settings/organizations.json).
+[from this file](https://github.com/chaoss/grimoirelab/blob/main/default-grimoirelab-settings/organizations.json).
 
 #### Add a new organization/domain entry via Hatstall [&uarr;](#how-to-)
 
 [Hatstall](https://github.com/chaoss/grimoirelab-hatstall) is a web interface to interact with SortingHat.
  
-Tip: if you are executing GrimoireLab [via `docker-compose`](https://github.com/chaoss/grimoirelab/tree/master/docker-compose),
+Tip: if you are executing GrimoireLab [via `docker-compose`](https://github.com/chaoss/grimoirelab/tree/main/docker-compose),
 you can access Hatstall from  `http://127.0.0.1:8000/`. Default credentials are `admin`-`admin`, as explained in 
-[this README section](https://github.com/chaoss/grimoirelab/tree/master/docker-compose#getting-started-in-3-steps). 
+[this README section](https://github.com/chaoss/grimoirelab/tree/main/docker-compose#getting-started-in-3-steps). 
 
 For adding a new organization domain from Hatstall, you have to click on `Organizations` tab on the nav bar, and then:
 * First, look for the organization you are interested in (you can navigate though the pages or you can use the search bar).
@@ -1007,7 +1007,7 @@ able to add new domains for that organization.
     
    - Remove all unused containers, images, and volumes with  `docker system prune -a --volumes`.
 
-   - Now, execute `docker-compose up -d` using the source code (see - https://github.com/chaoss/grimoirelab-sirmordred/blob/master/Getting-Started.md#source-code-and-docker- )
+   - Now, execute `docker-compose up -d` using the source code (see - https://github.com/chaoss/grimoirelab-sirmordred/blob/main/Getting-Started.md#source-code-and-docker- )
 
    - Check connection to Elasticsearch with `curl -XGET <elasticsearch-url> -k`.
         The output should be the similar to :
