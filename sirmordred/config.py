@@ -30,6 +30,8 @@ from typing import Any, Dict, TypeVar, Union
 from sirmordred.task import Task
 from grimoire_elk.utils import get_connectors
 
+# from enigma import enigma
+
 logger = logging.getLogger(__name__)
 
 
@@ -163,6 +165,12 @@ class Config():
                     "default": None,
                     "type": int,
                     "description": "The maximum number of minutes wrt the current date to retain the data"
+                },
+                "secrets_manager": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "Service used to store the credentials of the backends"
                 }
             }
         }
@@ -715,6 +723,15 @@ class Config():
                 self.conf.get(':'.join([base_backend_section] + list(parameters)), dict())
             )
 
+        # this gets the secrets_manager used to store the credentials used by the app
+        secrets_manager = self.conf.get('general', {}).get('secrets_manager')
+
+        # If a secrets manager is present, use enigma to retrieve any credentials stored in it
+        # if secrets_manager:
+        #     for key in output.keys():
+        #         if self._is_credential_key(key):
+        #             output[key] = enigma.get_secret(secrets_manager, base_backend_section, key)
+
         # Check that all necessary parameters are present
         if base_backend_section in self.get_backend_sections():
             # If this is a config section for a backend, check for missing parameters
@@ -856,3 +873,15 @@ class Config():
             conf = self.__add_types(raw_conf)
             self._add_to_conf(conf)
         self.check_config(self.conf)
+
+    def _is_credential_key(self, key: str) -> bool:
+        """
+        Check if a key represents a credential by checking for specific sensitive substrings.
+        """
+        # Define sensitive substrings to search for
+        sensitive_words = ['user', 'password', 'token', 'key']
+
+        key_lower = key.lower()
+
+        # If any of the sensitive substrings are present in the key, it is a credential
+        return any(word in key_lower for word in sensitive_words)
