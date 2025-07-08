@@ -152,12 +152,12 @@ but this allow to add the same source in different sections to enrich using the 
             "gerrit.chaoss.org --filter-raw=data.projects:CHAOSS"
         ]
         "git": [
-            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https://github.com/chaoss/grimoirelab-perceval",
             "https://<username>:<api-token>@github.com/chaoss/grimoirelab-sirmordred"
         ],
         "github": [
-            "https:/github.com/chaoss/grimoirelab-perceval --filter-no-collection=true",
-            "https:/github.com/chaoss/grimoirelab-sirmordred  --labels=[example]"
+            "https://github.com/chaoss/grimoirelab-perceval --filter-no-collection=true",
+            "https://github.com/chaoss/grimoirelab-sirmordred  --labels=[example]"
         ]
     },
     "GrimoireLab": {
@@ -487,7 +487,7 @@ Commits from Git
 {
     "Chaoss": {
         "git": [
-            "https:/github.com/chaoss/grimoirelab-perceval",
+            "https://github.com/chaoss/grimoirelab-perceval",
             "https://<username>:<api-token>@github.com/chaoss/grimoirelab-sirmordred"
         ]
     }
@@ -529,8 +529,8 @@ Issues and PRs from GitHub
 {
     "Chaoss": {
         "github:issue": [
-            "https:/github.com/chaoss/grimoirelab-perceval",
-            "https:/github.com/chaoss/grimoirelab-sirmordred"
+            "https://github.com/chaoss/grimoirelab-perceval",
+            "https://github.com/chaoss/grimoirelab-sirmordred"
         ]
     }
 }
@@ -582,8 +582,8 @@ map_label = [others, bugs, enhancements]
 {
     "Chaoss": {
         "github:pull": [
-            "https:/github.com/chaoss/grimoirelab-perceval",
-            "https:/github.com/chaoss/grimoirelab-sirmordred"
+            "https://github.com/chaoss/grimoirelab-perceval",
+            "https://github.com/chaoss/grimoirelab-sirmordred"
         ]
     }
 }
@@ -623,8 +623,8 @@ The number of forks, stars, and subscribers in the repository.
 {
     "Chaoss": {
         "github:repo": [
-            "https:/github.com/chaoss/grimoirelab-perceval",
-            "https:/github.com/chaoss/grimoirelab-sirmordred"
+            "https://github.com/chaoss/grimoirelab-perceval",
+            "https://github.com/chaoss/grimoirelab-sirmordred"
         ]
     }
 }
@@ -702,8 +702,8 @@ to `true` in the `panels` section within the `setup.cfg`
 {
     "Chaoss": {
         "github2:issue": [
-            "https:/github.com/chaoss/grimoirelab-perceval",
-            "https:/github.com/chaoss/grimoirelab-sirmordred"
+            "https://github.com/chaoss/grimoirelab-perceval",
+            "https://github.com/chaoss/grimoirelab-sirmordred"
         ]
     }
 }
@@ -740,8 +740,8 @@ nlp_rest_url = http://localhost:2901
 {
     "Chaoss": {
         "github2:pull": [
-            "https:/github.com/chaoss/grimoirelab-perceval",
-            "https:/github.com/chaoss/grimoirelab-sirmordred"
+            "https://github.com/chaoss/grimoirelab-perceval",
+            "https://github.com/chaoss/grimoirelab-sirmordred"
         ]
     }
 }
