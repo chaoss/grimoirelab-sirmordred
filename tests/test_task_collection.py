@@ -154,7 +154,7 @@ class TestTaskRawDataCollection(unittest.TestCase):
         backend_sections = ['askbot', 'bugzilla', 'bugzillarest', 'confluence',
                             'discourse', 'dockerhub', 'gerrit', 'github:issue', 'github:pull',
                             'gitlab:issue', 'gitlab:merge', 'google_hits', 'jenkins',
-                            'jira', 'mediawiki', 'meetup', 'mozillaclub', 'nntp', 'phabricator',
+                            'jira', 'mediawiki', 'meetup', 'mozillaclub', 'phabricator',
                             'redmine', 'remo', 'rss', 'stackexchange', 'slack', 'telegram', 'twitter']
 
         # We need to load the projects

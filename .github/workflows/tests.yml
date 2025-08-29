@@ -14,16 +14,18 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     services:
-      # How to use MySQL
       mysql:
-        image: mariadb:10.5
+        image: mariadb:11.8
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
-      # Redis
       redis:
         image: redis
         ports:
@@ -33,7 +35,7 @@ jobs:
     name: Python ${{ matrix.python-version }} for ES ${{ matrix.elasticsearch-version }}
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
         elasticsearch-version: [6.8.6, 7.2.0]
     
     steps:
@@ -59,8 +61,7 @@ jobs:
 
     - name: Install and set up Poetry
       run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        echo "PATH=$HOME/.poetry/bin:$PATH" >> $GITHUB_ENV
+        pipx install poetry
 
     - name: Install dependencies
       run: |
