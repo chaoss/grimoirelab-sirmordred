@@ -18,8 +18,13 @@ jobs:
           artifact-path: dist
 
   tests:
+    name: Python ${{ matrix.python-version }} - OpenSearch ${{ matrix.opensearch-version }}
     needs: [build]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
+        opensearch-version: [ "2", "3" ]
     services:
       mysql:
         image: mariadb:11.8
@@ -32,18 +37,24 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
-
       redis:
         image: redis
         ports:
           - 6379:6379
         options: --health-cmd="redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
-
-    name: Python ${{ matrix.python-version }} for ES ${{ matrix.elasticsearch-version }}
-    strategy:
-      matrix:
-        python-version: ['3.10', '3.11', '3.12', '3.13']
-        elasticsearch-version: [6.8.6, 7.2.0]
+      opensearch:
+        image: opensearchproject/opensearch:${{ matrix.opensearch-version }}
+        env:
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: "true"
+        ports:
+          - 9200:9200
+          - 9300:9300
+        options: >-
+          --health-cmd="curl -fsSL http://localhost:9200/_cat/health?h=status | grep -E '^(green|yellow)$'"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -62,18 +73,6 @@ jobs:
       - name: Install Poetry
         run: |
           pipx install poetry
-
-      - name: Configure sysctl limits
-        run: |
-          sudo swapoff -a
-          sudo sysctl -w vm.swappiness=1
-          sudo sysctl -w fs.file-max=262144
-          sudo sysctl -w vm.max_map_count=262144
-
-      - name: Runs Elasticsearch ${{ matrix.elasticsearch-version }}
-        uses: elastic/elastic-github-actions/elasticsearch@master
-        with:
-          stack-version: ${{ matrix.elasticsearch-version }}
 
       - name: Install dev dependencies
         run: |
@@ -103,10 +102,6 @@ jobs:
           poetry run python manage.py runserver --settings=config.settings.sortinghat_settings &
           poetry run python manage.py rqworker --settings=config.settings.sortinghat_settings &
           cd
-
-      - name: Verify Elasticsearch connection
-        run: |
-          curl -fsSL "http://localhost:9200/_cat/health?h=status"
 
       - name: Test package
         run: |

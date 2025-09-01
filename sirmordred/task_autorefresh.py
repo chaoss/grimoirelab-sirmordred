@@ -24,8 +24,8 @@ import ssl
 
 from datetime import datetime
 
-from elasticsearch import Elasticsearch
-from elasticsearch.connection import create_ssl_context
+from opensearchpy import OpenSearch
+from opensearchpy.connection import create_ssl_context
 
 from grimoire_elk.elk import refresh_identities
 from grimoire_elk.enriched.git import GitEnrich
@@ -110,8 +110,8 @@ class TaskAutorefresh(Task):
         ssl_context = create_ssl_context()
         ssl_context.check_hostname = False
         ssl_context.verify_mode = ssl.CERT_NONE
-        es = Elasticsearch(hosts=[self.conf['es_enrichment']['url']],
-                           timeout=100, retry_on_timeout=True, ssl_context=ssl_context)
+        es = OpenSearch(hosts=[self.conf['es_enrichment']['url']],
+                        timeout=100, retry_on_timeout=True, ssl_context=ssl_context)
 
         if not es.indices.exists(index=aoc_index):
             logger.debug("Not doing autorefresh, index doesn't exist for Areas of Code study")
