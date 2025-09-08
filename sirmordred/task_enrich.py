@@ -27,7 +27,7 @@ import time
 
 from datetime import datetime, timedelta
 
-from elasticsearch import Elasticsearch, RequestsHttpConnection
+from opensearchpy import OpenSearch, RequestsHttpConnection
 
 from grimoire_elk.elk import (do_studies,
                               enrich_backend,
@@ -295,9 +295,10 @@ class TaskEnrich(Task):
 
         logger.debug("Autorefresh for Areas of Code study index: %s", aoc_index)
 
-        es = Elasticsearch([self.conf['es_enrichment']['url']], timeout=100, retry_on_timeout=True,
-                           verify_certs=self._get_enrich_backend().elastic.requests.verify,
-                           connection_class=RequestsHttpConnection)
+        es = OpenSearch([self.conf['es_enrichment']['url']], timeout=100, retry_on_timeout=True,
+                        verify_certs=self._get_enrich_backend().elastic.requests.verify,
+                        connection_class=RequestsHttpConnection,
+                        ssl_show_warn=self._get_enrich_backend().elastic.requests.verify)
 
         if not es.indices.exists(index=aoc_index):
             logger.debug("Not doing autorefresh, index doesn't exist for Areas of Code study")
