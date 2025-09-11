@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
+        python-version: [ "3.10", "3.11", "3.12" ]
         opensearch-version: [ "2", "3" ]
     services:
       mysql:
@@ -78,6 +78,11 @@ jobs:
         run: |
           poetry install --only dev --no-root
 
+      - name: Install the package
+        run: |
+          PACKAGE=`(cd dist && ls *whl)` && echo $PACKAGE
+          poetry run pip install --pre ./dist/$PACKAGE
+
       - name: Run Sortinghat Server
         env:
           SORTINGHAT_SECRET_KEY: "my-secret-key"
@@ -92,8 +97,6 @@ jobs:
 
       - name: Test package
         run: |
-          PACKAGE=`(cd dist && ls *whl)` && echo $PACKAGE
-          poetry run pip install --pre ./dist/$PACKAGE
           cd tests && poetry run python run_tests.py
 
   release:
