@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sirmordred"
-version = "1.2.0"
+version = "1.2.1-rc.1"
 description = "Drive GrimoireLab tools to produce a dashboard"
 authors = [
     "GrimoireLab Developers"
