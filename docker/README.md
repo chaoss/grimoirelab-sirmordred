@@ -201,55 +201,7 @@ https://github.com/Bitergia/mordred/blob/master/docker/example_conf/orgs_file.js
 
 ## docker-compose.yml
 
-So, now we have the input Mordred needs, let's set up its container.
-```
-mordred:
-  image: bitergia/mordred:latest
-  volumes:
-    - /home/luis/demo/conf/:/home/bitergia/conf
-    - /tmp/:/home/bitergia/logs
-  links:
-    - mariadb
-    - elasticsearch
-
-mariadb:
-  restart: "always"
-  image: mariadb:10.0
-  expose:
-    - "3306"
-  ports:
-    - "3306:3306"
-  environment:
-    - MYSQL_ROOT_PASSWORD=
-    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
-
-elasticsearch:
-  restart: "always"
-  image: elasticsearch:2.2
-  command: elasticsearch -Des.network.bind_host=0.0.0.0 -Dhttp.max_content_length=2000mb
-  ports:
-    - "9200:9200"
-
-kibana:
-  image: bitergia/kibiter:4.4.1
-  environment:
-    - PROJECT_NAME=mytest
-    - NODE_OPTIONS=--max-old-space-size=200
-  links:
-    - elasticsearch
-  ports:
-    - "8081:5601"
-
-kibana-ro:
-  image: bitergia/kibiter:4.4.1-public
-  environment:
-    - PROJECT_NAME=mytest
-    - NODE_OPTIONS=--max-old-space-size=200
-  links:
-    - elasticsearch
-  ports:
-    - "8091:5601"
-```
+NOTE: The latest docker-compose.yml file is available at https://github.com/chaoss/grimoirelab/tree/main/docker-compose
 
 ## execute it!
 
