@@ -314,6 +314,52 @@
       }
     ]
   },
+  "github:issue": {
+    "raw": [
+      {
+        "alias": "github-raw"
+      }
+    ],
+    "enrich": [
+      {
+        "alias": "github_issues"
+      },
+      {
+        "alias": "affiliations"
+      },
+      {
+        "alias": "all_enriched"
+      },
+      {
+        "alias": "all_enriched_tickets",
+        "filter" : {
+              "terms" : {
+                "pull_request" : ["false"]
+              }
+            }
+      },
+      {
+        "alias": "github_issues_onion-src",
+        "filter" : {
+            "terms" : {
+            "pull_request" : [
+                "false"
+                ]
+            }
+        }
+      },
+      {
+        "alias": "github_prs_onion-src",
+        "filter" : {
+            "terms" : {
+            "pull_request" : [
+                "true"
+            ]
+          }
+        }
+      }
+    ]
+  },
   "gitlab:issue": {
     "raw": [
       {
