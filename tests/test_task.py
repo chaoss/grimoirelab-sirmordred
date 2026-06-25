@@ -23,6 +23,7 @@
 import os
 import json
 import sys
+import tempfile
 import unittest
 
 
@@ -36,9 +37,14 @@ from sirmordred.task import Task
 from sortinghat.cli.client import SortingHatClient
 
 CONF_FILE = 'test.cfg'
+CONF_CREDENTIALS = 'test_credentials.cfg'
 BACKEND_NAME = 'stackexchange'
 COLLECTION_URL_STACKEXCHANGE = 'http://127.0.0.1:9200'
 REPO_NAME = 'https://stackoverflow.com/questions/tagged/ovirt'
+GITHUB_REPO_URL = 'https://github.com/example/repo'
+GIT_REPO_URL = 'https://github.com/example/repo.git'
+SECRETS_MANAGER_FLAGS = ['--secrets-manager', 'bitwarden',
+                         '--secret-name', 'github-prod']
 
 
 def read_file(filename, mode='r'):
@@ -137,6 +143,87 @@ class TestTask(unittest.TestCase):
         task.backend_section = "stackexchange"
 
         self.assertEqual(task._get_collection_url(), COLLECTION_URL_STACKEXCHANGE)
+
+
+class TestComposePercevalParamsCredentials(unittest.TestCase):
+    """Tests for the secrets-manager flag emission in
+    `Task._compose_perceval_params`.
+
+    These tests do not need a live SortingHat: `_compose_perceval_params`
+    never touches the client, and `Task.__init__` accepts
+    `sortinghat_client=None` and reads optional [sortinghat] config from
+    the fixture without opening a connection. Keeping them isolated from
+    `TestTask`'s SortingHat-dependent setUp makes the new behaviour
+    verifiable in any environment.
+    """
+
+    def test_secrets_manager_appended(self):
+        """Flags are appended when [general] secrets_manager is set and
+        the backend has a [<backend>:credentials] section."""
+
+        config = Config(CONF_CREDENTIALS)
+        task = Task(config, sortinghat_client=None)
+
+        params = task._compose_perceval_params('github', GITHUB_REPO_URL)
+
+        self.assertEqual(params[-4:], SECRETS_MANAGER_FLAGS)
+
+    def test_default_item_name(self):
+        """When [<backend>:credentials] omits item-name, --secret-name
+        defaults to the base backend name."""
+
+        original = read_file(CONF_CREDENTIALS)
+        patched = original.replace('item-name = github-prod\n', '')
+        tmp_path = tempfile.mktemp(prefix='test_credentials_', suffix='.cfg')
+        with open(tmp_path, 'w') as f:
+            f.write(patched)
+
+        try:
+            config = Config(tmp_path)
+            task = Task(config, sortinghat_client=None)
+            params = task._compose_perceval_params('github', GITHUB_REPO_URL)
+            self.assertEqual(
+                params[-4:],
+                ['--secrets-manager', 'bitwarden', '--secret-name', 'github'],
+            )
+        finally:
+            os.remove(tmp_path)
+
+    def test_no_secrets_manager(self):
+        """Without [general] secrets_manager set, no flags are appended
+        even if a [<backend>:credentials] section happens to exist."""
+
+        config = Config(CONF_FILE)
+        task = Task(config, sortinghat_client=None)
+
+        params = task._compose_perceval_params('github', GITHUB_REPO_URL)
+
+        self.assertNotIn('--secrets-manager', params)
+        self.assertNotIn('--secret-name', params)
+
+    def test_no_credentials_section(self):
+        """With secrets_manager set but no [<backend>:credentials], no
+        flags are appended for that backend."""
+
+        config = Config(CONF_CREDENTIALS)
+        task = Task(config, sortinghat_client=None)
+
+        # test_credentials.cfg has [git] but no [git:credentials].
+        params = task._compose_perceval_params('git', GIT_REPO_URL)
+
+        self.assertNotIn('--secrets-manager', params)
+        self.assertNotIn('--secret-name', params)
+
+    def test_parameterized_backend_uses_base(self):
+        """For a parameterized backend section like 'github:pull', the
+        credentials subsection is resolved against the base backend."""
+
+        config = Config(CONF_CREDENTIALS)
+        task = Task(config, sortinghat_client=None)
+
+        params = task._compose_perceval_params('github:pull', GITHUB_REPO_URL)
+
+        self.assertEqual(params[-4:], SECRETS_MANAGER_FLAGS)
 
 
 if __name__ == "__main__":

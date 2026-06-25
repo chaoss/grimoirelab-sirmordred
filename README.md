@@ -5,6 +5,7 @@ SirMordred is the tool used to coordinate the execution of the GrimoireLab platf
 ## Contents
 
 * [Setup.cfg](#setupcfg-)
+* [Secrets Manager](#secrets-manager-)
 * [Projects.json](#projectsjson-)
 * [Supported data sources](#supported-data-sources-)
 * [Micro Mordred](#micro-mordred-)
@@ -42,6 +43,7 @@ new data sources, thus you need to manually delete the dashboards `Data Status` 
  * **menu_file** (str: ./menu.yaml): YAML file to define the menus to be shown in Kibiter
  * **global_data_sources** (list: bugzilla, bugzillarest, confluence, discourse, gerrit, jenkins, jira): List of data sources collected globally, they are declared in the section 'unknown' of the projects.json
  * **retention_time** (int: None): the maximum number of minutes wrt the current date to retain the data
+ * **secrets_manager** (str: None): Secrets manager provider (`bitwarden` or `hashicorp`) to delegate backend credential resolution to Perceval. See [Secrets Manager](#secrets-manager-).
  * **update_hour** (int: None): The hour of the day the tasks will run ignoring `min_update_delay` (collect, enrich ...)
 ### [panels]
 
@@ -122,6 +124,33 @@ Note that some backend sections allow to specify specific enrichment options, wh
 A template of a study section is shown above. A complete list of studies parameters is available at:
 
 * https://github.com/chaoss/grimoirelab-sirmordred/blob/main/tests/test_studies.cfg
+
+## Secrets Manager [&uarr;](#contents)
+
+SirMordred can delegate backend credential resolution to Perceval's secrets manager support, so tokens and passwords do not need to live in `setup.cfg`. Supported providers are Bitwarden and HashiCorp Vault.
+
+**1. Enable a provider in `[general]`:**
+
+```ini
+[general]
+secrets_manager = bitwarden   # or: hashicorp
+```
+
+**2. Opt each backend in via a `[<backend>:credentials]` subsection:**
+
+```ini
+[github:credentials]
+item-name = github-prod        # vault entry name; defaults to backend name
+```
+
+**3. Provide provider auth via environment variables** (read by Perceval, not by SirMordred):
+
+| Provider | Variables |
+|---|---|
+| Bitwarden | `PERCEVAL_BW_CLIENT_ID`, `PERCEVAL_BW_CLIENT_SECRET`, `PERCEVAL_BW_MASTER_PASSWORD` |
+| HashiCorp Vault | `PERCEVAL_VAULT_URL`, `PERCEVAL_VAULT_TOKEN` |
+
+The vault entry referenced by `item-name` must store the credential under one of Perceval's standard field names (`user`, `password`, `api_token`, `email`, `access_token`, `user_id`). See the [Perceval secrets manager docs](https://github.com/chaoss/grimoirelab-perceval/blob/main/docs/perceval/secrets-manager.md) for installation, supported backends, and the full field reference.
 
 ## Projects.json [&uarr;](#contents)
 

@@ -159,6 +159,18 @@ class Task():
                 params.append("--" + p)
                 params.append(str(section_param))
 
+        # If a secrets manager is configured and this backend has a
+        # [<backend>:credentials] subsection, delegate credential
+        # resolution to perceval by appending its CLI flags. Provider
+        # auth (bw/vault) is read by perceval from PERCEVAL_BW_* /
+        # PERCEVAL_VAULT_* environment variables.
+        raw_sections = self.conf.conf
+        manager = raw_sections.get('general', {}).get('secrets_manager')
+        creds_section = raw_sections.get(f'{backend}:credentials')
+        if manager and creds_section is not None:
+            item_name = creds_section.get('item-name', backend)
+            params += ['--secrets-manager', manager, '--secret-name', item_name]
+
         return params
 
     def _get_collection_url(self):
