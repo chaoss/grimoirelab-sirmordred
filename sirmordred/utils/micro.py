@@ -216,7 +216,7 @@ def config_logging(debug, logs_dir, short_name):
 def get_params_parser():
     """Parse command line arguments"""
 
-    parser = argparse.ArgumentParser(add_help=False)
+    parser = argparse.ArgumentParser()
 
     parser.add_argument('-g', '--debug', dest='debug',
                         action='store_true',
