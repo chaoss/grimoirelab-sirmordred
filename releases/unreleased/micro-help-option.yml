@@ -1,0 +1,9 @@
+---
+title: Help option for micro.py
+category: added
+author: Tanmay Baranwal <baranwaltanmay16@gmail.com>
+issue: 560
+notes: >
+  `micro.py` now accepts `-h`/`--help`, which lists the available
+  options and their descriptions. Before, the option was disabled
+  and the parser rejected it.
