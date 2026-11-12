@@ -163,6 +163,16 @@ class Config():
                     "default": None,
                     "type": int,
                     "description": "The maximum number of minutes wrt the current date to retain the data"
+                },
+                "secrets_manager": {
+                    "optional": True,
+                    "default": None,
+                    "type": str,
+                    "description": "Secrets manager provider ('bitwarden' or 'hashicorp'). "
+                                   "If set, backend sections with a [<backend>:credentials] "
+                                   "subsection will fetch credentials via this provider. "
+                                   "Provider auth credentials are read from PERCEVAL_BW_* / "
+                                   "PERCEVAL_VAULT_* environment variables."
                 }
             }
         }

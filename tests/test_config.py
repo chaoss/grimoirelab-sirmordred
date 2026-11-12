@@ -33,6 +33,7 @@ from sirmordred.config import (Config, logger)
 CONF_FULL = 'test.cfg'
 CONF_SLIM = 'test_studies.cfg'
 CONF_WRONG = 'test_wrong.cfg'
+CONF_CREDENTIALS = 'test_credentials.cfg'
 
 
 class TestConfig(unittest.TestCase):
@@ -365,6 +366,42 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.get('backend', 'hiya!'), 'hiya!')
         self.assertEqual(config.get('backend:param1'), config['backend:param1'])
         self.assertEqual(config.get('backend:param1', 'inspecific string'), config['backend:param1'])
+
+    def test_secrets_manager_default_is_none(self):
+        """When [general] secrets_manager is absent, check_config applies
+        the default (None) defined in the schema."""
+
+        config = Config(CONF_FULL)
+
+        self.assertIsNone(config.conf['general']['secrets_manager'])
+
+    def test_secrets_manager_string_value(self):
+        """[general] secrets_manager parses as a plain string."""
+
+        config = Config(CONF_CREDENTIALS)
+
+        self.assertEqual(config.conf['general']['secrets_manager'], 'bitwarden')
+
+    def test_credentials_subsection_check_config_passes(self):
+        """A [<backend>:credentials] subsection does not trip check_config
+        and survives parsing intact."""
+
+        config = Config(CONF_CREDENTIALS)
+
+        self.assertIn('github:credentials', config.conf)
+        self.assertEqual(
+            config.conf['github:credentials']['item-name'],
+            'github-prod',
+        )
+
+    def test_credentials_subsection_not_leaked_by_get_backend_section(self):
+        """get_backend_section('github') must not pull keys from the
+        [github:credentials] subsection into the composed dict."""
+
+        config = Config(CONF_CREDENTIALS)
+        composed = config.get_backend_section('github')
+
+        self.assertNotIn('item-name', composed)
 
 
 if __name__ == "__main__":
